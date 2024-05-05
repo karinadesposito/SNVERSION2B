@@ -1,0 +1,168 @@
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { CreateShiftDto } from './dto/create-shift.dto';
+import { UpdateShiftDto } from './dto/update-shift.dto';
+import { Shift } from './entities/shift.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Schedule } from 'src/schedules/entities/schedule.entity';
+import { Patient } from 'src/patients/entities/patient.entity';
+import { Doctor } from 'src/doctors/entities/doctor.entity';
+import { ScheduleService } from 'src/schedules/schedules.service';
+type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+@Injectable()
+export class ShiftService {
+  constructor(
+    @InjectRepository(Shift) private shiftRepository: Repository<Shift>,
+    @InjectRepository(Schedule)
+    private readonly scheduleRepository: Repository<Schedule>,
+    @InjectRepository(Patient)
+    private readonly patientRepository: Repository<Patient>,
+    @InjectRepository(Doctor)
+    private readonly doctorRepository: Repository<Doctor>,
+    private readonly scheduleService: ScheduleService,
+  ) {}
+  async takeShift(
+    idSchedule: string,
+    idDoctor: string,
+    idPatient: string,
+  ): Promise<HttpException | CreateShiftDto | ResponseMessage> {
+    try {
+      const schedule = await this.scheduleRepository.findOne({
+        where: { idSchedule },
+      });
+      if (!schedule) {
+        return new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      if (!schedule.available) {
+        return new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
+      }
+
+      const doctor = await this.doctorRepository.findOne({
+        where: { id: idDoctor },
+      });
+      if (!doctor) {
+        return new HttpException('Doctor no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      const patient = await this.patientRepository.findOne({
+        where: { id: idPatient },
+      });
+      if (!patient) {
+        return new HttpException(
+          'Paciente no encontrado',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (doctor.id !== schedule.idDoctor) {
+        return {
+          message: 'El horario no corresponde al doctor seleccionado',
+          statusCode: HttpStatus.NOT_FOUND,
+        };
+      }
+      const shift = new Shift();
+      shift.idDoctor = doctor;
+      shift.idPatient = patient;
+      shift.schedule = schedule;
+
+      const savedShift = await this.shiftRepository.save(shift);
+
+      await this.scheduleService.updateAvailability(idSchedule);
+      return {
+        message: 'El turno se ha guardado',
+        data: savedShift,
+        statusCode: HttpStatus.OK,
+      };
+    } catch {
+      throw new HttpException(
+        'No se pudo seleccionar el horario',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async getShift(): Promise<
+    UpdateShiftDto[] | HttpException | ResponseMessage
+  > {
+    try {
+      const shift = await this.shiftRepository.find({
+        relations: ['idDoctor', 'idPatient', 'schedule'],
+      });
+      if (!shift.length) {
+        return {
+          message: 'No existen turnos vigentes',
+          statusCode: HttpStatus.OK,
+        };
+      } else {
+        const result = shift.map((d) => ({
+          id: d.id,
+          Doctor: d.idDoctor,
+          Patient: d.idPatient,
+          Schedules: d.schedule,
+        }));
+        return {
+          message: 'Los turnos existentes son:',
+          data: result,
+          statusCode: HttpStatus.OK,
+        };
+      }
+    } catch {
+      throw new HttpException(
+        'Ha ocurrido un error. No se accedió a la lista de turnos',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+  async findOneShift(
+    id: string,
+  ): Promise<HttpException | UpdateShiftDto | ResponseMessage> {
+    try {
+      const shift = await this.shiftRepository.findOne({
+        where: { id: id },
+      });
+      if (!shift) {
+        return {
+          message: 'El turno no fue hallado',
+          statusCode: HttpStatus.BAD_REQUEST,
+        };
+      } else {
+        return {
+          message: 'El turno hallado es:',
+          data: shift,
+          statusCode: HttpStatus.OK,
+        };
+      }
+    } catch {
+      throw new HttpException(
+        'Ha ocurrido una falla en la busqueda',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async deleteShift(
+    id: string,
+  ): Promise<HttpException | Shift | ResponseMessage> {
+    try {
+      const shift = await this.shiftRepository.findOne({
+        where: { id: id },
+      });
+      if (!shift) {
+        return {
+          message: 'El turno no ha sido encontrado',
+          statusCode: HttpStatus.NOT_FOUND,
+        };
+      } else {
+        await this.shiftRepository.delete({ id: id });
+        return {
+          message: 'Se ha eliminado el turno:',
+          data: shift,
+          statusCode: HttpStatus.OK,
+        };
+      }
+    } catch {
+      throw new HttpException(
+        'Ha ocurrido un error. No se logró eliminar el turno',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
