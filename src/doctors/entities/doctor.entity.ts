@@ -5,7 +5,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity({ name: 'doctors' })
 export class Doctor extends Person {
-  @Column({ length: 14 })
+  @Column({ length: 20 })
   speciality: string;
 
   @Column({ length: 14 })
