@@ -57,7 +57,7 @@ export class DoctorsController {
   }
 
   @Delete(':id')
-  deletePatient(
+  deleteDoctor(
     @Param('id') id: string,
   ): Promise<HttpException | Doctor | ResponseMessage> {
     return this.doctorsService.deleteDoctor(id);

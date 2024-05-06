@@ -8,17 +8,18 @@ import { DoctorsModule } from './doctors/doctors.module';
 import { ShiftModule } from './shift/shift.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { AdminModule } from './admin/admin.module';
-
+import { AuthModule } from './auth/auth.module';
+import { DB_NAME, DB_TYPE, HOST, PORT, USER_DB_NAME, USER_DB_PASSWORD } from 'config';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      username: 'root',
-      password: 'root',
-      port: 3306,
-      database: 'saludnet2',
+      type: DB_TYPE,
+      host: HOST,
+      username: USER_DB_NAME,
+      password: USER_DB_PASSWORD,
+      port:PORT,
+      database: DB_NAME,
       entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
       synchronize: true,
     }),
@@ -27,6 +28,7 @@ import { AdminModule } from './admin/admin.module';
     SchedulesModule,
     ShiftModule,
     AdminModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
