@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { CoveragesService } from './coverages.service';
-import { CoveragesController } from './coverages.controller';
+import { CoveragesService } from './coverage.service';
+import { CoveragesController } from './coverage.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Coverage } from './entities/coverage.entity';
 
@@ -9,4 +9,4 @@ import { Coverage } from './entities/coverage.entity';
   controllers: [CoveragesController],
   providers: [CoveragesService],
 })
-export class CoveragesModule {}
+export class CoverageModule {}

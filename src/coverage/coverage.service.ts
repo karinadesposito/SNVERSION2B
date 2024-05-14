@@ -18,12 +18,12 @@ export class CoveragesService {
   ): Promise<HttpException | CreateCoverageDto | ResponseMessage> {
     try {
       const nameFound = await this.coverageRepository.findOne({
-        where: { healthCoverages: coverage.healthCoverages },
+        where: { coverages: coverage.coverages },
       });
 
       if (nameFound) {
         return {
-          message: `La obra social con nombre ${nameFound.healthCoverages} ya existe en la base de datos`,
+          message: `La obra social con nombre ${nameFound.coverages} ya existe en la base de datos`,
           statusCode: HttpStatus.CONFLICT,
         };
       }
@@ -140,7 +140,7 @@ export class CoveragesService {
       await this.coverageRepository.delete({ id: id });
       return {
         message: 'Se ha eliminado la obra social: ',
-        data: coverages.healthCoverages,
+        data: coverages.coverages,
         statusCode: HttpStatus.MOVED_PERMANENTLY,
       };
     } catch (error) {

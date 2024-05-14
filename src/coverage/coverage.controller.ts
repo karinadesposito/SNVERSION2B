@@ -8,8 +8,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { CreateCoverageDto } from './dto/create-coverage.dto';
-import { CoveragesService } from './coverages.service';
 import { UpdateCoverageDto } from './dto/update-coverage.dto';
+import { CoveragesService } from './coverage.service';
 
 @Controller('coverage')
 export class CoveragesController {
@@ -43,4 +43,3 @@ export class CoveragesController {
     return this.coverageService.deleteCoverage(id);
   }
 }
-

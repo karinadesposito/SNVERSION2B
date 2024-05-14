@@ -11,7 +11,8 @@ import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { DB_NAME, DB_TYPE, HOST, PORT, USER_DB_NAME, USER_DB_PASSWORD } from 'config';
 import { SpecialityModule } from './speciality/speciality.module';
-import { CoveragesModule } from './coverages/coverages.module';
+import { CoverageModule } from './coverage/coverage.module';
+
 
 
 @Module({
@@ -33,7 +34,7 @@ import { CoveragesModule } from './coverages/coverages.module';
     AdminModule,
     AuthModule,
     SpecialityModule,
-    CoveragesModule,
+    CoverageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,4 @@
-import { Coverage } from 'src/coverages/entities/coverage.entity';
+import { Coverage } from 'src/coverage/entities/coverage.entity';
 import { Person } from 'src/person/person.entity';
 import { Shift } from 'src/shift/entities/shift.entity';
 import {
@@ -32,7 +32,7 @@ export class Patient extends Person {
   @OneToMany(() => Shift, (shift) => shift.idPatient)
   shifts: Shift[];
 
- @OneToOne(() => Coverage)
+  @OneToOne(() => Coverage)
   @JoinColumn()
-  healthCoverage: Coverage;
+  healthCoverage:Coverage;
 }
