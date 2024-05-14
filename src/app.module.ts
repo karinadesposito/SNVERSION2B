@@ -10,6 +10,9 @@ import { SchedulesModule } from './schedules/schedules.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { DB_NAME, DB_TYPE, HOST, PORT, USER_DB_NAME, USER_DB_PASSWORD } from 'config';
+import { SpecialityModule } from './speciality/speciality.module';
+import { CoveragesModule } from './coverages/coverages.module';
+
 
 @Module({
   imports: [
@@ -29,6 +32,8 @@ import { DB_NAME, DB_TYPE, HOST, PORT, USER_DB_NAME, USER_DB_PASSWORD } from 'co
     ShiftModule,
     AdminModule,
     AuthModule,
+    SpecialityModule,
+    CoveragesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

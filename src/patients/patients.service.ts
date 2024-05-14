@@ -19,7 +19,7 @@ export class PatientsService {
   ): Promise<HttpException | CreatePatientDto | ResponseMessage> {
     try {
       const patientFound = await this.patientsRepository.findOne({
-        where: { id: patient.dni },
+        where: { dni: patient.dni },
       });
       if (patientFound) {
         return {
@@ -135,7 +135,7 @@ export class PatientsService {
           statusCode: HttpStatus.NOT_FOUND,
         };
       } else {
-        await this.patientsRepository.delete({ id: id });
+        await this.patientsRepository.softDelete({ id: id });
         return {
           message: 'Se ha eliminado el paciente: ',
           data: patient,
@@ -149,4 +149,29 @@ export class PatientsService {
       );
     }
   }
+
+  async restorePatient(
+    id: string,
+  ): Promise<HttpException | Patient | ResponseMessage> {
+    try {
+      const restoredPatient = await this.patientsRepository.restore({ id });
+      if (!restoredPatient) {
+        return new HttpException(
+          'El paciente no pudo ser restaurado',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const dataRestored = await this.patientsRepository.findOne({ where: { id: id}});
+      return {
+        message: 'Se ha restaurado el paciente: ',
+        data: dataRestored,
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'No se pudo restaurar el paciente',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+}
 }

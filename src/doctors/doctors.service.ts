@@ -10,7 +10,6 @@ type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
 
 @Injectable()
 export class DoctorsService {
-  scheduleRepository: any;
   constructor(
     @InjectRepository(Doctor) private doctorRepository: Repository<Doctor>,
   ) {}
@@ -20,7 +19,7 @@ export class DoctorsService {
   ): Promise<HttpException | CreateDoctorDto | ResponseMessage> {
     try {
       const doctorFound = await this.doctorRepository.findOne({
-        where: { id: doctor.license },
+        where: { license: doctor.license },
       });
 
       if (doctorFound) {
@@ -29,6 +28,7 @@ export class DoctorsService {
           statusCode: HttpStatus.CONFLICT,
         };
       }
+
       const newDoctor = this.doctorRepository.create(doctor);
       const savedDoctor = await this.doctorRepository.save(newDoctor);
       if (savedDoctor) {
@@ -39,7 +39,6 @@ export class DoctorsService {
         };
       }
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         'No se pudo crear al doctor',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -49,7 +48,9 @@ export class DoctorsService {
 
   async getDoctors(): Promise<HttpException | Doctor[] | ResponseMessage> {
     try {
-      const doctors = await this.doctorRepository.find();
+      const doctors = await this.doctorRepository.find({
+        relations: ['speciality'],
+      });
 
       if (!doctors.length)
         return {
@@ -215,7 +216,7 @@ export class DoctorsService {
           HttpStatus.NOT_FOUND,
         );
       }
-      await this.doctorRepository.delete({ id: id });
+      await this.doctorRepository.softDelete({ id: id });
       return {
         message: 'Se ha eliminado el doctor con la matricula: ',
         data: doctor.license,
@@ -228,4 +229,29 @@ export class DoctorsService {
       );
     }
   }
+
+  async restoreDoctor(
+    id: string,
+  ): Promise<HttpException | Doctor | ResponseMessage> {
+    try {
+      const restoredDoctor = await this.doctorRepository.restore({ id });
+      if (!restoredDoctor) {
+        return new HttpException(
+          'El Doctor no pudo ser restaurado',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const dataRestored = await this.doctorRepository.findOne({ where: { id: id}});
+      return {
+        message: 'Se ha restaurado el doctor con la matrícula: ',
+        data: dataRestored,
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'No se pudo restaurar el doctor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+}
 }

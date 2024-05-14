@@ -9,8 +9,8 @@ export class CreatePatientDto {
   mail: string;
   @IsNotEmpty()
   phone: string;
-  @IsNotEmpty()
-  healthCoverage: string;
+  //@IsNotEmpty()
+  //healthCoverage: HealthCoverage
   @IsNotEmpty()
   dni: string;
   @IsNotEmpty()

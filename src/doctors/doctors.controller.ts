@@ -62,4 +62,12 @@ export class DoctorsController {
   ): Promise<HttpException | Doctor | ResponseMessage> {
     return this.doctorsService.deleteDoctor(id);
   }
+
+
+  @Put('/restore/:id')
+  restoreDoctor(
+    @Param('id') id: string,
+  ): Promise<HttpException | Doctor | ResponseMessage> {
+    return this.doctorsService.restoreDoctor(id);
+  }
 }
