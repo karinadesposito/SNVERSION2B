@@ -48,7 +48,7 @@ export class PatientsService {
     UpdatePatientDto[] | ResponseMessage | HttpException
   > {
     try {
-      const patients = await this.patientsRepository.find();
+      const patients = await this.patientsRepository.find(({ relations: ['coverage'] }));
       if (!patients.length) {
         return {
           message: 'No existen pacientes registrados',

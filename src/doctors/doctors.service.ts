@@ -6,7 +6,7 @@ import { Doctor } from './entities/doctor.entity';
 import { Repository } from 'typeorm/repository/Repository';
 import { FindManyOptions } from 'typeorm';
 
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };//realizar interface
 
 @Injectable()
 export class DoctorsService {

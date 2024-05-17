@@ -10,12 +10,14 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'doctors' })
 export class Doctor extends Person {
   @Column({ length: 14 })
+ // @Unique()
   license: string;
 
   @DeleteDateColumn({ name: 'deletedAt', nullable: true, type: 'datetime' })
@@ -34,11 +36,8 @@ export class Doctor extends Person {
   @JoinColumn({ name: 'speciality' })
   speciality: Speciality;
 
-  //@ManyToOne(() => Coverage, (coverage) => coverage.idDoctor)
-  //@JoinColumn({ name: 'coverageId' }) 
-  //coverage: Coverage;
-
   @ManyToOne(()=>Coverage,(coverage)=> coverage.idDoctor)
   @JoinColumn({name:'coverage'})
   coverages:Coverage
+  //muchos a muchos 
 }

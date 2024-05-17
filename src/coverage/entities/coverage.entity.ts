@@ -3,7 +3,7 @@ import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 
 const { v4: uuidv4 } = require('uuid');
 @Entity({ name: 'coverage' })
 export class Coverage {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ length: 25 })
@@ -11,8 +11,9 @@ export class Coverage {
 
   @BeforeInsert()
   createId() {
-    this.id = uuidv4().slice(0, 6);
+    this.id = uuidv4().slice(0,6);
   }
   @OneToMany(()=> Doctor,(doctor)=> doctor.coverages)
   idDoctor:Doctor[];
+   //muchos a muchos 
 }

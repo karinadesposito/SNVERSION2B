@@ -34,5 +34,5 @@ export class Patient extends Person {
 
   @OneToOne(() => Coverage)
   @JoinColumn()
-  healthCoverage:Coverage;
+  coverage:Coverage;
 }
