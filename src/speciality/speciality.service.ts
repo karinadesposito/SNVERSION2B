@@ -4,7 +4,7 @@ import { UpdateSpecialityDto } from './dto/update-speciality.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Speciality } from './entities/speciality.entity';
 import { Repository } from 'typeorm';
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { IResponse } from 'src/interface/IResponse';
 
 @Injectable()
 export class SpecialityService {
@@ -14,7 +14,7 @@ export class SpecialityService {
   ) {}
   async create(
     name: CreateSpecialityDto,
-  ): Promise<HttpException | CreateSpecialityDto | ResponseMessage> {
+  ): Promise<HttpException | CreateSpecialityDto | IResponse> {
     try {
       const nameFound = await this.specialityRepository.findOne({
         where: { name: name.name },
@@ -44,9 +44,7 @@ export class SpecialityService {
     }
   }
 
-  async getSpeciality(): Promise<
-    HttpException | Speciality[] | ResponseMessage
-  > {
+  async getSpeciality(): Promise<HttpException | Speciality[] | IResponse> {
     try {
       const specialitys = await this.specialityRepository.find();
 
@@ -72,7 +70,7 @@ export class SpecialityService {
 
   async findOneSpeciality(
     id: string,
-  ): Promise<HttpException | Speciality | ResponseMessage> {
+  ): Promise<HttpException | Speciality | IResponse> {
     try {
       const speciality = await this.specialityRepository.findOne({
         where: { id: id },
@@ -98,7 +96,7 @@ export class SpecialityService {
   async updateSpeciality(
     id: string,
     updateSpeciality: Partial<UpdateSpecialityDto>,
-  ): Promise<HttpException | UpdateSpecialityDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateSpecialityDto | IResponse> {
     try {
       const speciality = await this.specialityRepository.findOne({
         where: { id: id },
@@ -125,7 +123,7 @@ export class SpecialityService {
 
   async deleteSpeciality(
     id: string,
-  ): Promise<HttpException | Speciality | ResponseMessage> {
+  ): Promise<HttpException | Speciality | IResponse> {
     try {
       const speciality = await this.specialityRepository.findOne({
         where: { id: id },

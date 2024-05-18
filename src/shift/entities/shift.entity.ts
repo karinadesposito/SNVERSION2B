@@ -21,12 +21,6 @@ export class Shift {
   createId() {
     this.id = uuidv4().slice(0, 6);
   }
-
-  // // Relación con Doctor: cada turno está asociado a un médico
-  @ManyToOne(() => Doctor, (doctor) => doctor.shift)
-  @JoinColumn({ name: 'idDoctor' })
-  idDoctor: Doctor;
-
   // Relación con Patient: cada turno está asociado a un paciente
 
   @ManyToOne(() => Patient, (patient) => patient.shifts)

@@ -1,11 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { CreateCoverageDto } from "./dto/create-coverage.dto";
-import { Coverage } from "./entities/coverage.entity";
-import { UpdateCoverageDto } from "./dto/update-coverage.dto";
-
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateCoverageDto } from './dto/create-coverage.dto';
+import { Coverage } from './entities/coverage.entity';
+import { UpdateCoverageDto } from './dto/update-coverage.dto';
+import { IResponse } from 'src/interface/IResponse';
 
 @Injectable()
 export class CoveragesService {
@@ -15,7 +14,7 @@ export class CoveragesService {
   ) {}
   async create(
     coverage: CreateCoverageDto,
-  ): Promise<HttpException | CreateCoverageDto | ResponseMessage> {
+  ): Promise<HttpException | CreateCoverageDto | IResponse> {
     try {
       const nameFound = await this.coverageRepository.findOne({
         where: { coverages: coverage.coverages },
@@ -28,8 +27,7 @@ export class CoveragesService {
         };
       }
       const newCoverage = this.coverageRepository.create(coverage);
-      const savedCoverage =
-        await this.coverageRepository.save(newCoverage);
+      const savedCoverage = await this.coverageRepository.save(newCoverage);
       if (savedCoverage) {
         return {
           message: `La obra social ha sido creado exitosamente`,
@@ -45,9 +43,7 @@ export class CoveragesService {
     }
   }
 
-  async getCoverage(): Promise<
-    HttpException | Coverage[] | ResponseMessage
-  > {
+  async getCoverage(): Promise<HttpException | Coverage[] | IResponse> {
     try {
       const coverages = await this.coverageRepository.find();
 
@@ -73,7 +69,7 @@ export class CoveragesService {
 
   async findOneCoverages(
     id: string,
-  ): Promise<HttpException | Coverage | ResponseMessage> {
+  ): Promise<HttpException | Coverage | IResponse> {
     try {
       const coverages = await this.coverageRepository.findOne({
         where: { id: id },
@@ -99,7 +95,7 @@ export class CoveragesService {
   async updateCoverages(
     id: string,
     updateCoverages: Partial<UpdateCoverageDto>,
-  ): Promise<HttpException | UpdateCoverageDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateCoverageDto | IResponse> {
     try {
       const coverages = await this.coverageRepository.findOne({
         where: { id: id },
@@ -126,7 +122,7 @@ export class CoveragesService {
 
   async deleteCoverage(
     id: string,
-  ): Promise<HttpException | Coverage | ResponseMessage> {
+  ): Promise<HttpException | Coverage | IResponse> {
     try {
       const coverages = await this.coverageRepository.findOne({
         where: { id: id },

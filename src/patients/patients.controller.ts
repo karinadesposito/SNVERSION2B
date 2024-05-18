@@ -14,7 +14,7 @@ import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
-type ResponseMessage = { message: string };
+import { IResponse } from 'src/interface/IResponse';
 
 @Controller('patients')
 export class PatientsController {
@@ -23,19 +23,19 @@ export class PatientsController {
   @Post()
   create(
     @Body() newPatient: CreatePatientDto,
-  ): Promise<HttpException | CreatePatientDto | ResponseMessage> {
+  ): Promise<HttpException | CreatePatientDto | IResponse> {
     return this.patientsService.create(newPatient);
   }
 
   @Get()
-  getPatients(): Promise<UpdatePatientDto[] | ResponseMessage | HttpException> {
+  getPatients(): Promise<UpdatePatientDto[] | IResponse | HttpException> {
     return this.patientsService.getPatients();
   }
 
   @Get(':id')
   findOne(
     @Param('id') id: string,
-  ): Promise<HttpException | UpdatePatientDto | ResponseMessage> {
+  ): Promise<HttpException | UpdatePatientDto | IResponse> {
     return this.patientsService.findOnePatient(id);
   }
 
@@ -43,21 +43,21 @@ export class PatientsController {
   updatePatient(
     @Body() updatePatient: Partial<UpdatePatientDto>,
     @Param('id') id: string,
-  ): Promise<HttpException | UpdatePatientDto | ResponseMessage> {
+  ): Promise<HttpException | UpdatePatientDto | IResponse> {
     return this.patientsService.updatePatient(id, updatePatient);
   }
   @UseGuards(AuthGuard)
   @Delete(':id')
   deletePatient(
     @Param('id') id: string,
-  ): Promise<HttpException | Patient | ResponseMessage> {
+  ): Promise<HttpException | Patient | IResponse> {
     return this.patientsService.deletePatient(id);
   }
 
   @Put('/restore/:id')
   restorePatient(
     @Param('id') id: string,
-  ): Promise<HttpException | Patient | ResponseMessage> {
+  ): Promise<HttpException | Patient | IResponse> {
     return this.patientsService.restorePatient(id);
   }
 }

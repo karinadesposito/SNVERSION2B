@@ -4,7 +4,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus }; // se declara ésta sentencia para dar respuesta a determinadas situaciones
+import { IResponse } from 'src/interface/IResponse';
 
 //injectRepository es quien nos permite poder vincular el crud con los datos que estamos almacenando en el entity
 
@@ -16,7 +16,7 @@ export class PatientsService {
 
   async create(
     patient: CreatePatientDto,
-  ): Promise<HttpException | CreatePatientDto | ResponseMessage> {
+  ): Promise<HttpException | CreatePatientDto | IResponse> {
     try {
       const patientFound = await this.patientsRepository.findOne({
         where: { dni: patient.dni },
@@ -44,11 +44,11 @@ export class PatientsService {
     }
   }
 
-  async getPatients(): Promise<
-    UpdatePatientDto[] | ResponseMessage | HttpException
-  > {
+  async getPatients(): Promise<UpdatePatientDto[] | IResponse | HttpException> {
     try {
-      const patients = await this.patientsRepository.find(({ relations: ['coverage'] }));
+      const patients = await this.patientsRepository.find({
+        relations: ['coverage'],
+      });
       if (!patients.length) {
         return {
           message: 'No existen pacientes registrados',
@@ -71,7 +71,7 @@ export class PatientsService {
 
   async findOnePatient(
     id: string,
-  ): Promise<HttpException | UpdatePatientDto | ResponseMessage> {
+  ): Promise<HttpException | UpdatePatientDto | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
         where: { id: id },
@@ -124,7 +124,7 @@ export class PatientsService {
   }
   async deletePatient(
     id: string,
-  ): Promise<HttpException | Patient | ResponseMessage> {
+  ): Promise<HttpException | Patient | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
         where: { id: id },
@@ -152,7 +152,7 @@ export class PatientsService {
 
   async restorePatient(
     id: string,
-  ): Promise<HttpException | Patient | ResponseMessage> {
+  ): Promise<HttpException | Patient | IResponse> {
     try {
       const restoredPatient = await this.patientsRepository.restore({ id });
       if (!restoredPatient) {
@@ -161,7 +161,9 @@ export class PatientsService {
           HttpStatus.NOT_FOUND,
         );
       }
-      const dataRestored = await this.patientsRepository.findOne({ where: { id: id}});
+      const dataRestored = await this.patientsRepository.findOne({
+        where: { id: id },
+      });
       return {
         message: 'Se ha restaurado el paciente: ',
         data: dataRestored,
@@ -173,5 +175,5 @@ export class PatientsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-}
+  }
 }

@@ -12,7 +12,7 @@ import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctor } from './entities/doctor.entity';
-type ResponseMessage = { message: string };
+import { IResponse } from 'src/interface/IResponse';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -21,30 +21,30 @@ export class DoctorsController {
   @Post()
   create(
     @Body() newDoctor: CreateDoctorDto,
-  ): Promise<HttpException | CreateDoctorDto | ResponseMessage> {
+  ): Promise<HttpException | CreateDoctorDto | IResponse> {
     return this.doctorsService.create(newDoctor);
   }
 
   @Get()
-  Doctors(): Promise<HttpException | Doctor[] | ResponseMessage> {
+  Doctors(): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctors();
   }
   @Get('/shiftAvailable/:idDoctor')
   DoctorsTwo(
     @Param('idDoctor') idDoctor: string,
-  ): Promise<HttpException | Doctor[] | ResponseMessage> {
+  ): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctorsShift(idDoctor);
   }
   @Get('/shiftUnAvailable/:idDoctor')
   DoctorsThree(
     @Param('idDoctor') idDoctor: string,
-  ): Promise<HttpException | Doctor[] | ResponseMessage> {
+  ): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctorsUnAvailable(idDoctor);
   }
   @Get(':id')
   findOneDoctor(
     @Param('id') id: string,
-  ): Promise<HttpException | Doctor | ResponseMessage> {
+  ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.findOneDoctor(id);
   }
 
@@ -52,22 +52,21 @@ export class DoctorsController {
   updateDoctor(
     @Body() updateDoctor: Partial<UpdateDoctorDto>,
     @Param('id') id: string,
-  ): Promise<HttpException | UpdateDoctorDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateDoctorDto | IResponse> {
     return this.doctorsService.updateDoctor(id, updateDoctor);
   }
 
   @Delete(':id')
   deleteDoctor(
     @Param('id') id: string,
-  ): Promise<HttpException | Doctor | ResponseMessage> {
+  ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.deleteDoctor(id);
   }
-
 
   @Put('/restore/:id')
   restoreDoctor(
     @Param('id') id: string,
-  ): Promise<HttpException | Doctor | ResponseMessage> {
+  ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.restoreDoctor(id);
   }
 }

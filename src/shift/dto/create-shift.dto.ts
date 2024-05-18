@@ -9,9 +9,6 @@ export class CreateShiftDto {
   idSchedule: string;
 
   @IsNotEmpty()
-  idDoctor: string;
-
-  @IsNotEmpty()
   idPatient: string;
 
   @BeforeInsert()

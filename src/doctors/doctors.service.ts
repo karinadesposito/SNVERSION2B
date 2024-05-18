@@ -5,8 +5,7 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { Repository } from 'typeorm/repository/Repository';
 import { FindManyOptions } from 'typeorm';
-
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };//realizar interface
+import { IResponse } from 'src/interface/IResponse';
 
 @Injectable()
 export class DoctorsService {
@@ -16,7 +15,7 @@ export class DoctorsService {
 
   async create(
     doctor: CreateDoctorDto,
-  ): Promise<HttpException | CreateDoctorDto | ResponseMessage> {
+  ): Promise<HttpException | CreateDoctorDto | IResponse> {
     try {
       const doctorFound = await this.doctorRepository.findOne({
         where: { license: doctor.license },
@@ -46,7 +45,7 @@ export class DoctorsService {
     }
   }
 
-  async getDoctors(): Promise<HttpException | Doctor[] | ResponseMessage> {
+  async getDoctors(): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const doctors = await this.doctorRepository.find({
         relations: ['speciality'],
@@ -74,7 +73,7 @@ export class DoctorsService {
   //Busca todos los turnos que se encuentren disponible del doctor especificado.
   async getDoctorsShift(
     idDoctor: string,
-  ): Promise<HttpException | Doctor[] | ResponseMessage> {
+  ): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const options: FindManyOptions<Doctor> = {
         relations: ['schedule'],
@@ -114,7 +113,7 @@ export class DoctorsService {
   //Busca todos los turnos que se encuentren ya tomados del doctor especificado.
   async getDoctorsUnAvailable(
     idDoctor: string,
-  ): Promise<HttpException | Doctor[] | ResponseMessage> {
+  ): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const options: FindManyOptions<Doctor> = {
         relations: ['schedule'],
@@ -150,9 +149,7 @@ export class DoctorsService {
       );
     }
   }
-  async findOneDoctor(
-    id: string,
-  ): Promise<HttpException | Doctor | ResponseMessage> {
+  async findOneDoctor(id: string): Promise<HttpException | Doctor | IResponse> {
     try {
       const doctor = await this.doctorRepository.findOne({
         where: { id: id },
@@ -178,7 +175,7 @@ export class DoctorsService {
   async updateDoctor(
     id: string,
     updateDoctor: Partial<UpdateDoctorDto>,
-  ): Promise<HttpException | UpdateDoctorDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateDoctorDto | IResponse> {
     try {
       const doctor = await this.doctorRepository.findOne({
         where: { id: id },
@@ -203,9 +200,7 @@ export class DoctorsService {
     }
   }
 
-  async deleteDoctor(
-    id: string,
-  ): Promise<HttpException | Doctor | ResponseMessage> {
+  async deleteDoctor(id: string): Promise<HttpException | Doctor | IResponse> {
     try {
       const doctor = await this.doctorRepository.findOne({
         where: { id: id },
@@ -230,9 +225,7 @@ export class DoctorsService {
     }
   }
 
-  async restoreDoctor(
-    id: string,
-  ): Promise<HttpException | Doctor | ResponseMessage> {
+  async restoreDoctor(id: string): Promise<HttpException | Doctor | IResponse> {
     try {
       const restoredDoctor = await this.doctorRepository.restore({ id });
       if (!restoredDoctor) {
@@ -241,7 +234,9 @@ export class DoctorsService {
           HttpStatus.NOT_FOUND,
         );
       }
-      const dataRestored = await this.doctorRepository.findOne({ where: { id: id}});
+      const dataRestored = await this.doctorRepository.findOne({
+        where: { id: id },
+      });
       return {
         message: 'Se ha restaurado el doctor con la matrícula: ',
         data: dataRestored,
@@ -253,5 +248,5 @@ export class DoctorsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-}
+  }
 }

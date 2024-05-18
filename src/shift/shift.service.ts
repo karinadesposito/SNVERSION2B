@@ -6,9 +6,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Schedule } from 'src/schedules/entities/schedule.entity';
 import { Patient } from 'src/patients/entities/patient.entity';
-import { Doctor } from 'src/doctors/entities/doctor.entity';
 import { ScheduleService } from 'src/schedules/schedules.service';
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { IResponse } from 'src/interface/IResponse';
+
 @Injectable()
 export class ShiftService {
   constructor(
@@ -17,15 +17,12 @@ export class ShiftService {
     private readonly scheduleRepository: Repository<Schedule>,
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
-    @InjectRepository(Doctor)
-    private readonly doctorRepository: Repository<Doctor>,
     private readonly scheduleService: ScheduleService,
   ) {}
   async takeShift(
     idSchedule: string,
-    idDoctor: string,
     idPatient: string,
-  ): Promise<HttpException | CreateShiftDto | ResponseMessage> {
+  ): Promise<HttpException | CreateShiftDto | IResponse> {
     try {
       const schedule = await this.scheduleRepository.findOne({
         where: { idSchedule },
@@ -37,14 +34,6 @@ export class ShiftService {
       if (!schedule.available) {
         return new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
       }
-
-      const doctor = await this.doctorRepository.findOne({
-        where: { id: idDoctor },
-      });
-      if (!doctor) {
-        return new HttpException('Doctor no encontrado', HttpStatus.NOT_FOUND);
-      }
-
       const patient = await this.patientRepository.findOne({
         where: { id: idPatient },
       });
@@ -54,14 +43,7 @@ export class ShiftService {
           HttpStatus.NOT_FOUND,
         );
       }
-      if (doctor.id !== schedule.idDoctor) {
-        return {
-          message: 'El horario no corresponde al doctor seleccionado',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
-      }
       const shift = new Shift();
-      shift.idDoctor = doctor;
       shift.idPatient = patient;
       shift.schedule = schedule;
 
@@ -80,9 +62,7 @@ export class ShiftService {
       );
     }
   }
-  async getShift(): Promise<
-    UpdateShiftDto[] | HttpException | ResponseMessage
-  > {
+  async getShift(): Promise<UpdateShiftDto[] | HttpException | IResponse> {
     try {
       const shift = await this.shiftRepository.find({
         relations: ['idDoctor', 'idPatient', 'schedule'],
@@ -95,7 +75,6 @@ export class ShiftService {
       } else {
         const result = shift.map((d) => ({
           id: d.id,
-          Doctor: d.idDoctor,
           Patient: d.idPatient,
           Schedules: d.schedule,
         }));
@@ -114,7 +93,7 @@ export class ShiftService {
   }
   async findOneShift(
     id: string,
-  ): Promise<HttpException | UpdateShiftDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateShiftDto | IResponse> {
     try {
       const shift = await this.shiftRepository.findOne({
         where: { id: id },
@@ -138,9 +117,7 @@ export class ShiftService {
       );
     }
   }
-  async deleteShift(
-    id: string,
-  ): Promise<HttpException | Shift | ResponseMessage> {
+  async deleteShift(id: string): Promise<HttpException | Shift | IResponse> {
     try {
       const shift = await this.shiftRepository.findOne({
         where: { id: id },

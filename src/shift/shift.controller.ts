@@ -12,31 +12,32 @@ import { ShiftService } from './shift.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { Shift } from './entities/shift.entity';
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { IResponse } from 'src/interface/IResponse';
+
 @Controller('shift')
 export class ShiftController {
   constructor(private readonly shiftService: ShiftService) {}
   @Post()
   async takeShift(
     @Body() newShift: CreateShiftDto,
-  ): Promise<HttpException | CreateShiftDto | ResponseMessage> {
-    const { idSchedule, idDoctor, idPatient } = newShift;
-    return this.shiftService.takeShift(idSchedule, idDoctor, idPatient);
+  ): Promise<HttpException | CreateShiftDto | IResponse> {
+    const { idSchedule, idPatient } = newShift;
+    return this.shiftService.takeShift(idSchedule, idPatient);
   }
   @Get()
-  getShift(): Promise<UpdateShiftDto[] | ResponseMessage | HttpException> {
+  getShift(): Promise<UpdateShiftDto[] | IResponse | HttpException> {
     return this.shiftService.getShift();
   }
   @Get(':id')
   findOne(
     @Param('id') id: string,
-  ): Promise<HttpException | UpdateShiftDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateShiftDto | IResponse> {
     return this.shiftService.findOneShift(id);
   }
   @Delete(':id')
   deleteShift(
     @Param('id') id: string,
-  ): Promise<HttpException | Shift | ResponseMessage> {
+  ): Promise<HttpException | Shift | IResponse> {
     return this.shiftService.deleteShift(id);
   }
 }

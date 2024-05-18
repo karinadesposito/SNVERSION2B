@@ -4,7 +4,7 @@ import { Coverage } from 'src/coverage/entities/coverage.entity';
 export class CreatePatientDto {
   @MinLength(4)
   @MaxLength(25)
-  firstLastName: string;
+  fullName: string;
   @IsEmail()
   @IsNotEmpty()
   mail: string;

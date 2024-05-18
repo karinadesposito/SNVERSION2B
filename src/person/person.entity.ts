@@ -11,7 +11,7 @@ export class Person extends BaseEntity {
   id: string;
 
   @Column({ length: 30 })
-  firstLastName: string;
+  fullName: string;
 
   @Column({ length: 30 })
   mail: string;

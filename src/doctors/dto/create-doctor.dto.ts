@@ -3,7 +3,7 @@ import { Speciality } from 'src/speciality/entities/speciality.entity';
 
 export class CreateDoctorDto {
   @MaxLength(30)
-  firstLastName: string;
+  fullName: string;
   @IsEmail()
   @IsNotEmpty()
   mail: string;

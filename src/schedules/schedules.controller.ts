@@ -13,7 +13,7 @@ import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { Schedule } from './entities/schedule.entity';
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { IResponse } from 'src/interface/IResponse';
 
 @Controller('schedules')
 export class ScheduleController {
@@ -22,7 +22,7 @@ export class ScheduleController {
   @Post()
   create(
     @Body() newSchedule: CreateScheduleDto,
-  ): Promise<HttpException | CreateScheduleDto | ResponseMessage | void> {
+  ): Promise<HttpException | CreateScheduleDto | IResponse | void> {
     return this.scheduleService.createScheduleWithInterval(newSchedule);
   }
 
@@ -34,7 +34,7 @@ export class ScheduleController {
   @Get(':id')
   findOneSchedule(
     @Param('id') id: string,
-  ): Promise<HttpException | Schedule | ResponseMessage> {
+  ): Promise<HttpException | Schedule | IResponse> {
     return this.scheduleService.findOneSchedule(id);
   }
 
@@ -53,7 +53,7 @@ export class ScheduleController {
   @Put('/updateAvailability/:idSchedule')
   async updateAvailability(
     @Param('idSchedule') idSchedule: string,
-  ): Promise<HttpException | UpdateScheduleDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateScheduleDto | IResponse> {
     return await this.scheduleService.updateAvailability(idSchedule);
   }
 }

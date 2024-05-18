@@ -4,7 +4,7 @@ import { Admin } from './entities/admin.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { IResponse } from 'src/interface/IResponse';
 
 @Injectable()
 export class AdminService {
@@ -15,7 +15,7 @@ export class AdminService {
 
   async create(
     admin: CreateAdminDto,
-  ): Promise<HttpException | CreateAdminDto | ResponseMessage> {
+  ): Promise<HttpException | CreateAdminDto | IResponse> {
     try {
       const adminFound = await this.adminRepository.findOne({
         where: { username: admin.username },

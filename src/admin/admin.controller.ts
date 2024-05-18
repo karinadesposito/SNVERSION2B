@@ -11,8 +11,8 @@ import {
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { IResponse } from 'src/interface/IResponse';
 
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
 
 @Controller('admin')
 export class AdminController {
@@ -21,7 +21,7 @@ export class AdminController {
   @Post('/login')
   create(
     @Body() newAdmin: CreateAdminDto,
-  ): Promise<HttpException | CreateAdminDto | ResponseMessage> {
+  ): Promise<HttpException | CreateAdminDto | IResponse> {
     return this.adminService.create(newAdmin);
   }
   @Get()

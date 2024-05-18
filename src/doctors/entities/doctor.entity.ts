@@ -8,6 +8,8 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   Unique,
@@ -15,9 +17,9 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'doctors' })
+@Unique(['license'])
 export class Doctor extends Person {
   @Column({ length: 14 })
- // @Unique()
   license: string;
 
   @DeleteDateColumn({ name: 'deletedAt', nullable: true, type: 'datetime' })
@@ -29,15 +31,12 @@ export class Doctor extends Person {
   @OneToMany(() => Schedule, (schedule) => schedule.idDoctors)
   schedule: Schedule[];
 
-  @OneToMany(() => Shift, (shift) => shift.idDoctor)
-  shift: Shift[];
-
   @ManyToOne(() => Speciality, (speciality) => speciality.idDoctor)
   @JoinColumn({ name: 'speciality' })
   speciality: Speciality;
+  
+  @ManyToMany(() => Coverage)
+   @JoinTable()
+   coverages : Coverage[];
 
-  @ManyToOne(()=>Coverage,(coverage)=> coverage.idDoctor)
-  @JoinColumn({name:'coverage'})
-  coverages:Coverage
-  //muchos a muchos 
 }

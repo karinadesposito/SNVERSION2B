@@ -4,8 +4,7 @@ import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Schedule } from './entities/schedule.entity';
 import { Repository } from 'typeorm';
-
-type ResponseMessage = { message: string; data?: {}; statusCode: HttpStatus };
+import { IResponse } from 'src/interface/IResponse';
 
 @Injectable()
 export class ScheduleService {
@@ -16,7 +15,7 @@ export class ScheduleService {
 
   async createScheduleWithInterval(
     createScheduleDto: CreateScheduleDto,
-  ): Promise<HttpException | CreateScheduleDto | ResponseMessage> {
+  ): Promise<HttpException | CreateScheduleDto | IResponse> {
     try {
       const { day, idDoctor, start_Time, end_Time, interval } =
         createScheduleDto;
@@ -79,7 +78,7 @@ export class ScheduleService {
     }
   }
 
-  async getSchedules(): Promise<HttpException | Schedule[] | ResponseMessage> {
+  async getSchedules(): Promise<HttpException | Schedule[] | IResponse> {
     try {
       const schedules = await this.scheduleRepository.find();
 
@@ -102,7 +101,7 @@ export class ScheduleService {
   }
   async findOneSchedule(
     id: string,
-  ): Promise<HttpException | Schedule | ResponseMessage> {
+  ): Promise<HttpException | Schedule | IResponse> {
     try {
       const scheduleFound = await this.scheduleRepository.findOne({
         where: { idSchedule: id },
@@ -125,7 +124,7 @@ export class ScheduleService {
   async updateSchedule(
     id: string,
     updateScheduleDto: Partial<UpdateScheduleDto>,
-  ): Promise<HttpException | UpdateScheduleDto | ResponseMessage> {
+  ): Promise<HttpException | UpdateScheduleDto | IResponse> {
     try {
       const scheduleFound = await this.scheduleRepository.findOne({
         where: { idSchedule: id },
@@ -149,7 +148,7 @@ export class ScheduleService {
 
   async deleteSchedule(
     id: string,
-  ): Promise<HttpException | Schedule | ResponseMessage> {
+  ): Promise<HttpException | Schedule | IResponse> {
     try {
       const schedule = await this.scheduleRepository.findOne({
         where: { idSchedule: id },
@@ -173,7 +172,7 @@ export class ScheduleService {
   //Funcion para seleccionar turno o cancelarlo (pasa de true a false)
   async updateAvailability(
     idSchedule: string,
-  ): Promise<ResponseMessage | HttpException | UpdateScheduleDto> {
+  ): Promise<IResponse | HttpException | UpdateScheduleDto> {
     try {
       const existingSchedule = await this.scheduleRepository.findOne({
         where: { idSchedule },
@@ -208,4 +207,4 @@ export class ScheduleService {
       );
     }
   }
-  }
+}
