@@ -1,5 +1,5 @@
 import { Doctor } from 'src/doctors/entities/doctor.entity';
-import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 const { v4: uuidv4 } = require('uuid');
 @Entity({ name: 'coverage' })
 export class Coverage {
@@ -13,7 +13,6 @@ export class Coverage {
   createId() {
     this.id = uuidv4().slice(0,6);
   }
-  @OneToMany(()=> Doctor,(doctor)=> doctor.coverages)
-  idDoctor:Doctor[];
-   //muchos a muchos 
+  @ManyToMany(()=> Doctor, doctor => doctor.coverages)
+  doctors:Doctor[]
 }

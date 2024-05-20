@@ -1,7 +1,6 @@
 import { Coverage } from 'src/coverage/entities/coverage.entity';
 import { Person } from 'src/person/person.entity';
 import { Schedule } from 'src/schedules/entities/schedule.entity';
-import { Shift } from 'src/shift/entities/shift.entity';
 import { Speciality } from 'src/speciality/entities/speciality.entity';
 import {
   Column,
@@ -34,9 +33,8 @@ export class Doctor extends Person {
   @ManyToOne(() => Speciality, (speciality) => speciality.idDoctor)
   @JoinColumn({ name: 'speciality' })
   speciality: Speciality;
-  
-  @ManyToMany(() => Coverage)
-   @JoinTable()
-   coverages : Coverage[];
 
+  @ManyToMany(() => Coverage)
+  @JoinTable()
+  coverages: Coverage[];
 }

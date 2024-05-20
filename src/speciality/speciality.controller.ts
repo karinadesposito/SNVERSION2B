@@ -42,4 +42,5 @@ export class SpecialityController {
   remove(@Param('id') id: string) {
     return this.specialityService.deleteSpeciality(id);
   }
+
 }

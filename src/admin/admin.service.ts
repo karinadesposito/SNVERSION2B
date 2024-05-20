@@ -43,7 +43,6 @@ export class AdminService {
         };
       }
     } catch (error) {
-      console.log(error);
       throw new HttpException(
         'No se pudo crear al administrador',
         HttpStatus.INTERNAL_SERVER_ERROR,

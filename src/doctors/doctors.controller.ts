@@ -13,6 +13,7 @@ import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { IResponse } from 'src/interface/IResponse';
+import { AddCoverageToDoctorDto } from 'src/coverage/dto/add-coverage.dto';
 
 @Controller('doctors')
 export class DoctorsController {
@@ -68,5 +69,29 @@ export class DoctorsController {
     @Param('id') id: string,
   ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.restoreDoctor(id);
+  }
+  @Post('/addCoverage')
+  async addCoverageToDoctor(
+    @Body() addCoverageToDoctorDto: AddCoverageToDoctorDto,
+  ): Promise<HttpException | Doctor | IResponse> {
+    return this.doctorsService.addCoverageToDoctor(addCoverageToDoctorDto);
+  }
+
+  @Delete('/remove/coverage')
+  async removeCoverageFromDoctor(
+    @Body() doctorData: AddCoverageToDoctorDto,
+  ): Promise<Doctor> {
+    return await this.doctorsService.removeCoverageFromDoctor(doctorData);
+  }
+  @Get('/patients/:id')
+  getPatientsByDoctorId(@Param('id') doctorId: string) {
+    return this.doctorsService.findPatientsByDoctorId(doctorId);
+  }
+
+  @Get('speciality/:sname')
+  findBySpeciality(
+    @Param('sname') specialityName: string,
+  ): Promise<HttpException | Doctor[] | IResponse> {
+    return this.doctorsService.findBySpeciality(specialityName);
   }
 }

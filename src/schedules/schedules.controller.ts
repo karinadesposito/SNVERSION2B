@@ -56,4 +56,12 @@ export class ScheduleController {
   ): Promise<HttpException | UpdateScheduleDto | IResponse> {
     return await this.scheduleService.updateAvailability(idSchedule);
   }
+
+  @Get('/schedules/count')
+  async getCountTake(
+    @Body() body: { idDoctor: string, day: string }
+  ): Promise<IResponse | HttpException | Schedule[]> {
+    const { idDoctor, day } = body;
+    return this.scheduleService.countScheduleByDoctor(day, idDoctor);
+  }
 }

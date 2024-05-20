@@ -207,4 +207,59 @@ export class ScheduleService {
       );
     }
   }
+  async findScheduleByDay(
+    day: string,
+    idDoctor: string,
+  ): Promise<HttpException | Schedule[] | IResponse> {
+    try {
+      const schedules = await this.scheduleRepository.find({
+        where: { day: day, idDoctor: idDoctor, available: false },
+        relations: ['idDoctors', 'shift'],
+      });
+
+      if (!schedules.length) {
+        throw new HttpException(
+          'No hay turnos disponibles para este día y médico',
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
+        return schedules;
+      }
+    } catch (error) {
+      throw new HttpException(
+        'Ha ocurrido un error en la búsqueda',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async countScheduleByDoctor(
+    day: string,
+    idDoctor: string,
+  ): Promise<HttpException | Schedule[] | IResponse> {
+    try {
+      const schedules = await this.scheduleRepository.find({
+        where: { day: day, idDoctor: idDoctor, available: false },
+        relations: ['idDoctors', 'shift'],
+      });
+
+      if (schedules.length) {
+        const count = schedules.length;
+        return {
+          message: `Los turnos del doctor ${idDoctor} son ${count} para el día ${day}`,
+          data: schedules,
+          statusCode: HttpStatus.OK,
+        };
+      } else {
+        throw new HttpException(
+          'No hay turnos disponibles para este día y médico',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+    } catch (error) {
+      throw new HttpException(
+        'Ha ocurrido un error en la sumatoria',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

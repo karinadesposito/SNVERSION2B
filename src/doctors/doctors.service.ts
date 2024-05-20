@@ -1,16 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { Repository } from 'typeorm/repository/Repository';
-import { FindManyOptions } from 'typeorm';
+import { FindManyOptions, FindOneOptions } from 'typeorm';
 import { IResponse } from 'src/interface/IResponse';
+import { Coverage } from 'src/coverage/entities/coverage.entity';
+import { AddCoverageToDoctorDto } from 'src/coverage/dto/add-coverage.dto';
+import { Patient } from 'src/patients/entities/patient.entity';
 
 @Injectable()
 export class DoctorsService {
   constructor(
     @InjectRepository(Doctor) private doctorRepository: Repository<Doctor>,
+    @InjectRepository(Coverage)
+    private coverageRepository: Repository<Coverage>,
   ) {}
 
   async create(
@@ -45,10 +55,78 @@ export class DoctorsService {
     }
   }
 
+  async addCoverageToDoctor({
+    doctorId,
+    coverageId,
+  }: AddCoverageToDoctorDto): Promise<Doctor> {
+    const doctor = await this.doctorRepository
+      .findOne({
+        where: { id: doctorId },
+        relations: ['coverages'],
+      })
+      .catch(() => {
+        throw new NotFoundException(
+          `Doctor con ID ${doctorId} no fue encontrado`,
+        );
+      });
+
+    const coverage = await this.coverageRepository
+      .findOne({
+        where: { id: coverageId },
+      })
+      .catch(() => {
+        throw new NotFoundException(
+          `Coverage con ID ${coverageId} no fue encontrado`,
+        );
+      });
+
+    if (!doctor.coverages) {
+      doctor.coverages = [];
+    }
+
+    doctor.coverages.push(coverage);
+    return this.doctorRepository.save(doctor);
+  }
+  async removeCoverageFromDoctor({
+    doctorId,
+    coverageId,
+  }: AddCoverageToDoctorDto): Promise<Doctor> {
+    const doctor = await this.doctorRepository
+      .findOne({
+        where: { id: doctorId },
+        relations: ['coverages'],
+      })
+      .catch(() => {
+        throw new NotFoundException(
+          `Doctor con ID ${doctorId} no fue encontrado`,
+        );
+      });
+
+    if (!doctor.coverages) {
+      throw new NotFoundException(
+        `El doctor con ID ${doctorId} no tiene coberturas`,
+      );
+    }
+
+    const coverageIndex = doctor.coverages.findIndex(
+      (coverage) => coverage.id === coverageId,
+    );
+
+    if (coverageIndex === -1) {
+      throw new NotFoundException(
+        `Coverage con ID ${coverageId} no fue encontrado en las coberturas del doctor`,
+      );
+    }
+
+    doctor.coverages.splice(coverageIndex, 1);
+
+    return this.doctorRepository.save(doctor);
+  }
+
   async getDoctors(): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const doctors = await this.doctorRepository.find({
-        relations: ['speciality'],
+        relations: ['speciality', 'coverages'],
       });
 
       if (!doctors.length)
@@ -245,6 +323,74 @@ export class DoctorsService {
     } catch (error) {
       throw new HttpException(
         'No se pudo restaurar el doctor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async findPatientsByDoctorId(
+    doctorId: string,
+  ): Promise<HttpException | Patient[] | IResponse> {
+    try {
+      const options: FindOneOptions<Doctor> = {
+        relations: ['schedule', 'schedule.shift', 'schedule.shift.idPatient'],
+        where: { id: doctorId },
+      };
+
+      const doctor = await this.doctorRepository.findOne(options);
+
+      if (!doctor) {
+        return new HttpException(
+          'El Doctor no existe en la base de datos',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (doctor.schedule.length === 0) {
+        return {
+          message: 'No se encontraron pacientes asociados al médico',
+          statusCode: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      const patients = doctor.schedule
+        .filter((schedule) => schedule.shift)
+        .map((schedule) => schedule.shift.idPatient);
+
+      return {
+        message: 'Los pacientes del médico son:',
+        data: patients,
+        statusCode: HttpStatus.FOUND,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Ha ocurrido un error. No se pudo obtener la lista de pacientes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async findBySpeciality(
+    specialityName: string,
+  ): Promise<HttpException | Doctor[] | IResponse> {
+    try {
+      const specialityDoctor = await this.doctorRepository.find({
+        where: { speciality: { name: specialityName } },
+      });
+      if (!specialityDoctor.length) {
+        return {
+          message: 'La especialidad no fue encontrada',
+          statusCode: HttpStatus.NOT_FOUND,
+        };
+      } else {
+        return {
+          message: 'Los doctores con dicha especialidad son:',
+          data: specialityDoctor,
+          statusCode: HttpStatus.FOUND,
+        };
+      }
+    } catch (error) {
+      throw new HttpException(
+        'Ha ocurrido una falla en la busqueda',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

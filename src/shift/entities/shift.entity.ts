@@ -1,4 +1,3 @@
-import { Doctor } from 'src/doctors/entities/doctor.entity';
 import { Patient } from 'src/patients/entities/patient.entity';
 import { Schedule } from 'src/schedules/entities/schedule.entity';
 
