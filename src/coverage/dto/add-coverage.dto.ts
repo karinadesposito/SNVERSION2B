@@ -5,5 +5,5 @@ export class AddCoverageToDoctorDto {
   doctorId: string;
 
   @IsNotEmpty()
-  coverageId: string;
+  coverageId: string[];
 }

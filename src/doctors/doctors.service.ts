@@ -70,23 +70,21 @@ export class DoctorsService {
         );
       });
 
-    const coverage = await this.coverageRepository
-      .findOne({
-        where: { id: coverageId },
-      })
-      .catch(() => {
-        throw new NotFoundException(
-          `Coverage con ID ${coverageId} no fue encontrado`,
-        );
-      });
-
-    if (!doctor.coverages) {
-      doctor.coverages = [];
+      if (!doctor.coverages) {
+        doctor.coverages = [];
+      }
+    
+      for (const id of coverageId) {
+        const coverage = await this.coverageRepository
+          .findOne({ where: { id } })
+          .catch(() => {
+            throw new NotFoundException(`Coverage con ID ${id} no fue encontrado`);
+          });
+        doctor.coverages.push(coverage);
+      }
+    
+      return this.doctorRepository.save(doctor);
     }
-
-    doctor.coverages.push(coverage);
-    return this.doctorRepository.save(doctor);
-  }
   async removeCoverageFromDoctor({
     doctorId,
     coverageId,
@@ -102,24 +100,16 @@ export class DoctorsService {
         );
       });
 
-    if (!doctor.coverages) {
+    if (!doctor.coverages || doctor.coverages.length === 0) {
       throw new NotFoundException(
         `El doctor con ID ${doctorId} no tiene coberturas`,
       );
     }
 
-    const coverageIndex = doctor.coverages.findIndex(
-      (coverage) => coverage.id === coverageId,
+    doctor.coverages = doctor.coverages.filter(
+      (coverage) => !coverageId.includes(coverage.id),
     );
-
-    if (coverageIndex === -1) {
-      throw new NotFoundException(
-        `Coverage con ID ${coverageId} no fue encontrado en las coberturas del doctor`,
-      );
-    }
-
-    doctor.coverages.splice(coverageIndex, 1);
-
+  
     return this.doctorRepository.save(doctor);
   }
 
