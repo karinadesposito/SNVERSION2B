@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { SECRET } from 'config';
+import {SECRET} from '../../config'
+//import * as dotenv from 'dotenv';
+//dotenv.config();
+//const SECRET = process.env.SECRET;
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
@@ -18,8 +21,8 @@ export class AuthGuard implements CanActivate {
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-       // secret: jwtConstants.secret,
-       secret: SECRET,
+        //secret: jwtConstants.secret,
+      secret: SECRET,
       });
       request['admin'] = payload;
     } catch {

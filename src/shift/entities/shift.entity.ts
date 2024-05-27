@@ -1,5 +1,5 @@
-import { Patient } from 'src/patients/entities/patient.entity';
-import { Schedule } from 'src/schedules/entities/schedule.entity';
+import { Patient } from '../../patients/entities/patient.entity';
+import { Schedule } from '../../schedules/entities/schedule.entity';
 
 import {
   BeforeInsert,

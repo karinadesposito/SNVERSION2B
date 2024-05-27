@@ -4,7 +4,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 //injectRepository es quien nos permite poder vincular el crud con los datos que estamos almacenando en el entity
 

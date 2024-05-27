@@ -4,10 +4,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Admin } from 'src/admin/entities/admin.entity';
+import { Admin } from '../admin/entities/admin.entity';
 import { compare } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
-import { AdminService } from 'src/admin/admin.service';
+import { AdminService } from '../admin/admin.service';
 
 @Injectable()
 export class AuthService {

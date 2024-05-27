@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
-import { Coverage } from 'src/coverage/entities/coverage.entity';
+import { Coverage } from '../../coverage/entities/coverage.entity';
 
 export class CreatePatientDto {
   @MinLength(4)

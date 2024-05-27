@@ -1,4 +1,4 @@
-import { Doctor } from 'src/doctors/entities/doctor.entity';
+import { Doctor } from '../../doctors/entities/doctor.entity'
 import {
   BeforeInsert,
   Column,

@@ -1,12 +1,7 @@
 import {
   IsEmail,
-  IsNotEmpty,
   Length,
-  Matches,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
-import { Column } from 'typeorm';
 
 export class CreateAdminDto {
   @Length(6, 14)

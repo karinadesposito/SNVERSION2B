@@ -4,7 +4,7 @@ import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Schedule } from './entities/schedule.entity';
 import { Repository } from 'typeorm';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 @Injectable()
 export class ScheduleService {

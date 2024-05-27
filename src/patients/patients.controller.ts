@@ -13,8 +13,8 @@ import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { Patient } from './entities/patient.entity';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { IResponse } from 'src/interface/IResponse';
+import { AuthGuard } from '../auth/auth.guard';
+import { IResponse } from '../interface/IResponse';
 
 @Controller('patients')
 export class PatientsController {

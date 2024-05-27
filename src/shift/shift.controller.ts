@@ -5,14 +5,13 @@ import {
   Body,
   Param,
   Delete,
-  HttpException,
-  HttpStatus,
+  HttpException
 } from '@nestjs/common';
 import { ShiftService } from './shift.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
 import { Shift } from './entities/shift.entity';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 @Controller('shift')
 export class ShiftController {

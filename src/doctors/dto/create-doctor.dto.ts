@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsObject, MaxLength} from 'class-validator';
-import { Speciality } from 'src/speciality/entities/speciality.entity';
+import { CreateSpecialityDto } from '../..//speciality/dto/create-speciality.dto';
 
 export class CreateDoctorDto {
   @MaxLength(30)
@@ -10,7 +10,7 @@ export class CreateDoctorDto {
   @IsNotEmpty()
   phone: string;
   @IsNotEmpty()
-  speciality: Speciality;
+  speciality: CreateSpecialityDto;
   @IsNotEmpty()
   @MaxLength(14)
   license: string;

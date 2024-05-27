@@ -1,5 +1,5 @@
-import { Doctor } from 'src/doctors/entities/doctor.entity';
-import { Shift } from 'src/shift/entities/shift.entity';
+import { Doctor } from '../../doctors/entities/doctor.entity'
+import { Shift } from '../../shift/entities/shift.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

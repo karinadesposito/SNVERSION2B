@@ -4,10 +4,10 @@ import { UpdateShiftDto } from './dto/update-shift.dto';
 import { Shift } from './entities/shift.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Schedule } from 'src/schedules/entities/schedule.entity';
-import { Patient } from 'src/patients/entities/patient.entity';
-import { ScheduleService } from 'src/schedules/schedules.service';
-import { IResponse } from 'src/interface/IResponse';
+import { Schedule } from '../schedules/entities/schedule.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { ScheduleService } from '../schedules/schedules.service';
+import { IResponse } from '../interface/IResponse';
 
 @Injectable()
 export class ShiftService {

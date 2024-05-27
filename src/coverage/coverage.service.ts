@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateCoverageDto } from './dto/create-coverage.dto';
 import { Coverage } from './entities/coverage.entity';
 import { UpdateCoverageDto } from './dto/update-coverage.dto';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 @Injectable()
 export class CoveragesService {

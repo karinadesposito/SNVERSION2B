@@ -1,4 +1,4 @@
-import { Doctor } from 'src/doctors/entities/doctor.entity';
+import { Doctor } from '../../doctors/entities/doctor.entity'
 import { BeforeInsert, Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 const { v4: uuidv4 } = require('uuid');
 @Entity({ name: 'coverage' })

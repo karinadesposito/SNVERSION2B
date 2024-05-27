@@ -3,7 +3,7 @@ import { ScheduleService } from './schedules.service';
 import { ScheduleController } from './schedules.controller';
 import { Schedule } from './entities/schedule.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Doctor } from 'src/doctors/entities/doctor.entity';
+import { Doctor } from '../doctors/entities/doctor.entity';
 
 
 @Module({

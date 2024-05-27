@@ -4,7 +4,7 @@ import { Admin } from './entities/admin.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 @Injectable()
 export class AdminService {

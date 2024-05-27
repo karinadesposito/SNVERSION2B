@@ -6,14 +6,13 @@ import {
   Param,
   Delete,
   HttpException,
-  Put,
-  HttpStatus,
+  Put
 } from '@nestjs/common';
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { Schedule } from './entities/schedule.entity';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 @Controller('schedules')
 export class ScheduleController {

@@ -3,10 +3,10 @@ import { ShiftService } from './shift.service';
 import { ShiftController } from './shift.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shift } from './entities/shift.entity';
-import { Schedule } from 'src/schedules/entities/schedule.entity';
-import { Patient } from 'src/patients/entities/patient.entity';
-import { Doctor } from 'src/doctors/entities/doctor.entity';
-import { ScheduleService } from 'src/schedules/schedules.service';
+import { Schedule } from '../schedules/entities/schedule.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { Doctor } from '../doctors/entities/doctor.entity';
+import { ScheduleService } from '../schedules/schedules.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Shift, Doctor, Schedule, Patient])],
   controllers: [ShiftController],

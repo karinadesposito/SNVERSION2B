@@ -1,6 +1,6 @@
-import { Coverage } from 'src/coverage/entities/coverage.entity';
-import { Person } from 'src/person/person.entity';
-import { Shift } from 'src/shift/entities/shift.entity';
+import { Coverage } from '../../coverage/entities/coverage.entity';
+import { Person } from '../../person/person.entity';
+import { Shift } from '../../shift/entities/shift.entity';
 import {
   Column,
   DeleteDateColumn,

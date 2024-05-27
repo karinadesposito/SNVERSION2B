@@ -10,10 +10,10 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { Repository } from 'typeorm/repository/Repository';
 import { FindManyOptions, FindOneOptions } from 'typeorm';
-import { IResponse } from 'src/interface/IResponse';
-import { Coverage } from 'src/coverage/entities/coverage.entity';
-import { AddCoverageToDoctorDto } from 'src/coverage/dto/add-coverage.dto';
-import { Patient } from 'src/patients/entities/patient.entity';
+import { IResponse } from '../interface/IResponse';
+import { Coverage } from '../coverage/entities/coverage.entity';
+import { AddCoverageToDoctorDto } from '../coverage/dto/add-coverage.dto';
+import { Patient } from '../patients/entities/patient.entity';
 
 @Injectable()
 export class DoctorsService {
@@ -70,21 +70,23 @@ export class DoctorsService {
         );
       });
 
-      if (!doctor.coverages) {
-        doctor.coverages = [];
-      }
-    
-      for (const id of coverageId) {
-        const coverage = await this.coverageRepository
-          .findOne({ where: { id } })
-          .catch(() => {
-            throw new NotFoundException(`Coverage con ID ${id} no fue encontrado`);
-          });
-        doctor.coverages.push(coverage);
-      }
-    
-      return this.doctorRepository.save(doctor);
+    if (!doctor.coverages) {
+      doctor.coverages = [];
     }
+
+    for (const id of coverageId) {
+      const coverage = await this.coverageRepository
+        .findOne({ where: { id } })
+        .catch(() => {
+          throw new NotFoundException(
+            `Coverage con ID ${id} no fue encontrado`,
+          );
+        });
+      doctor.coverages.push(coverage);
+    }
+
+    return this.doctorRepository.save(doctor);
+  }
   async removeCoverageFromDoctor({
     doctorId,
     coverageId,
@@ -109,7 +111,7 @@ export class DoctorsService {
     doctor.coverages = doctor.coverages.filter(
       (coverage) => !coverageId.includes(coverage.id),
     );
-  
+
     return this.doctorRepository.save(doctor);
   }
 

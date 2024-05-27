@@ -4,14 +4,11 @@ import {
   Post,
   Body,
   Param,
-  Delete,
-  HttpException,
-  HttpStatus,
+  HttpException
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 
 @Controller('admin')

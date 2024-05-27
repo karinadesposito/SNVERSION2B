@@ -4,7 +4,7 @@ import { UpdateSpecialityDto } from './dto/update-speciality.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Speciality } from './entities/speciality.entity';
 import { Repository } from 'typeorm';
-import { IResponse } from 'src/interface/IResponse';
+import { IResponse } from '../interface/IResponse';
 
 @Injectable()
 export class SpecialityService {
