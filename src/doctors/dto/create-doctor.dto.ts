@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsObject, MaxLength} from 'class-validator';
+import { IsEmail, IsNotEmpty, MaxLength} from 'class-validator';
 import { CreateSpecialityDto } from '../..//speciality/dto/create-speciality.dto';
 
 export class CreateDoctorDto {

@@ -56,7 +56,7 @@ describe('DoctorsController', () => {
       };
       const result: IResponse = {
         message: 'Doctor created successfully',
-        statusCode: HttpStatus.OK,
+        statusCode: HttpStatus.CREATED,
       };
 
       jest.spyOn(service, 'create').mockResolvedValue(result);
@@ -97,7 +97,7 @@ describe('DoctorsController', () => {
         },
       ];
       const result: IResponse = {
-        message: 'Doctor created successfully',
+        message: 'Doctor found successfully',
         statusCode: HttpStatus.OK,
         data: search
       };
@@ -174,7 +174,7 @@ describe('DoctorsController', () => {
         },
       ];
       const result: IResponse = {
-        message: 'Doctor created successfully',
+        message: 'Doctor found successfully',
         statusCode: HttpStatus.OK,
         data: search
       };

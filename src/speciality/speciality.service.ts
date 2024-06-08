@@ -57,7 +57,7 @@ export class SpecialityService {
         return {
           message: 'La lista de especialidades está compuesta por:',
           data: specialitys,
-          statusCode: HttpStatus.FOUND,
+          statusCode: HttpStatus.OK,
         };
       }
     } catch (error) {
