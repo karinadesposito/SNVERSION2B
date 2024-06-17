@@ -22,40 +22,40 @@ export class ShiftService {
   async takeShift(
     idSchedule: string,
     idPatient: string,
-  ): Promise<HttpException | CreateShiftDto | IResponse> {
+  ): Promise<CreateShiftDto | IResponse> {
     try {
       const schedule = await this.scheduleRepository.findOne({
         where: { idSchedule },
       });
       if (!schedule) {
-        return new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
+        throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
       }
-
+  
       if (!schedule.available) {
-        return new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
+        throw new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
       }
       const patient = await this.patientRepository.findOne({
         where: { id: idPatient },
       });
       if (!patient) {
-        return new HttpException(
-          'Paciente no encontrado',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('Paciente no encontrado', HttpStatus.NOT_FOUND);
       }
       const shift = new Shift();
       shift.idPatient = patient;
       shift.schedule = schedule;
-
+  
       const savedShift = await this.shiftRepository.save(shift);
-
+  
       await this.scheduleService.updateAvailability(idSchedule);
       return {
         message: 'El turno se ha guardado',
         data: savedShift,
         statusCode: HttpStatus.OK,
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;  
+      }
       throw new HttpException(
         'No se pudo seleccionar el horario',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -87,7 +87,7 @@ export class ShiftService {
     } catch {
       throw new HttpException(
         'Ha ocurrido un error. No se accedió a la lista de turnos',
-        HttpStatus.NOT_FOUND,
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -101,18 +101,18 @@ export class ShiftService {
       if (!shift) {
         return {
           message: 'El turno no fue hallado',
-          statusCode: HttpStatus.BAD_REQUEST,
+          statusCode: HttpStatus.NOT_FOUND,
         };
       } else {
         return {
           message: 'El turno hallado es:',
-          data: shift,
+          data: shift, 
           statusCode: HttpStatus.OK,
-        };
+        };  
       }
     } catch {
       throw new HttpException(
-        'Ha ocurrido una falla en la busqueda',
+        'Ha ocurrido una falla en la búsqueda',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

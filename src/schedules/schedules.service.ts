@@ -201,6 +201,9 @@ export class ScheduleService {
         };
       }
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error; // Re-lanzar la excepción específica
+      }
       throw new HttpException(
         'No se pudo actualizar la agenda',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -223,7 +226,9 @@ export class ScheduleService {
           HttpStatus.NOT_FOUND,
         );
       } else {
-        return schedules;
+        return {message: 'Turnos tomamos en éste dia',
+          statusCode: HttpStatus.OK,
+          data: schedules}  ;
       }
     } catch (error) {
       throw new HttpException(
@@ -256,10 +261,14 @@ export class ScheduleService {
         );
       }
     } catch (error) {
-      throw new HttpException(
-        'Ha ocurrido un error en la sumatoria',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        throw new HttpException(
+          'Ha ocurrido un error en la sumatoria',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 }

@@ -41,6 +41,7 @@ export class AdminService {
           data: savedAdmin,
           statusCode: HttpStatus.CREATED,
         };
+        
       }
     } catch (error) {
       throw new HttpException(
@@ -55,7 +56,7 @@ export class AdminService {
       where: { email: email },
     });
     if (!user) {
-      return new HttpException('Admin not found', HttpStatus.NOT_FOUND);
+     throw new HttpException('Admin not found', HttpStatus.NOT_FOUND);
     }
     return user;
   }

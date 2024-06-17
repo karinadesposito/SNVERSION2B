@@ -138,11 +138,11 @@ export class SpecialityService {
       return {
         message: 'Se ha eliminado la especialidad: ',
         data: speciality.name,
-        statusCode: HttpStatus.MOVED_PERMANENTLY,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
       throw new HttpException(
-        'No se pudo eliminar la especialidad',
+        'No se pudo eliminar la especialidad', 
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

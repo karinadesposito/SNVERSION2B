@@ -20,7 +20,6 @@ describe('DoctorsController', () => {
       findOneDoctor: jest.fn(),
       updateDoctor: jest.fn(),
       deleteDoctor: jest.fn(),
-      restoreDoctor: jest.fn(),
       addCoverageToDoctor: jest.fn(),
       removeCoverageFromDoctor: jest.fn(),
       findPatientsByDoctorId: jest.fn(),
@@ -210,18 +209,6 @@ describe('DoctorsController', () => {
       jest.spyOn(service, 'deleteDoctor').mockResolvedValue(result);
       const response = await controller.deleteDoctor(id);
       expect(service.deleteDoctor).toHaveBeenCalledWith(id);
-      expect(response).toEqual(result);
-      expect(response).not.toBeUndefined();
-      expect(response).not.toBeNull();
-    });
-  });
-  describe('restoreDoctor', () => {
-    it('should call service.restoreDoctor with correct params', async () => {
-      const id = '0bb2b9';
-      const result = { message: 'Doctor restored successfully', statusCode:HttpStatus.OK  };
-      jest.spyOn(service, 'restoreDoctor').mockResolvedValue(result);
-      const response = await controller.restoreDoctor(id);
-      expect(service.restoreDoctor).toHaveBeenCalledWith(id);
       expect(response).toEqual(result);
       expect(response).not.toBeUndefined();
       expect(response).not.toBeNull();

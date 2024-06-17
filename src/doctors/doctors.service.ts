@@ -295,30 +295,6 @@ export class DoctorsService {
     }
   }
 
-  async restoreDoctor(id: string): Promise<HttpException | Doctor | IResponse> {
-    try {
-      const restoredDoctor = await this.doctorRepository.restore({ id });
-      if (!restoredDoctor) {
-        return new HttpException(
-          'El Doctor no pudo ser restaurado',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const dataRestored = await this.doctorRepository.findOne({
-        where: { id: id },
-      });
-      return {
-        message: 'Se ha restaurado el doctor con la matrícula: ',
-        data: dataRestored,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      throw new HttpException(
-        'No se pudo restaurar el doctor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
   async findPatientsByDoctorId(
     doctorId: string,
   ): Promise<HttpException | Patient[] | IResponse> {

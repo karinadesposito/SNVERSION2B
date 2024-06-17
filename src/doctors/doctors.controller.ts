@@ -64,12 +64,6 @@ export class DoctorsController {
     return this.doctorsService.deleteDoctor(id);
   }
 
-  @Put('/restore/:id')
-  restoreDoctor(
-    @Param('id') id: string,
-  ): Promise<HttpException | Doctor | IResponse> {
-    return this.doctorsService.restoreDoctor(id);
-  }
   @Post('/addCoverage')
   async addCoverageToDoctor(
     @Body() addCoverageToDoctorDto: AddCoverageToDoctorDto,

@@ -1,37 +1,65 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DoctorsService } from './doctors.service';
 import { Doctor } from './entities/doctor.entity';
-import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Coverage } from '../coverage/entities/coverage.entity';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
-import { HttpStatus } from '@nestjs/common';
-import { IResponse } from 'src/interface/IResponse';
+import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { Repository } from 'typeorm';
 
 describe('DoctorsService', () => {
   let service: DoctorsService;
   let repository: Repository<Doctor>;
   let repositoryCoverage: Repository<Coverage>;
 
+  const dataDoc= {deletedAt: undefined,
+    restoredAt: undefined,
+    createAt: undefined,
+    createId: null,
+    hasId: null,
+    save: null,
+    remove: null,
+    softRemove: null,
+    recover: null,
+    reload: null}
+    const createDoc: CreateDoctorDto = {
+      fullName: 'Juan Gomez',
+      mail: 'docjgomez@gmail.com',
+      phone: '02281457800',
+      license: 'MP 75405',
+      speciality: { 
+        name: 'Oftalmología',},
+    };
+    const doctor: Doctor = {
+      ...createDoc,
+      id: '0bb2b9',
+      coverages: [],
+      speciality: {
+        name: 'Oftalmología',
+        id: '',
+        createId: null,
+        idDoctor: []
+      },
+      schedule:[],
+  ...dataDoc
+    };
+
   beforeEach(async () => {
     const mockRepository = {
       create: jest.fn(),
-      addCoverageToDoctor: jest.fn(),
-      removeCoverageFromDoctor: jest.fn(),
-      getDoctors: jest.fn(),
-      getDoctorsShift: jest.fn(),
-      getDoctorsUnAvailable: jest.fn(),
-      findOneDoctor: jest.fn(),
-      updateDoctor: jest.fn(),
-      deleteDoctor: jest.fn(),
-      restoreDoctor: jest.fn(),
-      findPatientsByDoctorId: jest.fn(),
-      findBySpeciality: jest.fn(),
+      findOne: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
+      softDelete: jest.fn(),
+      restore: jest.fn(),
+      find: jest.fn(),
+      get: jest.fn(),
     };
     const mockCoverage = {
       addCoverageToDoctor: jest.fn(),
       removeCoverageFromDoctor: jest.fn(),
+      findOne: jest.fn(),
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -55,95 +83,473 @@ describe('DoctorsService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
   describe('create', () => {
     it('should create a new doctor', async () => {
-      const createDoc: CreateDoctorDto = {
-        fullName: 'Juan Gomez',
-        mail: 'docjgomez@gmail.com',
-        phone: '02281457800',
-        license: 'MP 75405',
-        speciality: { name: 'Oftalmología' },
-      };
-      const result: IResponse = {
-        message: 'Doctor created successfully',
-        statusCode: HttpStatus.CREATED,
-      };
-      jest.spyOn(service, 'create').mockRejectedValue(new Error('Falló al dar de alta el doctor'));
+
+      jest.spyOn(repository, 'create').mockReturnValue(doctor);
+      jest.spyOn(repository, 'save').mockResolvedValue(doctor);
+
+      const response = await service.create(createDoc);
+      if ('message' in response && 'statusCode' in response && 'data' in response) {
+        expect(response.message).toEqual('El doctor ha sido creado exitosamente');
+        expect(response.statusCode).toEqual(HttpStatus.CREATED);
+        expect(response.data).toEqual(doctor);
+      }
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { license: createDoc.license },
+      });
+      expect(repository.create).toHaveBeenCalledWith(createDoc);
+      expect(repository.save).toHaveBeenCalledWith(doctor);
+    });
+
+
+    it('should return conflict response if doctor already exists', async () => {
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+      const response = await service.create(createDoc);
+      if ('message' in response && 'statusCode' in response) {
+        expect(response.message).toEqual(`El doctor con matricula ${createDoc.license} ya existe en la base de datos`);
+        expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
+      }
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { license: createDoc.license },
+      });
+    });
+
+    it('should handle unexpected errors', async () => {
+     
+      jest.spyOn(repository, 'findOne').mockRejectedValueOnce(new Error('Database error'));
       try {
         await service.create(createDoc);
       } catch (error) {
-        expect(error.message).toBe('Falló al dar de alta el doctor');
+        expect(error.message).toBe('No se pudo crear al doctor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
-      
-      jest.spyOn(service, 'create').mockResolvedValue(result);
+  });
+});
 
-      const response = await service.create(createDoc);
+  describe('addCoverageToDoctor', () => {
+    it('should add the coverage to the doctor', async () => {
+      const doctorId = '0bb2b9';
+      const coverageId = ['0bb4m9'];
+      const coverage: Coverage = {
+        id: '0bb4m9',
+        coverages: '',
+        createId: null,
+        doctors: [],
+      };
 
-      expect(response).toEqual(result);
-      expect(service.create).toHaveBeenCalledWith(createDoc);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+      jest.spyOn(repositoryCoverage, 'findOne').mockResolvedValue(coverage);
+      jest.spyOn(repository, 'save').mockResolvedValue({
+        ...doctor,
+        id: '0bb2b9',
+        fullName: '',
+        mail: '',
+        phone: '',
+        license: '',
+        speciality: undefined,
+        schedule: [],
+        coverages: [coverage],
+        ...dataDoc
+      });
+
+      const response = await service.addCoverageToDoctor({
+        doctorId,
+        coverageId,
+      });
+
+      expect(response.coverages).toEqual([coverage]);
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: doctorId },
+        relations: ['coverages'],
+      });
+      expect(repositoryCoverage.findOne).toHaveBeenCalledWith({
+        where: { id: '0bb4m9' },
+      });
+      expect(repository.save).toHaveBeenCalledWith({
+        ...doctor,
+        coverages: [coverage],
+      });
+    });
+
+    it('should throw NotFoundException if doctor is not found', async () => {
+      const doctorId = '0bb2b9';
+      const coverageId = ['0bb4m9'];
+
+      jest.spyOn(repository, 'findOne').mockRejectedValue(new NotFoundException());
+
+      try {
+        await service.addCoverageToDoctor({ doctorId, coverageId });
+      } catch (error) {
+        expect(error.message).toBe(`Doctor con ID ${doctorId} no fue encontrado`);
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+
+    it('should throw NotFoundException if coverage is not found', async () => {
+      const doctorId = '0bb2b9';
+      const coverageId = ['0bb4m9'];
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+      jest.spyOn(repositoryCoverage, 'findOne').mockRejectedValue(new NotFoundException());
+
+      try {
+        await service.addCoverageToDoctor({ doctorId, coverageId });
+      } catch (error) {
+        expect(error.message).toBe(`Coverage con ID ${coverageId} no fue encontrado`);
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+  });
+
+  describe('removeCoverageFromDoctor', () => {
+    it('should remove the coverage from the doctor', async () => {
+      const doctorId = '0bb2b9';
+      const coverageId = ['0bb4m9'];
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+      jest.spyOn(repository, 'save').mockResolvedValue({
+        ...doctor,
+        fullName: '',
+        mail: '',
+        phone: '',
+        license: '',
+        speciality: undefined,
+        schedule: [],
+        coverages: [
+          {
+            id: '58b2b9',
+            coverages: '',
+            createId: null,
+            doctors: [],
+          },
+        ],
+      ...dataDoc
+      });
+
+      const response = await service.removeCoverageFromDoctor({
+        doctorId,
+        coverageId,
+      });
+
+      expect(response.coverages).toEqual([
+        { id: '58b2b9', coverages: '', createId: null, doctors: [] },
+      ]);
+      expect(repository.findOne).toHaveBeenCalledWith({where: { id: doctorId },
+        relations: ['coverages'],});
+      expect(repository.save).toHaveBeenCalledWith({
+        ...doctor,
+      });
+    });
+
+    it('should throw NotFoundException if doctor is not found', async () => {
+      const doctorId = '0bb2b9';
+      const coverageId = ['58b2b9'];
+
+      jest.spyOn(repository, 'findOne').mockRejectedValue(new NotFoundException());
+      try {
+        await service.removeCoverageFromDoctor({ doctorId, coverageId });
+      } catch (error) {
+        expect(error.message).toBe(`Doctor con ID ${doctorId} no fue encontrado`);
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+      }
+    });
+
+    it('should throw NotFoundException if doctor has no coverages', async () => {
+      const doctorId = '0bb2b9';
+      const coverageId = ['0bb4m9'];
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+
+      try {
+        await service.removeCoverageFromDoctor({ doctorId, coverageId });
+      } catch (error) {
+        expect(error.message).toBe(`El doctor con ID ${doctorId} no tiene coberturas`);
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+      }
     });
   });
 
   describe('getDoctors', () => {
     it('should return a list of doctors', async () => {
-      const doctors = [
-        {
-          id: '0bb2b9',
-          fullName: 'Juan Gomez',
-          mail: 'docjgomez@gmail.com',
-          phone: '02281457800',
-          license: 'MP 75405',
-          speciality: { name: 'Oftalmología' },
-        },
-      ];
-     
-      const result: IResponse = {
-        message: 'La lista de doctores está compuesta por:',
-        data: doctors,
-        statusCode: HttpStatus.OK,
-      };
+      const doctors = [doctor];
 
-      jest.spyOn(service, 'getDoctors').mockResolvedValue(result);
+      jest.spyOn(repository, 'find').mockResolvedValue(doctors);
+
+      const response = await service.getDoctors();
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'La lista de doctores está compuesta por:',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.data).toEqual(doctors);
+      }
+    });
+
+    it('should return no content message if no doctors are registered', async () => {
+      jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
 
       const response = await service.getDoctors();
 
-      expect(response).toEqual(result);
-      expect(response).not.toBeUndefined();
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('No existen doctores registrados');
+        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
+    it('should throw an internal server error if an exception occurs', async () => {
+      jest
+        .spyOn(repository, 'find')
+        .mockRejectedValue(new Error('Repository error'));
+
+      try {
+        await service.getDoctors();
+      } catch (error) {
+        expect(error.message).toBe(
+          'Ha ocurrido un error.No se pudo traer la lista de doctores',
+        );
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    });
+  });
+
+  describe('getDoctorsShift', () => {
+    it('should return not found if the doctor not found', async () => {
+      const doctorId = '0bb2b9';
+      jest.spyOn(repository, 'find').mockResolvedValue([]);
+
+      const response = await service.getDoctorsShift(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('No existe el doctor especificado');
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
+    it('should return NO_CONTENT when there are no available schedules', async () => {
+      const doctorId = '0bb2b9';
+      const doctors = [doctor];
+      jest.spyOn(repository, 'find').mockResolvedValue(doctors);
+
+      const response = await service.getDoctorsShift(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'No hay turnos disponibles para el doctor especificado',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
+    it('should return available schedules if found', async () => {
+      const doctorId = '0bb2b9';
+      const availableSchedules = [
+        {
+          idSchedule: 'sch1',
+          day: '2024-06-18',
+          idDoctor: '0bb2b9',
+          start_Time: '09:00',
+          end_Time: '09:30',
+          available: true,
+          interval: '',
+          createId: null,
+          idDoctors: new Doctor(),
+          shift: null,
+        },
+      ];
+      const doctors = [doctor];
+      jest.spyOn(repository, 'find').mockResolvedValue(doctors);
+
+      const response = await service.getDoctorsShift(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('Turnos disponibles del doctor:');
+        expect(response.statusCode).toEqual(HttpStatus.OK);
+        expect(response.data).toEqual(availableSchedules);
+      }
+    });
+
+    it('should throw an internal server error if an exception occurs', async () => {
+      const doctorId = '0bb2b9';
+      jest
+        .spyOn(repository, 'find')
+        .mockRejectedValue(new Error('Repository error'));
+
+      try {
+        await service.getDoctorsShift(doctorId);
+      } catch (error) {
+        expect(error.message).toBe(
+          'Ha ocurrido un error. No se pudo obtener la lista de doctores',
+        );
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    });
+  });
+
+  describe('getDoctorsUnAvailable', () => {
+    it('should return not found if the doctor not found', async () => {
+      const doctorId = '0bb2b9';
+      jest.spyOn(repository, 'find').mockResolvedValue([]);
+
+      const response = await service.getDoctorsUnAvailable(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('No existe el doctor especificado');
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
+    it('should return NO_CONTENT when there are no available schedules', async () => {
+      const doctorId = '0bb2b9';
+      const doctors = [doctor];
+      jest.spyOn(repository, 'find').mockResolvedValue(doctors);
+
+      const response = await service.getDoctorsUnAvailable(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'No hay turnos disponibles para el doctor especificado',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
+    it('should return unavailable schedules if found', async () => {
+      const doctorId = '0bb2b9';
+      const unavailableSchedules = [
+        {
+          idSchedule: 'sch1',
+          day: '2024-06-18',
+          idDoctor: '0bb2b9',
+          start_Time: '09:00',
+          end_Time: '09:30',
+          available: false,
+          interval: '',
+          createId: null,
+          idDoctors: new Doctor(),
+          shift: null,
+        },
+        {
+          idSchedule: 'sch2',
+          day: '2024-06-18',
+          idDoctor: '0bb2b9',
+          start_Time: '09:00',
+          end_Time: '09:30',
+          available: false,
+          interval: '',
+          createId: null,
+          idDoctors: new Doctor(),
+          shift: null,
+        },
+      ];
+      const doctors = [doctor];
+      jest.spyOn(repository, 'find').mockResolvedValue(doctors);
+
+      const response = await service.getDoctorsUnAvailable(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('Turnos ya asignados del doctor:');
+        expect(response.statusCode).toEqual(HttpStatus.OK);
+        expect(response.data).toEqual(unavailableSchedules);
+      }
+    });
+
+    it('should throw an internal server error if an exception occurs', async () => {
+      const doctorId = '0bb2b9';
+      jest
+        .spyOn(repository, 'find')
+        .mockRejectedValue(new Error('Repository error'));
+
+      try {
+        await service.getDoctorsUnAvailable(doctorId);
+      } catch (error) {
+        expect(error.message).toBe(
+          'Ha ocurrido un error. No se pudo obtener la lista de doctores',
+        );
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     });
   });
 
   describe('findOneDoctor', () => {
+    it('should return not found message if the doctor does not exist', async () => {
+      const doctorId = '0bb2b9';
+      const doctorFound = null;
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctorFound);
+
+      const response = await service.findOneDoctor(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('El doctor no fue encontrado');
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
     it('should return a doctor if found', async () => {
       const id = '0bb2b9';
-      const doctor = [
-        {
-          id: '0bb2b9',
-          fullName: 'Juan Gomez',
-          mail: 'docjgomez@gmail.com',
-          phone: '02281457800',
-          license: 'MP 75405',
-          speciality: { name: 'Oftalmología' },
-        },
-      ];
-      const result: IResponse = {
-        message: 'El doctor encontrado es:',
-        statusCode: HttpStatus.FOUND,
-        data: doctor,
-      };
-
-      jest.spyOn(service, 'findOneDoctor').mockResolvedValue(result);
+     
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
       const response = await service.findOneDoctor(id);
 
-      expect(response).toEqual(result);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('El doctor encontrado es:');
+        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.data).toEqual(doctor);
+      }
     });
-    it('should handle error if doctor not found', async () => {
-      const id = 'invalid id';
-      jest.spyOn(service, 'findOneDoctor').mockRejectedValue(new Error('Doctor not found'));
+
+    it('should throw an internal server error if an exception occurs', async () => {
+      const doctorId = '0bb2b9';
+      jest
+        .spyOn(repository, 'findOne')
+        .mockRejectedValue(new Error('Repository error'));
 
       try {
-        await service.findOneDoctor(id);
+        await service.findOneDoctor(doctorId);
       } catch (error) {
-        expect(error.message).toBe('Doctor not found');
+        expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
@@ -166,18 +572,86 @@ describe('DoctorsService', () => {
       expect(response).not.toBeUndefined();
       expect(response).not.toBeNull();
     });
+
+    it('should update the data if the doctor exists', async () => {
+      const doctorId = '0bb2b9';
+      const updateData: Partial<UpdateDoctorDto> = {
+        fullName: 'Juan Pablo Perez',
+        mail: 'jpabloperez@gmail.com',
+      };
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+      jest
+        .spyOn(repository, 'update')
+        .mockResolvedValue({ affected: 1, raw: [], generatedMaps: [] });
+
+      const response = await service.updateDoctor(doctorId, updateData);
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: doctorId },
+      });
+      expect(repository.update).toHaveBeenCalledWith(doctorId, updateData);
+
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'Las modificaciones son las siguientes: ',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.OK);
+        expect(response.data).toEqual({
+          ...updateData,
+          datosAnteriores: doctor,
+        });
+      }
+    });
+
+    it('should return not found message if the doctor does not exist', async () => {
+      const doctorId = '0bb2b9';
+      const updateDoc: Partial<UpdateDoctorDto> = {
+        fullName: 'Juan Perez',
+        mail: 'jperez@gmail.com',
+      };
+
+      jest.spyOn(repository, 'find').mockResolvedValue(null);
+
+      const response = await service.updateDoctor(doctorId, updateDoc);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'El Doctor no existe en la base de datos',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+        expect(response.data).toBeUndefined();
+      }
+    });
+
     it('should handle error during update', async () => {
       const id = '0bb2b9';
       const updateDoc: Partial<UpdateDoctorDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
       };
-      jest.spyOn(service, 'updateDoctor').mockRejectedValue(new Error('Update failed'));
-  
+      const errorMessage = 'No se pudo actualizar el doctor';
+
+      jest
+        .spyOn(repository, 'update')
+        .mockRejectedValue(new Error('Repository error'));
+      jest
+        .spyOn(repository, 'findOne')
+        .mockRejectedValue(
+          new HttpException(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR),
+        );
+
       try {
         await service.updateDoctor(id, updateDoc);
       } catch (error) {
-        expect(error.message).toBe('Update failed');
+        expect(error.message).toBe(errorMessage);
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
@@ -196,48 +670,74 @@ describe('DoctorsService', () => {
       expect(response).not.toBeUndefined();
       expect(response).not.toBeNull();
     });
-    it('should handle error during deletion', async () => {
-      const id = 'invalid id';
-      jest.spyOn(service, 'deleteDoctor').mockRejectedValue(new Error('Deletion failed'));
 
-      try {
-        await service.deleteDoctor(id);
-      } catch (error) {
-        expect(error.message).toBe('Deletion failed');
+    it('should return not found message if the doctor does not exist', async () => {
+      const doctorId = '0bb2b9';
+      const result = null;
+      jest.spyOn(repository, 'find').mockResolvedValue(result);
+
+      const response = await service.deleteDoctor(doctorId);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'El Doctor no existe en la base de datos',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+        expect(response.data).toBeUndefined();
       }
     });
-  });
-  describe('restoreDoctor', () => {
-    it('should call service.restoreDoctor with correct params', async () => {
-      const id = '0bb2b9';
-      const result = {
-        message: 'Doctor restored successfully',
-        statusCode: HttpStatus.OK,
+
+    it('should delete the doctor successfully', async () => {
+      const idDoctor = '0bb2b9';
+      const deleteResponse = {
+        generatedMaps: [],
+        raw: [],
+        affected: 1,
       };
-      jest.spyOn(service, 'restoreDoctor').mockResolvedValue(result);
-      const response = await service.restoreDoctor(id);
-      expect(service.restoreDoctor).toHaveBeenCalledWith(id);
-      expect(response).toEqual(result);
-      expect(response).not.toBeUndefined();
-      expect(response).not.toBeNull();
+
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+      jest.spyOn(repository, 'softDelete').mockResolvedValue(deleteResponse);
+
+      const response = await service.deleteDoctor(idDoctor);
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'Se ha eliminado el doctor con la matricula: ',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.MOVED_PERMANENTLY);
+        expect(response.data).toEqual(doctor.license);
+      }
     });
-    it('should handle error during restoration', async () => {
-      const id = 'invalid id';
-      jest.spyOn(service, 'restoreDoctor').mockRejectedValue(new Error('Restoration failed'));
+
+    it('should throw an internal server error if an exception occurs', async () => {
+      const doctorId = '0bb2b9';
+      jest
+        .spyOn(repository, 'findOne')
+        .mockRejectedValue(new Error('Repository error'));
 
       try {
-        await service.restoreDoctor(id);
+        await service.deleteDoctor(doctorId);
       } catch (error) {
-        expect(error.message).toBe('Restoration failed');
+        expect(error.message).toBe('No se pudo eliminar el doctor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
+
+
   describe('findPatientsByDoctorId', () => {
     it('should call service.findPatientsByDoctorId with correct params', async () => {
       const doctorId = '0bb2b9';
       const result = {
-        message: 'Coverage added successfully',
-        statusCode: HttpStatus.OK,
+        message: 'Los pacientes del médico son:',
+        data: [],
+        statusCode: HttpStatus.FOUND,
       };
       jest.spyOn(service, 'findPatientsByDoctorId').mockResolvedValue(result);
       const response = await service.findPatientsByDoctorId(doctorId);
@@ -246,14 +746,77 @@ describe('DoctorsService', () => {
       expect(response).not.toBeUndefined();
       expect(response).not.toBeNull();
     });
-    it('should handle error during patient search', async () => {
-      const doctorId = 'invalid id';
-      jest.spyOn(service, 'findPatientsByDoctorId').mockRejectedValue(new Error('Patients not found'));
+
+    it('should return not found message if the doctor does not exist', async () => {
+      const doctorId = '0bb2b9';
+      const result = null;
+      jest.spyOn(repository, 'find').mockResolvedValue(result);
+
+      const response = await service.findPatientsByDoctorId(doctorId);
+
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual(
+          'El Doctor no existe en la base de datos',
+        );
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+      } 
+    });
+
+    it('should return not found message if the doctor has no associated patients', async () => {
+      const doctorId = '0bb2b9';
+      
+      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
+
+      const response = await service.findPatientsByDoctorId(doctorId);
+  
+      if ('message' in response && 'statusCode' in response && 'data' in response  ){
+        expect(response.message).toEqual('No se encontraron pacientes asociados al médico');
+        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+        expect(response.data).toBeUndefined();
+    }
+  });
+
+    it('should return a list of patients if found', async () => {
+      const doctorId = '0bb2b9';
+      const patients = [{ id: '22be7c' }, { id: 'e951fe' }];
+      const result = {
+        message: 'Los pacientes del médico son:',
+        data: patients,
+        statusCode: HttpStatus.FOUND,
+      };
+
+      jest.spyOn(repository, 'find').mockRejectedValue(result);
+
+      const response = await service.findPatientsByDoctorId(doctorId);
+
+      if (
+        'message' in response &&
+        'statusCode' in response &&
+        'data' in response
+      ) {
+        expect(response.message).toEqual('Los pacientes del médico son:');
+        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.data).toEqual(patients);
+      }
+    });
+
+    it('should throw an internal server error if an exception occurs', async () => {
+      const doctorId = '0bb2b9';
+      jest
+        .spyOn(repository, 'findOne')
+        .mockRejectedValue(new Error('Repository error'));
 
       try {
         await service.findPatientsByDoctorId(doctorId);
       } catch (error) {
-        expect(error.message).toBe('Patients not found');
+        expect(error.message).toBe(
+          'Ha ocurrido un error. No se pudo obtener la lista de pacientes',
+        );
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
@@ -262,10 +825,12 @@ describe('DoctorsService', () => {
     it('should call service.findBySpeciality with correct params', async () => {
       const specialityName = 'Cardiología';
       const result = {
-        message: 'Coverage added successfully',
-        statusCode: HttpStatus.OK,
+        message: 'Los doctores con dicha especialidad son:',
+        data: [],
+        statusCode: HttpStatus.FOUND,
       };
       jest.spyOn(service, 'findBySpeciality').mockResolvedValue(result);
+
       const response = await service.findBySpeciality(specialityName);
       expect(service.findBySpeciality).toHaveBeenCalledWith(specialityName);
       expect(response).toEqual(result);
@@ -273,14 +838,59 @@ describe('DoctorsService', () => {
       expect(response).not.toBeNull();
     });
   });
-  it('should handle error during speciality search', async () => {
-    const specialityName = 'InvalidSpeciality';
-    jest.spyOn(service, 'findBySpeciality').mockRejectedValue(new Error('Speciality not found'));
+
+  it('should return a list of doctors if doctors with speciality are found', async () => {
+    const specialityName = 'Cardiología';
+    const doctors: Doctor[] = [doctor];
+
+    jest.spyOn(repository, 'find').mockResolvedValueOnce(doctors);
+
+    const response = await service.findBySpeciality(specialityName);
+
+    if (
+      'message' in response &&
+      'statusCode' in response &&
+      'data' in response
+    ) {
+      expect(response.message).toEqual(
+        'Los doctores con dicha especialidad son:',
+      );
+      expect(response.statusCode).toEqual(HttpStatus.FOUND);
+      expect(response.data).toEqual(doctors);
+    }
+  });
+
+  it('should return not found message if not the speciality are found', async () => {
+    const specialityName = 'cardiologia';
+    jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
+
+    const response = await service.findBySpeciality(specialityName);
+
+    if (
+      'message' in response &&
+      'statusCode' in response &&
+      'data' in response
+    ) {
+      expect(response.message).toEqual('La especialidad no fue encontrada');
+      expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
+      expect(response.data).toBeUndefined();
+    }
+  });
+
+  it('should throw an internal server error if an exception occurs', async () => {
+    const specialityName = 'Cardiología';
+    const errorMessage = 'Ha ocurrido una falla en la busqueda';
+
+    jest
+      .spyOn(repository, 'find')
+      .mockRejectedValueOnce(new Error(errorMessage));
 
     try {
       await service.findBySpeciality(specialityName);
     } catch (error) {
-      expect(error.message).toBe('Speciality not found');
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+      expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
     }
   });
-});
+}); 

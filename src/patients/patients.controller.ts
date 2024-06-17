@@ -53,11 +53,4 @@ export class PatientsController {
   ): Promise<HttpException | Patient | IResponse> {
     return this.patientsService.deletePatient(id);
   }
-
-  @Put('/restore/:id')
-  restorePatient(
-    @Param('id') id: string,
-  ): Promise<HttpException | Patient | IResponse> {
-    return this.patientsService.restorePatient(id);
-  }
 }

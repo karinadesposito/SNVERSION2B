@@ -58,7 +58,7 @@ export class PatientsService {
         return {
           message: 'La lista de pacientes está compuesta por:',
           data: patients,
-          statusCode: HttpStatus.NO_CONTENT,
+          statusCode: HttpStatus.OK,
         };
       }
     } catch (error) {
@@ -135,7 +135,7 @@ export class PatientsService {
           statusCode: HttpStatus.NOT_FOUND,
         };
       } else {
-        await this.patientsRepository.softDelete({ id: id });
+        await this.patientsRepository.delete({ id: id });
         return {
           message: 'Se ha eliminado el paciente: ',
           data: patient,
@@ -145,33 +145,6 @@ export class PatientsService {
     } catch (error) {
       throw new HttpException(
         'No se pudo eliminar el paciente',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async restorePatient(
-    id: string,
-  ): Promise<HttpException | Patient | IResponse> {
-    try {
-      const restoredPatient = await this.patientsRepository.restore({ id });
-      if (!restoredPatient) {
-        return new HttpException(
-          'El paciente no pudo ser restaurado',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const dataRestored = await this.patientsRepository.findOne({
-        where: { id: id },
-      });
-      return {
-        message: 'Se ha restaurado el paciente: ',
-        data: dataRestored,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      throw new HttpException(
-        'No se pudo restaurar el paciente',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
