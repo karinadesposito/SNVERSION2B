@@ -10,7 +10,13 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 describe('DoctorsController', () => {
   let controller: DoctorsController;
   let service: DoctorsService;
-
+  const newDoctor: CreateDoctorDto = {
+    fullName: 'Juan Gomez',
+    mail: 'docjgomez@gmail.com',
+    phone: '02281457800',
+    license: 'MP 75405',
+    speciality: { name: 'Oftalmología' },
+  };
   beforeEach(async () => {
     const mockDoctorsService = {
       create: jest.fn(),
@@ -46,13 +52,6 @@ describe('DoctorsController', () => {
 
   describe('create', () => {
     it('should call doctorsService.create and return the result', async () => {
-      const newDoctor: CreateDoctorDto = {
-        fullName: 'Juan Gomez',
-        mail: 'docjgomez@gmail.com',
-        phone: '02281457800',
-        license: 'MP 75405',
-        speciality: { name: 'Oftalmología' },
-      };
       const result: IResponse = {
         message: 'Doctor created successfully',
         statusCode: HttpStatus.CREATED,
@@ -67,13 +66,6 @@ describe('DoctorsController', () => {
     });
 
     it('should throw an exception if doctorsService.create fails', async () => {
-      const newDoctor: CreateDoctorDto = {
-        fullName: 'Juan Gomez',
-        mail: 'docjgomez@gmail.com',
-        phone: '02281457800',
-        license: 'MP 75405',
-        speciality: { name: 'Oftalmología' },
-      };
       const error = new HttpException('Error creating doctor', 500);
 
       jest.spyOn(service, 'create').mockRejectedValue(error);
@@ -85,16 +77,7 @@ describe('DoctorsController', () => {
 
   describe('Doctors', () => {
     it('should call service.getDoctors', async () => {
-      const search = [
-        {
-          id: '0bb2b9',
-          fullName: 'Juan Gomez',
-          mail: 'docjgomez@gmail.com',
-          phone: '02281457800',
-          license: 'MP 75405',
-          speciality: { name: 'Oftalmología' },
-        },
-      ];
+      const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor found successfully',
         statusCode: HttpStatus.OK,
@@ -110,16 +93,7 @@ describe('DoctorsController', () => {
   describe('DoctorsTwo', () => {
     it('should call service.getDoctorsShift', async () => {
       const id = '0bb2b9';
-      const search = [
-        {
-          id: '0bb2b9',
-          fullName: 'Juan Gomez',
-          mail: 'docjgomez@gmail.com',
-          phone: '02281457800',
-          license: 'MP 75405',
-          speciality: { name: 'Oftalmología' },
-        },
-      ];
+      const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor created successfully',
         statusCode: HttpStatus.OK,
@@ -136,16 +110,7 @@ describe('DoctorsController', () => {
   describe('DoctorsThree', () => {
     it('should call service.getDoctorsUnAvailable', async () => {
       const id = '0bb2b9';
-      const search = [
-        {
-          id: '0bb2b9',
-          fullName: 'Juan Gomez',
-          mail: 'docjgomez@gmail.com',
-          phone: '02281457800',
-          license: 'MP 75405',
-          speciality: { name: 'Oftalmología' },
-        },
-      ];
+      const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor created successfully',
         statusCode: HttpStatus.OK,
@@ -162,16 +127,7 @@ describe('DoctorsController', () => {
   describe('findOneDoctor', () => {
     it('should call service.findOneDoctor with correct params', async () => {
       const id = '0bb2b9';
-      const search = [
-        {
-          id: '0bb2b9',
-          fullName: 'Juan Gomez',
-          mail: 'docjgomez@gmail.com',
-          phone: '02281457800',
-          license: 'MP 75405',
-          speciality: { name: 'Oftalmología' },
-        },
-      ];
+      const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor found successfully',
         statusCode: HttpStatus.OK,

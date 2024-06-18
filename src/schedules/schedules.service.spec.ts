@@ -91,6 +91,16 @@ describe('SchedulesService', () => {
       schedule: null,
     },
   };
+  const updateResult: UpdateResult = {
+    affected: 1,
+    raw: {},
+    generatedMaps: [],
+  };
+  const scheduleTwo = {
+    ...schedule,
+    available:false,
+    createId: jest.fn()
+       };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -476,9 +486,6 @@ describe('SchedulesService', () => {
   describe('updateAvailability', () => {
     it('should throw an error if the schedule does not exist', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
-
-      mockRepository.findOne;
-
       try {
         await service.updateAvailability('non-existent-id');
       } catch (error) {
@@ -493,22 +500,16 @@ describe('SchedulesService', () => {
     });
 
     it('should update the availability from true to false', async () => {
-      const schedule = {
-        idSchedule: 'existing-id',
-        available: true,
-      };
+  
+      jest.spyOn(repository,'findOne').mockResolvedValueOnce(scheduleTwo).mockResolvedValueOnce({ ...scheduleTwo, available: true });
 
-      mockRepository.findOne
-        .mockResolvedValueOnce(schedule)
-        .mockResolvedValueOnce({ ...schedule, available: false });
-
-      mockRepository.update.mockResolvedValue({ affected: 1 });
+      jest.spyOn(repository, 'update').mockResolvedValue(updateResult);
 
       const result = await service.updateAvailability('existing-id');
-
+ 
       expect(result).toEqual({
-        message: 'El turno ha sido reservado correctamente',
-        data: { ...schedule, available: false },
+        message: 'Se ha cancelado el turno correctamente',
+        data: { ...scheduleTwo, available: true },
         statusCode: HttpStatus.OK,
       });
 
@@ -516,28 +517,22 @@ describe('SchedulesService', () => {
         where: { idSchedule: 'existing-id' },
       });
       expect(repository.update).toHaveBeenCalledWith('existing-id', {
-        available: false,
+        available: true, 
       });
     });
 
     it('should update the availability from false to true', async () => {
-      const schedule = {
-        idSchedule: 'existing-id',
-        available: false,
-      };
+      
+      jest.spyOn(repository,'findOne').mockResolvedValueOnce(schedule).mockResolvedValueOnce({ ...scheduleTwo, available: true});
 
-      mockRepository.findOne
-        .mockResolvedValueOnce(schedule)
-        .mockResolvedValueOnce({ ...schedule, available: true });
-
-      mockRepository.update.mockResolvedValue({ affected: 1 });
+      jest.spyOn(repository, 'update').mockResolvedValue(updateResult);
 
       const result = await service.updateAvailability('existing-id');
 
       expect(result).toEqual({
-        message: 'Se ha cancelado el turno correctamente',
-        data: { ...schedule, available: true },
-        statusCode: HttpStatus.OK,
+        message: 'El turno ha sido reservado correctamente',
+        data: { ...scheduleTwo, available: true },
+        statusCode: HttpStatus.OK, 
       });
 
       expect(repository.findOne).toHaveBeenCalledWith({

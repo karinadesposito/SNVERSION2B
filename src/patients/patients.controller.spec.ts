@@ -6,6 +6,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpStatus } from '@nestjs/common';
+import { UpdatePatientDto } from './dto/update-patient.dto';
 
 
 jest.mock('config');
@@ -13,6 +14,21 @@ jest.mock('config');
 describe('PatientsController', () => {
   let controller: PatientsController;
   let service: PatientsService;
+  const newPatient: CreatePatientDto = {
+    fullName: 'Luis Garcia',
+    mail: 'larcia@gmail.com',
+    phone: '02281457898',
+    dni: 'MP 75405',
+    address: 'Sarmiento 224',
+    birthday: new Date("1974-02-02"),
+    coverage: {
+      id: '7b46c0',
+      coverages: 'ioma',
+      createId: jest.fn(),
+      doctors: [],
+    },
+  };
+
 
   beforeEach(async () => {
     const mockPatientsService = {
@@ -42,22 +58,7 @@ describe('PatientsController', () => {
 
   describe('create', () => {
     it('should call patientsService.create and return the result', async () => {
-      const newPatient: CreatePatientDto = {
-        fullName: 'Luis Garcia',
-        mail: 'larcia@gmail.com',
-        phone: '02281457898',
-        dni: 'MP 75405',
-        address: 'Sarmiento 224',
-        birthday: new Date("1974-02-02"),
-        coverage: {
-          id: '7b46c0',
-          coverages: 'ioma',
-          createId: jest.fn(),
-          doctors: [],
-        },
-      };
-
-      const result: IResponse = {
+       const result: IResponse = {
         message: 'Patient created successfully',
         statusCode: HttpStatus.OK,
         data:newPatient
@@ -72,21 +73,7 @@ describe('PatientsController', () => {
   });
   describe('getPatients', () => {
     it('should call service.getPatients', async () => {
-      const search = [
-        { 
-        id: "a501bd",
-        fullName: "Luis Molina",
-        mail: "lmolina@gmail.com",
-        phone: "02281457798",
-        "createAt": "2024-05-15T09:56:37.000Z",
-        dni: "18485744",
-        address: "San Martin 224",
-        birthday: "1974-02-02",
-        coverage: {
-          id: "7b46c0",
-          coverages: "ioma"
-        }}
-      ];
+      const search = [newPatient];
       const result: IResponse = {
         message: 'Patients found successfully',
         statusCode: HttpStatus.OK,
@@ -101,27 +88,10 @@ describe('PatientsController', () => {
   describe('findOne', () => {
     it('should call service.findOnePatient with correct params', async () => {
       const id = 'a501bd';
-      const patient = {
-        id: "a501bd",
-        fullName: "Luis Molina",
-        mail: "lmolina@gmail.com",
-        phone: "02281457798",
-        createAt: new Date("2024-05-15T09:56:37.000Z"),
-        dni: "18485744",
-        address: "San Martin 224",
-        birthday: new Date("1974-02-02"),
-        deletedAt: null,
-        restoredAt: new Date("2024-05-15T09:56:37.880Z"),
-        coverage: {
-          id: "7b46c0",
-          coverages: "ioma",
-        }
-      };
-
       const result: IResponse = {
         message: 'Patient found successfully',
         statusCode: HttpStatus.OK,
-        data: patient
+        data: newPatient
       };
 
       jest.spyOn(service, 'findOnePatient').mockResolvedValue(result);
@@ -133,7 +103,7 @@ describe('PatientsController', () => {
     });
   });
 
-  /*describe('updatePatient', () => {
+  describe('updatePatient', () => {
     it('should call service.updatePatient with correct params', async () => {
       const id = 'a501bd';
       const updatePatientDto: Partial<UpdatePatientDto> = {
@@ -141,42 +111,16 @@ describe('PatientsController', () => {
         mail: 'jperez@gmail.com',
       };
   
-      const patient = {
-        id: 'a501bd',
-        fullName: 'Luis Molina',
-        mail: 'lmolina@gmail.com',
-        phone: '02281457798',
-        createAt: new Date('2024-05-15T09:56:37.000Z'),
-        dni: '18485744',
-        address: 'San Martin 224',
-        birthday: new Date('1974-02-02'),
-        coverage: {
-          id: '7b46c0',
-          coverages: 'ioma',
-        },
-        deletedAt: null,
-        restoredAt: null,
-        shifts: [],
-      };
-  
-      const result = {
-        message: 'Las modificaciones son las siguientes: ',
-        data: {
-          ...updatePatientDto,
-          datosAnteriores: patient,
-        },
-        statusCode: HttpStatus.OK,
-      };
-  
+      const result = { id: '1', fullName: 'Juan Perez', mail: 'jperez@gmail.com' };
       jest.spyOn(service, 'updatePatient').mockResolvedValue(result);
-  
       const response = await controller.updatePatient(updatePatientDto, id);
       expect(service.updatePatient).toHaveBeenCalledWith(id, updatePatientDto);
       expect(response).toEqual(result);
       expect(response).not.toBeUndefined();
       expect(response).not.toBeNull();
     });
-  });*/
+  });
+
   describe('deletePatient', () => {
     it('should call service.deletePatient with correct params', async () => {
       const id = 'a501bd';

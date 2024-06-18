@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
+import { UpdateDoctorDto } from 'src/doctors/dto/update-doctor.dto';
 
 //injectRepository es quien nos permite poder vincular el crud con los datos que estamos almacenando en el entity
 
@@ -96,7 +97,7 @@ export class PatientsService {
     }
   }
 
-  async updatePatient(id: string, updatePatient: Partial<UpdatePatientDto>) {
+  async updatePatient(id: string, updatePatient: Partial<UpdatePatientDto>): Promise<HttpException | UpdateDoctorDto | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
         where: { id: id },

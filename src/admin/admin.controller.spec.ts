@@ -8,6 +8,17 @@ import { HttpStatus } from '@nestjs/common';
 describe('AdminController', () => {
   let controller: AdminController;
   let service: AdminService;
+  const createAdminDto: CreateAdminDto = {
+    username: 'adminTwo',
+    email: 'admintwo@gmail.com',
+    password:
+      '$2a$10$dIvpfHYiCtllrZpXBAHeJ.9hikXmmZPWyTWFWfYoalYwyUjpPI3he',
+  };
+  const search = {
+   ...createAdminDto,
+   id:383772,
+  createId:jest.fn(),
+  };
 
   beforeEach(async () => {
     const mockAdminService = {
@@ -33,12 +44,6 @@ describe('AdminController', () => {
   });
   describe('create', () => {
     it('should call AdminService.create with correct parameters', async () => {
-      const createAdminDto: CreateAdminDto = {
-        username: 'adminTwo',
-        email: 'admintwo@gmail.com',
-        password:
-          '$2a$10$dIvpfHYiCtllrZpXBAHeJ.9hikXmmZPWyTWFWfYoalYwyUjpPI3he',
-      };
       const result: IResponse = {
         message: 'El administrador ha sido creado exitosamente',
         data: createAdminDto,
@@ -56,15 +61,7 @@ describe('AdminController', () => {
   describe('findOneAdmin', () => {
     it('should call AdminService.findByEmail with correct parameters', async () => {
       const email = 'admintwo@gmail.com';
-      const search = {
-        id: 383772,
-        username: 'adminTwo',
-        email: 'admintwo@gmail.com',
-        password:
-          '$2a$10$dIvpfHYiCtllrZpXBAHeJ.9hikXmmZPWyTWFWfYoalYwyUjpPI3he',
-      createId:jest.fn(),
-      };
-  
+
       jest.spyOn(service, 'findByEmail').mockResolvedValue(search);
       const response = await controller.findOneAdmin(email);
       expect(response).not.toBeUndefined();
@@ -74,24 +71,10 @@ describe('AdminController', () => {
 
     it('should return a user from AdminService.findByEmail', async () => {
       const email = 'admintwo@gmail.com';
-      const search = {
-        id: 383772,
-        username: 'adminTwo',
-        email: 'admintwo@gmail.com',
-        password:
-          '$2a$10$dIvpfHYiCtllrZpXBAHeJ.9hikXmmZPWyTWFWfYoalYwyUjpPI3he',
-      createId:jest.fn(),
-      };
 
       jest.spyOn(service, 'findByEmail').mockResolvedValue(search);
       const result = await controller.findOneAdmin(email);
-      expect(result).toMatchObject({
-        id: 383772,
-        username: 'adminTwo',
-        email: 'admintwo@gmail.com',
-        password:
-          '$2a$10$dIvpfHYiCtllrZpXBAHeJ.9hikXmmZPWyTWFWfYoalYwyUjpPI3he',
-      });
+      expect(result).toMatchObject(search);
     });
   });
 });

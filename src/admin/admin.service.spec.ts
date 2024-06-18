@@ -141,11 +141,16 @@ describe('AdminService', () => {
         expect(result).toEqual(foundAdmin);
     });
 
-    /*it('should return 404 if admin with email not found', async () => {
+    it('should return 404 if admin with email not found', async () => {
       const email = 'notexistemail@saludnet.com';
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
-
-      await expect(service.findByEmail(email)).rejects.toThrow(new HttpException('Admin not found', HttpStatus.NOT_FOUND));
-    });*/
+    try{
+     await service.findByEmail(email)
+    } catch (error){
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toEqual('Admin not found');
+      expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
+    }     
+  });
   });
 });

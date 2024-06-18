@@ -9,7 +9,7 @@ import { UpdateCoverageDto } from './dto/update-coverage.dto';
 describe('CoverageController', () => {
   let controller: CoveragesController;
   let service: CoveragesService;
-
+  const newCoverage: CreateCoverageDto = {coverages: 'ioma'};
   beforeEach(async () => {
     const mockCoveragesService = {
       create: jest.fn(),
@@ -37,9 +37,6 @@ describe('CoverageController', () => {
   });
   describe('create', () => {
     it('should call coverageService.create and return the result', async () => {
-      const newCoverage: CreateCoverageDto = {
-        coverages: 'ioma'
-      };
       const result: IResponse = {
         message: 'Coverages created successfully',
         statusCode: HttpStatus.OK,
@@ -55,12 +52,10 @@ describe('CoverageController', () => {
 });
 describe('findAll', () => {
   it('should call service.getCoverage', async () => {
-    const search = 
-     {coverages: 'ioma'}
     const result: IResponse = {
       message: 'Coverage found successfully',
       statusCode: HttpStatus.OK,
-      data: search
+      data: newCoverage
     };
     jest.spyOn(service, 'getCoverage').mockResolvedValue(result);
     const response = await controller.findAll();
@@ -71,15 +66,10 @@ describe('findAll', () => {
 describe('findOneCoverages', () => {
   it('should call service.findOneCoverages with correct params', async () => {
     const id = '7b46c0';
-    const search = 
-      {
-        id: '7b46c0',
-        coverages: 'ioma'
-      }
     const result: IResponse = {
       message: 'Coverages found successfully',
       statusCode: HttpStatus.OK,
-      data: search
+      data: {newCoverage}
     };
     jest.spyOn(service, 'findOneCoverages').mockResolvedValue(result);
     const response = await controller.findOne(id);
