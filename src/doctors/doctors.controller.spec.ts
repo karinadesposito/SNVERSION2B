@@ -92,7 +92,7 @@ describe('DoctorsController', () => {
 
   describe('DoctorsTwo', () => {
     it('should call service.getDoctorsShift', async () => {
-      const id = '0bb2b9';
+      const id =1;
       const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor created successfully',
@@ -109,7 +109,7 @@ describe('DoctorsController', () => {
 
   describe('DoctorsThree', () => {
     it('should call service.getDoctorsUnAvailable', async () => {
-      const id = '0bb2b9';
+      const id =1;
       const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor created successfully',
@@ -126,7 +126,7 @@ describe('DoctorsController', () => {
 
   describe('findOneDoctor', () => {
     it('should call service.findOneDoctor with correct params', async () => {
-      const id = '0bb2b9';
+      const id =1;
       const search = [newDoctor];
       const result: IResponse = {
         message: 'Doctor found successfully',
@@ -143,7 +143,7 @@ describe('DoctorsController', () => {
 
   describe('updateDoctor', () => {
     it('should call service.updateDoctor with correct params', async () => {
-      const id = '0bb2b9';
+      const id =1;
       const updateDoctorDto: Partial<UpdateDoctorDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
@@ -160,7 +160,7 @@ describe('DoctorsController', () => {
 
   describe('deleteDoctor', () => {
     it('should call service.deleteDoctor with correct params', async () => {
-      const id = '0bb2b9';
+      const id =1;
       const result = { message: 'Doctor deleted successfully', statusCode:HttpStatus.OK };
       jest.spyOn(service, 'deleteDoctor').mockResolvedValue(result);
       const response = await controller.deleteDoctor(id);
@@ -173,8 +173,8 @@ describe('DoctorsController', () => {
   describe('addCoverageToDoctor', () => {
     it('should call service.addCoverageToDoctor with correct params', async () => {
       const addCoverageToDoctorDto: AddCoverageToDoctorDto = {
-        doctorId: '0bb2b9',
-        coverageId: ['7b46c1']
+        doctorId:1,
+        coverageId: [1]
       };
 
       const response = await controller.addCoverageToDoctor(addCoverageToDoctorDto);
@@ -186,8 +186,8 @@ describe('DoctorsController', () => {
   describe('removeCoverageFromDoctor', () => {
     it('should call service.removeCoverageFromDoctor with correct params', async () => {
       const removeCoverageFromDoctorDto: AddCoverageToDoctorDto = {
-        doctorId: '0bb2b9',
-        coverageId: ['7b46c1']
+        doctorId: 1,
+        coverageId: [1]
       };
       const response = await controller.removeCoverageFromDoctor(removeCoverageFromDoctorDto);
       expect(service.removeCoverageFromDoctor).toHaveBeenCalledWith(removeCoverageFromDoctorDto);
@@ -198,7 +198,7 @@ describe('DoctorsController', () => {
   
   describe('findPatientsByDoctorId', () => {
     it('should call service.findPatientsByDoctorId with correct params', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const result = { message: 'Coverage added successfully', statusCode:HttpStatus.OK };
       jest.spyOn(service, 'findPatientsByDoctorId').mockResolvedValue(result);
       const response = await controller.getPatientsByDoctorId(doctorId);

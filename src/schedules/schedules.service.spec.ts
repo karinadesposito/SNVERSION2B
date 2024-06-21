@@ -7,6 +7,7 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
+import { DeletionReason } from './enum/deleteSchedule.enum';
 
 describe('SchedulesService', () => {
   let service: ScheduleService;
@@ -23,27 +24,29 @@ describe('SchedulesService', () => {
 
   const createSch: CreateScheduleDto = {
     day: '2024-05-29',
-    idDoctor: '0bb2b9',
+    idDoctor: 1,
     start_Time: '14:30:00',
     end_Time: '15:00:00',
     available: true,
     interval: '30',
   };
 
+  const deletionReason: DeletionReason = DeletionReason.other;
+
   const schedule: Schedule = {
     ...createSch,
-    idSchedule: '223f43',
-    createId: jest.fn(),
+    deletionReason: null,
+    removed: false,
+    idSchedule: 1,
     idDoctors: {
-      id: '0bb2b9',
+      id: 1,
       fullName: 'Mariana Perez',
       mail: 'docmperez@saludnet.com',
       phone: '02281457423',
       license: 'MP 75405',
       speciality: {
         name: 'Cardiologia',
-        id: '',
-        createId: null,
+        id: 1,
         idDoctor: [],
       },
       deletedAt: undefined,
@@ -51,7 +54,6 @@ describe('SchedulesService', () => {
       schedule: [],
       coverages: [],
       createAt: undefined,
-      createId: null,
       hasId: null,
       save: null,
       remove: null,
@@ -60,16 +62,14 @@ describe('SchedulesService', () => {
       reload: null,
     },
     shift: {
-      id: '1bc32f',
-      createId: jest.fn(),
+      id: 1,
       idPatient: {
         fullName: 'Luis Garcia',
         mail: 'larcia@gmail.com',
         phone: '02281457898',
         coverage: {
-          id: '7b46c0',
+          id: 1,
           coverages: 'ioma',
-          createId: jest.fn(),
           doctors: [],
         },
         dni: '18485754',
@@ -78,9 +78,8 @@ describe('SchedulesService', () => {
         deletedAt: null,
         restoredAt: null,
         shifts: [],
-        id: '5cec5f',
+        id: 1,
         createAt: null,
-        createId: null,
         hasId: null,
         save: null,
         remove: null,
@@ -98,9 +97,9 @@ describe('SchedulesService', () => {
   };
   const scheduleTwo = {
     ...schedule,
-    available:false,
-    createId: jest.fn()
-       };
+    available: false,
+    createId: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -226,7 +225,7 @@ describe('SchedulesService', () => {
   });
   describe('findOne', () => {
     it('should return a schedule if found', async () => {
-      const id = '223f43';
+      const id = 1;
       const schedules = { ...schedule, createId: jest.fn() };
       const result: IResponse = {
         message: 'La agenda encontrada es:',
@@ -242,7 +241,7 @@ describe('SchedulesService', () => {
       });
     });
     it('should return "Esa agenda no existe" when not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       const response = await service.findOneSchedule(id);
@@ -257,7 +256,7 @@ describe('SchedulesService', () => {
       }
     });
     it('should handle error if coverage not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
@@ -272,12 +271,12 @@ describe('SchedulesService', () => {
 
   describe('update', () => {
     it('should call service.updateSchedule whit correct params', async () => {
-      const id = '223f43';
+      const id = 1;
       const updateSch: UpdateScheduleDto = {
         available: true,
       };
-      const existingSch: Schedule = { ...schedule, createId: jest.fn() };
-      const updatedSch: Schedule = { ...schedule, createId: jest.fn() };
+      const existingSch: Schedule = { ...schedule};
+      const updatedSch: Schedule = { ...schedule};
 
       const updateResult: UpdateResult = {
         affected: 1,
@@ -307,7 +306,7 @@ describe('SchedulesService', () => {
     });
 
     it('should handle error during update', async () => {
-      const id = '123456';
+      const id = 123456;
       const updateSch: UpdateScheduleDto = {
         available: true,
       };
@@ -326,7 +325,8 @@ describe('SchedulesService', () => {
 
   describe('delete', () => {
     it('should call delete', async () => {
-      const id = '223f43';
+      const id = 1;
+
       const result = {
         message: 'Se ha eliminado la agenda con id: ',
         statusCode: HttpStatus.OK,
@@ -338,7 +338,7 @@ describe('SchedulesService', () => {
       };
       jest.spyOn(service, 'deleteSchedule').mockResolvedValue(result);
       jest.spyOn(repository, 'delete').mockRejectedValue(deleteResult);
-      const response = await service.deleteSchedule(id);
+      const response = await service.deleteSchedule(id, deletionReason);
       expect(response).toBeDefined();
       if (
         'data' in response &&
@@ -351,13 +351,13 @@ describe('SchedulesService', () => {
       }
     });
     it('should handle deletion error', async () => {
-      const id = '123456';
+      const id = 123456;
       jest
         .spyOn(repository, 'delete')
         .mockRejectedValue(new Error('No se pudo eliminar la agenda'));
 
       try {
-        await service.deleteSchedule(id);
+        await service.deleteSchedule(id, deletionReason);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('No se pudo eliminar la agenda');
@@ -365,11 +365,11 @@ describe('SchedulesService', () => {
       }
     });
     it('should handle coverage not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       try {
-        await service.deleteSchedule(id);
+        await service.deleteSchedule(id, deletionReason);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('La agenda no existe');
@@ -381,8 +381,7 @@ describe('SchedulesService', () => {
     it('should return the found schedules of the day', async () => {
       const schedules: Schedule[] = [
         {
-          ...schedule,
-          createId: jest.fn(),
+          ...schedule
         },
       ];
       const result: IResponse = {
@@ -487,7 +486,7 @@ describe('SchedulesService', () => {
     it('should throw an error if the schedule does not exist', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
       try {
-        await service.updateAvailability('non-existent-id');
+        await service.updateAvailability(123456);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toBe('El turno no existe');
@@ -495,18 +494,20 @@ describe('SchedulesService', () => {
       }
 
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { idSchedule: 'non-existent-id' },
+        where: { idSchedule: 123456 },
       });
     });
 
     it('should update the availability from true to false', async () => {
-  
-      jest.spyOn(repository,'findOne').mockResolvedValueOnce(scheduleTwo).mockResolvedValueOnce({ ...scheduleTwo, available: true });
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValueOnce(scheduleTwo)
+        .mockResolvedValueOnce({ ...scheduleTwo, available: true });
 
       jest.spyOn(repository, 'update').mockResolvedValue(updateResult);
 
-      const result = await service.updateAvailability('existing-id');
- 
+      const result = await service.updateAvailability(1);
+
       expect(result).toEqual({
         message: 'Se ha cancelado el turno correctamente',
         data: { ...scheduleTwo, available: true },
@@ -514,31 +515,33 @@ describe('SchedulesService', () => {
       });
 
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { idSchedule: 'existing-id' },
+        where: { idSchedule: 1 },
       });
-      expect(repository.update).toHaveBeenCalledWith('existing-id', {
-        available: true, 
+      expect(repository.update).toHaveBeenCalledWith(1, {
+        available: true,
       });
     });
 
     it('should update the availability from false to true', async () => {
-      
-      jest.spyOn(repository,'findOne').mockResolvedValueOnce(schedule).mockResolvedValueOnce({ ...scheduleTwo, available: true});
+      jest
+        .spyOn(repository, 'findOne')
+        .mockResolvedValueOnce(schedule)
+        .mockResolvedValueOnce({ ...scheduleTwo, available: true });
 
       jest.spyOn(repository, 'update').mockResolvedValue(updateResult);
 
-      const result = await service.updateAvailability('existing-id');
+      const result = await service.updateAvailability(1);
 
       expect(result).toEqual({
         message: 'El turno ha sido reservado correctamente',
         data: { ...scheduleTwo, available: true },
-        statusCode: HttpStatus.OK, 
+        statusCode: HttpStatus.OK,
       });
 
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { idSchedule: 'existing-id' },
+        where: { idSchedule: 1 },
       });
-      expect(repository.update).toHaveBeenCalledWith('existing-id', {
+      expect(repository.update).toHaveBeenCalledWith(1, {
         available: true,
       });
     });

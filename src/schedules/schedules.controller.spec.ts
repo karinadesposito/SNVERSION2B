@@ -5,18 +5,20 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpStatus } from '@nestjs/common';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
+import { DeletionReason } from './enum/deleteSchedule.enum';
 
 describe('ScheduleController', () => {
   let controller: ScheduleController;
   let service: ScheduleService;
   const newSchedule: CreateScheduleDto = {
     day: '2024-05-29',
-    idDoctor: '0bb2b9',
+    idDoctor: 1,
     start_Time: '08:30',
     end_Time: '16:30',
     interval: '30',
     available: true,
   };
+  const id = 1;
   const schedule = {
     ...newSchedule,
   };
@@ -88,8 +90,6 @@ describe('ScheduleController', () => {
 
   describe('findOneSchedule', () => {
     it('should call service.findOneSchedule with correct params and return the result', async () => {
-      const id = '223f43';
-
       const result: IResponse = {
         message: 'La agenda encontrada es:',
         statusCode: HttpStatus.FOUND,
@@ -105,8 +105,7 @@ describe('ScheduleController', () => {
   });
 
   describe('updateSchedule', () => {
-    it('should call service.updateSchedule with correct params and return the result', async () => {
-      const id = '223f43';
+    it('should call service.updateSchedule with correct params and return the result', async () => {    
       const updateScheduleDto: UpdateScheduleDto = {
         end_Time: '15:30',
       };
@@ -123,7 +122,7 @@ describe('ScheduleController', () => {
 
   describe('deleteSchedule', () => {
     it('should call service.deleteSchedule with correct params and return the result', async () => {
-      const id = '223f43';
+        const deletionReason: DeletionReason = DeletionReason.other;
       const result = {
         message: 'Se ha eliminado la agenda con id:',
         data: id,
@@ -132,15 +131,15 @@ describe('ScheduleController', () => {
 
       jest.spyOn(service, 'deleteSchedule').mockResolvedValue(result);
 
-      const response = await controller.remove(id);
-      expect(service.deleteSchedule).toHaveBeenCalledWith(id);
+      const response = await controller.remove(id,deletionReason);
+      expect(service.deleteSchedule).toHaveBeenCalledWith(id,deletionReason);
       expect(response).toEqual(result);
     });
   });
 
   describe('updateAvailability', () => {
     it('should call service.updateAvailability with correct params and return the result', async () => {
-      const idSchedule = '223f43';
+      const idSchedule = 1;
       const result: IResponse = {
         message: 'El turno ha sido reservado correctamente',
         statusCode: HttpStatus.OK,
@@ -157,7 +156,7 @@ describe('ScheduleController', () => {
   describe('countScheduleByDoctor', () => {
     it('should call service.countScheduleByDoctor with correct params and return the result', async () => {
       const day = '2024-05-29';
-      const idDoctor = '0bb2b9';
+      const idDoctor = 1;
       const schedules = [schedule];
       const result: IResponse = {
         message: `Los turnos del doctor ${idDoctor} son ${schedules.length} para el día ${day}`,

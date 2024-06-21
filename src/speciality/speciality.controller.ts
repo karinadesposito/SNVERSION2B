@@ -26,20 +26,20 @@ export class SpecialityController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.specialityService.findOneSpeciality(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateSpecialityDto: UpdateSpecialityDto,
   ) {
     return this.specialityService.updateSpeciality(id, updateSpecialityDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.specialityService.deleteSpeciality(id);
   }
 

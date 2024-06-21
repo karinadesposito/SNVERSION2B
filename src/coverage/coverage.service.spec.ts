@@ -15,9 +15,8 @@ describe('CoverageService', () => {
     coverages: 'ioma',
   };
   const cov: Coverage = {
-    id: '7b46c0',
+    id:1,
     coverages: 'ioma',
-    createId: jest.fn(),
     doctors: [],
   };
 
@@ -74,9 +73,8 @@ describe('CoverageService', () => {
         coverages: 'ioma',
       };
       const existingCoverage = {
-        id: '7b46c0',
+        id: 1,
         coverages: 'ioma',
-        createId: jest.fn(),
         doctors: [],
       };
       const result: IResponse = {
@@ -113,7 +111,7 @@ describe('CoverageService', () => {
 
   describe('find', () => {
     it('should return a list of coverage', async () => {
-      const coverages: Coverage[] = [{ ...cov, createId: jest.fn() }];
+      const coverages: Coverage[] = [{ ...cov}];
       const result: IResponse = {
         message: 'La lista de obras sociales está compuesta por:',
         data: coverages,
@@ -162,7 +160,7 @@ describe('CoverageService', () => {
 
   describe('findOne', () => {
     it('should return a coverage ir found', async () => {
-      const id = '7b46c0';
+      const id = 1;
 
       const result: IResponse = {
         message: 'La obra social encontrada es:',
@@ -185,7 +183,7 @@ describe('CoverageService', () => {
       });
     });
     it('should return "La obra social no fue encontrada" when not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       const response = await service.findOneCoverages(id);
@@ -200,7 +198,7 @@ describe('CoverageService', () => {
       }
     });
     it('should handle error if coverage not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
@@ -215,20 +213,18 @@ describe('CoverageService', () => {
 
   describe('update', () => {
     it('should call service.updateCoverages', async () => {
-      const id = '7b46c0';
+      const id = 1;
       const updateCov: Partial<UpdateCoverageDto> = {
         coverages: 'IOMA',
       };
       const existingCoverage: Coverage = {
-        id: '7b46c0',
+        id: 1,
         coverages: 'ioma',
-        createId: jest.fn(),
         doctors: [],
       };
       const updatedCoverage: Coverage = {
-        id: '7b46c0',
+        id: 1,
         coverages: 'IOMA',
-        createId: existingCoverage.createId,
         doctors: existingCoverage.doctors,
       };
       const updateResult: UpdateResult = {
@@ -257,7 +253,7 @@ describe('CoverageService', () => {
     });
 
     it('should handle error during update', async () => {
-      const id = '123456';
+      const id = 123456;
       const updateCov: UpdateCoverageDto = {
         coverages: 'IOMA',
       };
@@ -276,7 +272,7 @@ describe('CoverageService', () => {
 
   describe('delete', () => {
     it('should call delete', async () => {
-      const id = '0bb2b9';
+      const id = 1;
       const result = {
         message: 'Se ha eliminado la obra social: ',
         statusCode: HttpStatus.MOVED_PERMANENTLY,
@@ -302,7 +298,7 @@ describe('CoverageService', () => {
     });
 
     it('should handle deletion error', async () => {
-      const id = '123456';
+      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       jest
         .spyOn(repository, 'delete')
@@ -318,7 +314,7 @@ describe('CoverageService', () => {
       }
     });
     it('should handle coverage not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       try {

@@ -8,9 +8,6 @@ import { IResponse } from 'src/interface/IResponse';
 import { HttpStatus } from '@nestjs/common';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 
-
-jest.mock('config');
-
 describe('PatientsController', () => {
   let controller: PatientsController;
   let service: PatientsService;
@@ -20,15 +17,13 @@ describe('PatientsController', () => {
     phone: '02281457898',
     dni: 'MP 75405',
     address: 'Sarmiento 224',
-    birthday: new Date("1974-02-02"),
+    birthday: new Date('1974-02-02'),
     coverage: {
-      id: '7b46c0',
+      id: 1,
       coverages: 'ioma',
-      createId: jest.fn(),
       doctors: [],
     },
   };
-
 
   beforeEach(async () => {
     const mockPatientsService = {
@@ -58,10 +53,10 @@ describe('PatientsController', () => {
 
   describe('create', () => {
     it('should call patientsService.create and return the result', async () => {
-       const result: IResponse = {
+      const result: IResponse = {
         message: 'Patient created successfully',
         statusCode: HttpStatus.OK,
-        data:newPatient
+        data: newPatient,
       };
 
       jest.spyOn(service, 'create').mockResolvedValue(result);
@@ -77,7 +72,7 @@ describe('PatientsController', () => {
       const result: IResponse = {
         message: 'Patients found successfully',
         statusCode: HttpStatus.OK,
-        data: search
+        data: search,
       };
       jest.spyOn(service, 'getPatients').mockResolvedValue(result);
       const response = await controller.getPatients();
@@ -87,11 +82,11 @@ describe('PatientsController', () => {
   });
   describe('findOne', () => {
     it('should call service.findOnePatient with correct params', async () => {
-      const id = 'a501bd';
+      const id = 1;
       const result: IResponse = {
         message: 'Patient found successfully',
         statusCode: HttpStatus.OK,
-        data: newPatient
+        data: newPatient,
       };
 
       jest.spyOn(service, 'findOnePatient').mockResolvedValue(result);
@@ -105,13 +100,17 @@ describe('PatientsController', () => {
 
   describe('updatePatient', () => {
     it('should call service.updatePatient with correct params', async () => {
-      const id = 'a501bd';
+      const id = 1;
       const updatePatientDto: Partial<UpdatePatientDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
       };
-  
-      const result = { id: '1', fullName: 'Juan Perez', mail: 'jperez@gmail.com' };
+
+      const result = {
+        id: '1',
+        fullName: 'Juan Perez',
+        mail: 'jperez@gmail.com',
+      };
       jest.spyOn(service, 'updatePatient').mockResolvedValue(result);
       const response = await controller.updatePatient(updatePatientDto, id);
       expect(service.updatePatient).toHaveBeenCalledWith(id, updatePatientDto);
@@ -123,8 +122,11 @@ describe('PatientsController', () => {
 
   describe('deletePatient', () => {
     it('should call service.deletePatient with correct params', async () => {
-      const id = 'a501bd';
-      const result = { message: 'Patient deleted successfully', statusCode:HttpStatus.OK };
+      const id = 1;
+      const result = {
+        message: 'Patient deleted successfully',
+        statusCode: HttpStatus.OK,
+      };
       jest.spyOn(service, 'deletePatient').mockResolvedValue(result);
       const response = await controller.deletePatient(id);
       expect(service.deletePatient).toHaveBeenCalledWith(id);
@@ -133,5 +135,4 @@ describe('PatientsController', () => {
       expect(response).not.toBeNull();
     });
   });
-
 });

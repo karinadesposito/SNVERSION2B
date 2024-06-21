@@ -1,18 +1,12 @@
 import { IsNotEmpty } from 'class-validator';
-import { BeforeInsert, PrimaryGeneratedColumn } from 'typeorm';
-const { v4: uuidv4 } = require('uuid');
+import { PrimaryGeneratedColumn } from 'typeorm';
 export class CreateShiftDto {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @IsNotEmpty()
-  idSchedule: string;
+  idSchedule: number;
 
   @IsNotEmpty()
-  idPatient: string;
-
-  @BeforeInsert()
-  createId() {
-    this.id = uuidv4().slice(0, 6);
-  }
+  idPatient: number;
 }

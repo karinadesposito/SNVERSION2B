@@ -65,7 +65,7 @@ describe('findAll', () => {
 });
 describe('findOneCoverages', () => {
   it('should call service.findOneCoverages with correct params', async () => {
-    const id = '7b46c0';
+    const id = 1;
     const result: IResponse = {
       message: 'Coverages found successfully',
       statusCode: HttpStatus.OK,
@@ -80,11 +80,11 @@ describe('findOneCoverages', () => {
 });
 describe('updatecoverages', () => {
   it('should call service.updateCoverages with correct params', async () => {
-    const id = '7b46c0';
+    const id = 1;
     const updateCoverages: Partial<UpdateCoverageDto> = {
     coverages: 'IOMA'
     };
-    const result = { id: '7b46c0', coverages: 'IOMA'};
+    const result = { id: 1, coverages: 'IOMA'};
     jest.spyOn(service, 'updateCoverages').mockResolvedValue(result);
     const response = await controller.update(id,updateCoverages);
     expect(service.updateCoverages).toHaveBeenCalledWith(id, updateCoverages);
@@ -95,7 +95,7 @@ describe('updatecoverages', () => {
 });
 describe('deleteCoverage', () => {
   it('should call service.deleteCoverages with correct params', async () => {
-    const id = '7b46c0';
+    const id = 1;
     const result = { message: 'Doctor deleted successfully', statusCode:HttpStatus.OK };
     jest.spyOn(service, 'deleteCoverage').mockResolvedValue(result);
     const response = await controller.remove(id);

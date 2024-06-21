@@ -13,6 +13,7 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { Schedule } from './entities/schedule.entity';
 import { IResponse } from '../interface/IResponse';
+import { DeletionReason } from './enum/deleteSchedule.enum';
 
 @Controller('schedules')
 export class ScheduleController {
@@ -32,33 +33,36 @@ export class ScheduleController {
 
   @Get(':id')
   findOneSchedule(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | Schedule | IResponse> {
     return this.scheduleService.findOneSchedule(id);
   }
 
   @Put(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateScheduleDto: UpdateScheduleDto,
   ) {
     return this.scheduleService.updateSchedule(id, updateScheduleDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.scheduleService.deleteSchedule(id);
+  async remove(
+    @Param('id') id: number,
+    @Body('deletionReason') deletionReason: DeletionReason,
+  ): Promise<HttpException | Schedule | IResponse> {
+    return this.scheduleService.deleteSchedule(id, deletionReason);
   }
   @Put('/updateAvailability/:idSchedule')
   async updateAvailability(
-    @Param('idSchedule') idSchedule: string,
+    @Param('idSchedule') idSchedule:number,
   ): Promise<HttpException | UpdateScheduleDto | IResponse> {
     return await this.scheduleService.updateAvailability(idSchedule);
   }
 
   @Get('/schedules/count')
   async getCountTake(
-    @Body() body: { idDoctor: string, day: string }
+    @Body() body: { idDoctor: number, day: string }
   ): Promise<IResponse | HttpException | Schedule[]> {
     const { idDoctor, day } = body;
     return this.scheduleService.countScheduleByDoctor(day, idDoctor);

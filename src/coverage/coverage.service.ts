@@ -68,7 +68,7 @@ export class CoveragesService {
   }
 
   async findOneCoverages(
-    id: string,
+    id: number,
   ): Promise<HttpException | Coverage | IResponse> {
     try {
       const coverages = await this.coverageRepository.findOne({
@@ -93,7 +93,7 @@ export class CoveragesService {
     }
   }
   async updateCoverages(
-    id: string,
+    id: number,
     updateCoverages: Partial<UpdateCoverageDto>,
   ): Promise<HttpException | UpdateCoverageDto | IResponse> {
     try {
@@ -121,7 +121,7 @@ export class CoveragesService {
   }
 
   async deleteCoverage(
-    id: string,
+    id: number,
   ): Promise<HttpException | Coverage | IResponse> {
     try {
       const coverages = await this.coverageRepository.findOne({

@@ -20,8 +20,8 @@ export class ShiftService {
     private readonly scheduleService: ScheduleService,
   ) {}
   async takeShift(
-    idSchedule: string,
-    idPatient: string,
+    idSchedule: number,
+    idPatient: number,
   ): Promise<CreateShiftDto | IResponse> {
     try {
       const schedule = await this.scheduleRepository.findOne({
@@ -92,7 +92,7 @@ export class ShiftService {
     }
   }
   async findOneShift(
-    id: string,
+    id: number,
   ): Promise<HttpException | UpdateShiftDto | IResponse> {
     try {
       const shift = await this.shiftRepository.findOne({
@@ -117,7 +117,7 @@ export class ShiftService {
       );
     }
   }
-  async deleteShift(id: string): Promise<HttpException | Shift | IResponse> {
+  async deleteShift(id: number): Promise<HttpException | Shift | IResponse> {
     try {
       const shift = await this.shiftRepository.findOne({
         where: { id: id },

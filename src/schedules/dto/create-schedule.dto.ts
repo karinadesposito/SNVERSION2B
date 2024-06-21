@@ -5,7 +5,7 @@ export class CreateScheduleDto {
   day: string;
 
   @IsNotEmpty()
-  idDoctor: string;
+  idDoctor: number;
 
   @IsNotEmpty()
   start_Time: string;

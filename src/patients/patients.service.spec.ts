@@ -16,9 +16,8 @@ describe('PatientsService', () => {
     mail: 'larcia@gmail.com',
     phone: '02281457898',
     coverage: {
-      id: '7b46c0',
+      id: 1,
       coverages: 'ioma',
-      createId: jest.fn(),
       doctors: [],
     },
     dni: '18485754',
@@ -31,9 +30,8 @@ describe('PatientsService', () => {
     deletedAt: null,
     restoredAt: null,
     shifts: [],
-    id: '5cec5f',
+    id: 1,
     createAt: null,
-    createId: null,
     hasId: null,
     save: null,
     remove: null,
@@ -139,7 +137,7 @@ describe('PatientsService', () => {
   });
   describe('findOne', () => {
     it('should return a patient if found', async () => {
-      const id = '5cec5f';
+      const id = 1;
       const result: IResponse = {
         message: 'El paciente encontrado es:',
         statusCode: HttpStatus.OK,
@@ -152,7 +150,7 @@ describe('PatientsService', () => {
       expect(repository.findOne).toHaveBeenCalled();
     });
     it('should handle error if doctor not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
@@ -164,7 +162,7 @@ describe('PatientsService', () => {
       }
     });
     it('should return "El paciente no fue encontrado" when not found', async () => {
-      const id = '123456';
+      const id = 1;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       const response = await service.findOnePatient(id);
@@ -181,13 +179,13 @@ describe('PatientsService', () => {
   });
   describe('update', () => {
     it('should return patient updated', async () => {
-      const id = '5cec5f';
+      const id = 1;
       const updatePatient = {
         fullName: 'Juan Garcia',
         mail: 'larcia@gmail.com',
         phone: '02281457898',
         coverage: {
-          id: '7b46c0',
+          id: 1,
           coverages: 'ioma',
           createId: jest.fn(),
           doctors: [],
@@ -198,7 +196,7 @@ describe('PatientsService', () => {
         deletedAt: null,
         restoredAt: null,
         shifts: [],
-        id: '5cec5f',
+        id: 1,
         createAt: null,
         createId: null,
         hasId: null,
@@ -234,7 +232,7 @@ describe('PatientsService', () => {
     });
 
     it('should handle error during update', async () => {
-      const id = '123456';
+      const id = 123456;
       const updatePatient: Partial<UpdatePatientDto> = { 
         fullName: 'Juan Garcia',
       };
@@ -253,7 +251,7 @@ describe('PatientsService', () => {
 
   describe('delete', () => {
     it('should call service.deletePatient whit correct params', async () => {
-      const id = '5cec5f';
+      const id = 1;
       const result = {
         message: 'Se ha eliminado el paciente: ',
         statusCode: HttpStatus.OK,
@@ -277,7 +275,7 @@ describe('PatientsService', () => {
     });
   });
   it('should handle error during deletion', async () => {
-    const id = '123456';
+    const id = 123456;
     jest.spyOn(repository, 'findOne').mockResolvedValue(patient);
     jest
       .spyOn(repository, 'delete')
@@ -293,7 +291,7 @@ describe('PatientsService', () => {
     }
   });
   it('should handle coverage not found', async () => {
-    const id = '123456';
+    const id = 123456;
     jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
     const response = await service.deletePatient(id);
     if ('statusCode' in response && 'message' in response) {

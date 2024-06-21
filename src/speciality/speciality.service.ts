@@ -69,7 +69,7 @@ export class SpecialityService {
   }
 
   async findOneSpeciality(
-    id: string,
+    id:number,
   ): Promise<HttpException | Speciality | IResponse> {
     try {
       const speciality = await this.specialityRepository.findOne({
@@ -94,7 +94,7 @@ export class SpecialityService {
     }
   }
   async updateSpeciality(
-    id: string,
+    id: number,
     updateSpeciality: Partial<UpdateSpecialityDto>,
   ): Promise<HttpException | UpdateSpecialityDto | IResponse> {
     try {
@@ -122,7 +122,7 @@ export class SpecialityService {
   }
 
   async deleteSpeciality(
-    id: string,
+    id: number,
   ): Promise<HttpException | Speciality | IResponse> {
     try {
       const speciality = await this.specialityRepository.findOne({

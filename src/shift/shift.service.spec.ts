@@ -15,10 +15,10 @@ describe('ShiftService', () => {
   let scheduleRepository: Repository<Schedule>;
   let patientRepository: Repository<Patient>;
   let scheduleService: ScheduleService;
-  const idSchedule = '1ada55';
-  const idPatient = '5cec5f';
+  const idSchedule = 1;
+  const idPatient = 1;
   const mockShift: Shift = {
-    id: 'c66a01',
+    id: 1,
     schedule: { idSchedule, available: true } as Schedule,
     idPatient: { id: idPatient } as Patient,
   } as Shift;
@@ -107,8 +107,6 @@ describe('ShiftService', () => {
     });
 
     it('should throw error if schedule not found', async () => {
-      const idSchedule = '1ada55';
-      const idPatient = '5cec5f';
 
       jest.spyOn(scheduleRepository, 'findOne').mockResolvedValue(null);
 
@@ -124,9 +122,6 @@ describe('ShiftService', () => {
     });
 
     it('should throw error if patient not found', async () => {
-      const idSchedule = '1ada55';
-      const idPatient = '5cec5f';
-
       jest
         .spyOn(scheduleRepository, 'findOne')
         .mockResolvedValue({ idSchedule, available: true } as Schedule);
@@ -144,10 +139,7 @@ describe('ShiftService', () => {
     });
 
     it('should throw error if schedule not available', async () => {
-      const idSchedule = '1ada55';
-      const idPatient = '5cec5f';
-
-      jest
+         jest
         .spyOn(scheduleRepository, 'findOne')
         .mockResolvedValue({ idSchedule, available: false } as Schedule);
 
@@ -163,9 +155,6 @@ describe('ShiftService', () => {
     });
 
     it('should throw internal server error on exception', async () => {
-      const idSchedule = '1ada55';
-      const idPatient = '5cec5f';
-
       jest
         .spyOn(scheduleRepository, 'findOne')
         .mockRejectedValue(new Error('Database error'));
@@ -204,7 +193,7 @@ describe('ShiftService', () => {
   });
   describe('findOneShift', () => {
     it('should return the found shift', async () => {
-      const id = '4d87d5';
+      const id = 1;
       const result: IResponse = {
         message: 'El turno hallado es:',
         statusCode: HttpStatus.OK,
@@ -218,7 +207,7 @@ describe('ShiftService', () => {
     });
 
     it('should handle error if shift not found', async () => {
-      const id = '123456';
+      const id = 123456;
       jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(null);
       const response = await service.findOneShift(id);
       if (
@@ -233,7 +222,7 @@ describe('ShiftService', () => {
     });
 
     it('should handle internal server error', async () => {
-      const id = '4d87d5';
+      const id = 1;
       jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(null);
       const response = await service.findOneShift(id);
       if (
@@ -251,7 +240,7 @@ describe('ShiftService', () => {
   });
   describe('deleteShift', () => {
     it('should delete shift and return the result', async () => {
-      const id = '4d87d5';
+      const id = 1;
       const result: IResponse = {
         message: 'Se ha eliminado el turno:',
         statusCode: HttpStatus.OK,
@@ -277,7 +266,7 @@ describe('ShiftService', () => {
       }
     });
     it('should handle error during deletion', async () => {
-      const id = '89820e';
+      const id = 1;
       jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(mockShift);
       jest
         .spyOn(shiftRepository, 'delete')
@@ -294,7 +283,7 @@ describe('ShiftService', () => {
       }
     });
     it('should handle non-existing shift', async () => {
-      const id = '89820e';
+      const id = 1;
       jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(null);
 
       const response = await service.deleteShift(id);

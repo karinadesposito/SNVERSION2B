@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Schedule } from './entities/schedule.entity';
 import { Repository } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
+import { DeletionReason } from './enum/deleteSchedule.enum';
 
 @Injectable()
 export class ScheduleService {
@@ -80,7 +81,9 @@ export class ScheduleService {
 
   async getSchedules(): Promise<HttpException | Schedule[] | IResponse> {
     try {
-      const schedules = await this.scheduleRepository.find();
+      const schedules = await this.scheduleRepository.find({
+        where: { removed: false },
+      });
 
       if (!schedules.length)
         return {
@@ -100,7 +103,7 @@ export class ScheduleService {
     }
   }
   async findOneSchedule(
-    id: string,
+    id: number,
   ): Promise<HttpException | Schedule | IResponse> {
     try {
       const scheduleFound = await this.scheduleRepository.findOne({
@@ -122,7 +125,7 @@ export class ScheduleService {
     }
   }
   async updateSchedule(
-    id: string,
+    id:number,
     updateScheduleDto: Partial<UpdateScheduleDto>,
   ): Promise<HttpException | UpdateScheduleDto | IResponse> {
     try {
@@ -147,7 +150,8 @@ export class ScheduleService {
   }
 
   async deleteSchedule(
-    id: string,
+    id: number,
+    deletionReason: DeletionReason,
   ): Promise<HttpException | Schedule | IResponse> {
     try {
       const schedule = await this.scheduleRepository.findOne({
@@ -156,11 +160,15 @@ export class ScheduleService {
       if (!schedule) {
         return new HttpException('La agenda no existe', HttpStatus.NOT_FOUND);
       }
-      await this.scheduleRepository.delete({ idSchedule: id });
+      schedule.deletionReason = deletionReason;
+      schedule.removed = true; // Marcar como eliminado
+
+     await this.scheduleRepository.save(schedule);
+
       return {
-        message: 'Se ha eliminado la agenda con id: ',
+        message: `Se ha marcado la agenda con id: ${schedule.idSchedule} como eliminada`,
         data: schedule.idSchedule,
-        statusCode: HttpStatus.MOVED_PERMANENTLY,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
       throw new HttpException(
@@ -171,7 +179,7 @@ export class ScheduleService {
   }
   //Funcion para seleccionar turno o cancelarlo (pasa de true a false)
   async updateAvailability(
-    idSchedule: string,
+    idSchedule:number,
   ): Promise<IResponse | HttpException | UpdateScheduleDto> {
     try {
       const existingSchedule = await this.scheduleRepository.findOne({
@@ -212,7 +220,7 @@ export class ScheduleService {
   }
   async findScheduleByDay(
     day: string,
-    idDoctor: string,
+    idDoctor: number,
   ): Promise<HttpException | Schedule[] | IResponse> {
     try {
       const schedules = await this.scheduleRepository.find({
@@ -226,9 +234,11 @@ export class ScheduleService {
           HttpStatus.NOT_FOUND,
         );
       } else {
-        return {message: 'Turnos tomamos en éste dia',
+        return {
+          message: 'Turnos tomamos en éste dia',
           statusCode: HttpStatus.OK,
-          data: schedules}  ;
+          data: schedules,
+        };
       }
     } catch (error) {
       throw new HttpException(
@@ -239,7 +249,7 @@ export class ScheduleService {
   }
   async countScheduleByDoctor(
     day: string,
-    idDoctor: string,
+    idDoctor: number,
   ): Promise<HttpException | Schedule[] | IResponse> {
     try {
       const schedules = await this.scheduleRepository.find({

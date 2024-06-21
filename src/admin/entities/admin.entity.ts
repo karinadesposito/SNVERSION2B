@@ -6,6 +6,12 @@ const { v4: uuidv4 } = require('uuid');
 export class Admin {
   @PrimaryGeneratedColumn('uuid')
   id: number;
+
+  @BeforeInsert()
+  createId() {
+    this.id = uuidv4().slice(0, 6);
+  }
+
   @Column({ length: 14 })
   @Length(6, 14)
   username: string;
@@ -19,9 +25,4 @@ export class Admin {
   @Column({ length: 140 })
   @Length(8, 140)
   password: string;
-
-  @BeforeInsert()
-  createId() {
-    this.id = uuidv4().slice(0, 6);
-  }
 }

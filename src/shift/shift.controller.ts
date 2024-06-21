@@ -29,13 +29,13 @@ export class ShiftController {
   }
   @Get(':id')
   findOne(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | UpdateShiftDto | IResponse> {
     return this.shiftService.findOneShift(id);
   }
   @Delete(':id')
   deleteShift(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | Shift | IResponse> {
     return this.shiftService.deleteShift(id);
   }

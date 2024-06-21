@@ -71,7 +71,7 @@ export class PatientsService {
   }
 
   async findOnePatient(
-    id: string,
+    id:number,
   ): Promise<HttpException | UpdatePatientDto | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
@@ -97,7 +97,7 @@ export class PatientsService {
     }
   }
 
-  async updatePatient(id: string, updatePatient: Partial<UpdatePatientDto>): Promise<HttpException | UpdateDoctorDto | IResponse> {
+  async updatePatient(id: number, updatePatient: Partial<UpdatePatientDto>): Promise<HttpException | UpdateDoctorDto | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
         where: { id: id },
@@ -124,7 +124,7 @@ export class PatientsService {
     }
   }
   async deletePatient(
-    id: string,
+    id: number,
   ): Promise<HttpException | Patient | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({

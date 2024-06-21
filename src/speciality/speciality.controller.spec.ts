@@ -11,11 +11,11 @@ describe('SpecialityController', () => {
   let service: SpecialityService;
   const search = [
     {
-      id: '89820e',
+      id: 1,
       name: 'Oftalmología',
     },
   ];
-
+const id= 1;
   beforeEach(async () => {
     const mockSpecialityService = {
       create: jest.fn(),
@@ -75,7 +75,7 @@ describe('SpecialityController', () => {
   });
   describe('findOneSpeciality', () => {
     it('should call service.findOneSpeciality with correct params', async () => {
-      const id = '89820e';
+     
       const result: IResponse = {
         message: 'La especialidad encontrada es:',
         statusCode: HttpStatus.OK,
@@ -90,11 +90,11 @@ describe('SpecialityController', () => {
   });
   describe('updateSpeciality', () => {
     it('should call service.updateSpeciality with correct params', async () => {
-      const id = '89820e';
+  
       const updateSpecialityDto: Partial<UpdateSpecialityDto> = {
         name: 'Nutricionista',
       };
-      const result = { id: '89820e', name: 'Nutricionista' };
+      const result = { id: 1, name: 'Nutricionista' };
       jest.spyOn(service, 'updateSpeciality').mockResolvedValue(result);
       const response = await controller.update(id, updateSpecialityDto);
       expect(service.updateSpeciality).toHaveBeenCalledWith(
@@ -108,7 +108,6 @@ describe('SpecialityController', () => {
   });
   describe('deleteSpeciality', () => {
     it('should call service.deleteSpeciality with correct params', async () => {
-      const id = '89820e';
       const result = {
         message: 'Se ha eliminado la especialidad: ',
         statusCode: HttpStatus.OK,

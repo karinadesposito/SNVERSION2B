@@ -33,12 +33,11 @@ describe('DoctorsService', () => {
     };
     const doctor: Doctor = {
       ...createDoc,
-      id: '0bb2b9',
+      id: 1,
       coverages: [],
       speciality: {
         name: 'Oftalmología',
-        id: '',
-        createId: null,
+        id: 1,
         idDoctor: []
       },
       schedule:[],
@@ -130,12 +129,11 @@ describe('DoctorsService', () => {
 
   describe('addCoverageToDoctor', () => {
     it('should add the coverage to the doctor', async () => {
-      const doctorId = '0bb2b9';
-      const coverageId = ['0bb4m9'];
+      const doctorId = 1;
+      const coverageId = [1];
       const coverage: Coverage = {
-        id: '0bb4m9',
+        id: 1,
         coverages: '',
-        createId: null,
         doctors: [],
       };
 
@@ -143,7 +141,7 @@ describe('DoctorsService', () => {
       jest.spyOn(repositoryCoverage, 'findOne').mockResolvedValue(coverage);
       jest.spyOn(repository, 'save').mockResolvedValue({
         ...doctor,
-        id: '0bb2b9',
+        id: 1,
         fullName: '',
         mail: '',
         phone: '',
@@ -165,7 +163,7 @@ describe('DoctorsService', () => {
         relations: ['coverages'],
       });
       expect(repositoryCoverage.findOne).toHaveBeenCalledWith({
-        where: { id: '0bb4m9' },
+        where: { id: 1 },
       });
       expect(repository.save).toHaveBeenCalledWith({
         ...doctor,
@@ -174,8 +172,8 @@ describe('DoctorsService', () => {
     });
 
     it('should throw NotFoundException if doctor is not found', async () => {
-      const doctorId = '0bb2b9';
-      const coverageId = ['0bb4m9'];
+      const doctorId =1;
+      const coverageId = [1];
 
       jest.spyOn(repository, 'findOne').mockRejectedValue(new NotFoundException());
 
@@ -188,8 +186,8 @@ describe('DoctorsService', () => {
     });
 
     it('should throw NotFoundException if coverage is not found', async () => {
-      const doctorId = '0bb2b9';
-      const coverageId = ['0bb4m9'];
+      const doctorId = 1;
+      const coverageId = [1];
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
       jest.spyOn(repositoryCoverage, 'findOne').mockRejectedValue(new NotFoundException());
@@ -205,8 +203,8 @@ describe('DoctorsService', () => {
 
   describe('removeCoverageFromDoctor', () => {
     it('should remove the coverage from the doctor', async () => {
-      const doctorId = '0bb2b9';
-      const coverageId = ['0bb4m9'];
+      const doctorId = 1;
+      const coverageId = [1];
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
       jest.spyOn(repository, 'save').mockResolvedValue({
@@ -219,7 +217,7 @@ describe('DoctorsService', () => {
         schedule: [],
         coverages: [
           {
-            id: '58b2b9',
+            id: 1,
             coverages: '',
             createId: null,
             doctors: [],
@@ -234,7 +232,7 @@ describe('DoctorsService', () => {
       });
 
       expect(response.coverages).toEqual([
-        { id: '58b2b9', coverages: '', createId: null, doctors: [] },
+        { id: 1, coverages: '', createId: null, doctors: [] },
       ]);
       expect(repository.findOne).toHaveBeenCalledWith({where: { id: doctorId },
         relations: ['coverages'],});
@@ -244,8 +242,8 @@ describe('DoctorsService', () => {
     });
 
     it('should throw NotFoundException if doctor is not found', async () => {
-      const doctorId = '0bb2b9';
-      const coverageId = ['58b2b9'];
+      const doctorId = 1;
+      const coverageId = [1];
 
       jest.spyOn(repository, 'findOne').mockRejectedValue(new NotFoundException());
       try {
@@ -257,8 +255,8 @@ describe('DoctorsService', () => {
     });
 
     it('should throw NotFoundException if doctor has no coverages', async () => {
-      const doctorId = '0bb2b9';
-      const coverageId = ['0bb4m9'];
+      const doctorId = 1;
+      const coverageId = [1];
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
 
@@ -325,7 +323,7 @@ describe('DoctorsService', () => {
 
   describe('getDoctorsShift', () => {
     it('should return not found if the doctor not found', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest.spyOn(repository, 'find').mockResolvedValue([]);
 
       const response = await service.getDoctorsShift(doctorId);
@@ -341,7 +339,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return NO_CONTENT when there are no available schedules', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const doctors = [doctor];
       jest.spyOn(repository, 'find').mockResolvedValue(doctors);
 
@@ -360,12 +358,12 @@ describe('DoctorsService', () => {
     });
 
     it('should return available schedules if found', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const availableSchedules = [
         {
           idSchedule: 'sch1',
           day: '2024-06-18',
-          idDoctor: '0bb2b9',
+          idDoctor: 1,
           start_Time: '09:00',
           end_Time: '09:30',
           available: true,
@@ -391,7 +389,7 @@ describe('DoctorsService', () => {
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest
         .spyOn(repository, 'find')
         .mockRejectedValue(new Error('Repository error'));
@@ -409,7 +407,7 @@ describe('DoctorsService', () => {
 
   describe('getDoctorsUnAvailable', () => {
     it('should return not found if the doctor not found', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest.spyOn(repository, 'find').mockResolvedValue([]);
 
       const response = await service.getDoctorsUnAvailable(doctorId);
@@ -425,7 +423,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return NO_CONTENT when there are no available schedules', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const doctors = [doctor];
       jest.spyOn(repository, 'find').mockResolvedValue(doctors);
 
@@ -444,12 +442,12 @@ describe('DoctorsService', () => {
     });
 
     it('should return unavailable schedules if found', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const unavailableSchedules = [
         {
-          idSchedule: 'sch1',
+          idSchedule: 1,
           day: '2024-06-18',
-          idDoctor: '0bb2b9',
+          idDoctor: 1,
           start_Time: '09:00',
           end_Time: '09:30',
           available: false,
@@ -459,9 +457,9 @@ describe('DoctorsService', () => {
           shift: null,
         },
         {
-          idSchedule: 'sch2',
+          idSchedule: 2,
           day: '2024-06-18',
-          idDoctor: '0bb2b9',
+          idDoctor: 1,
           start_Time: '09:00',
           end_Time: '09:30',
           available: false,
@@ -487,7 +485,7 @@ describe('DoctorsService', () => {
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest
         .spyOn(repository, 'find')
         .mockRejectedValue(new Error('Repository error'));
@@ -505,7 +503,7 @@ describe('DoctorsService', () => {
 
   describe('findOneDoctor', () => {
     it('should return not found message if the doctor does not exist', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const doctorFound = null;
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctorFound);
@@ -523,7 +521,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return a doctor if found', async () => {
-      const id = '0bb2b9';
+      const id = 1;
      
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
       const response = await service.findOneDoctor(id);
@@ -540,7 +538,7 @@ describe('DoctorsService', () => {
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Repository error'));
@@ -555,7 +553,7 @@ describe('DoctorsService', () => {
   });
   describe('updateDoctor', () => {
     it('should call service.updateDoctor with correct params', async () => {
-      const id = '0bb2b9';
+      const id = 1;
       const updateDoc: Partial<UpdateDoctorDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
@@ -574,7 +572,7 @@ describe('DoctorsService', () => {
     });
 
     it('should update the data if the doctor exists', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const updateData: Partial<UpdateDoctorDto> = {
         fullName: 'Juan Pablo Perez',
         mail: 'jpabloperez@gmail.com',
@@ -608,7 +606,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return not found message if the doctor does not exist', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const updateDoc: Partial<UpdateDoctorDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
@@ -631,7 +629,7 @@ describe('DoctorsService', () => {
     });
 
     it('should handle error during update', async () => {
-      const id = '0bb2b9';
+      const id = 1;
       const updateDoc: Partial<UpdateDoctorDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
@@ -658,7 +656,7 @@ describe('DoctorsService', () => {
 
   describe('deleteDoctor', () => {
     it('should call service.deleteDoctor with correct params', async () => {
-      const id = '0bb2b9';
+      const id = 1;
       const result = {
         message: 'Doctor deleted successfully',
         statusCode: HttpStatus.OK,
@@ -672,7 +670,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return not found message if the doctor does not exist', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const result = null;
       jest.spyOn(repository, 'find').mockResolvedValue(result);
 
@@ -691,7 +689,7 @@ describe('DoctorsService', () => {
     });
 
     it('should delete the doctor successfully', async () => {
-      const idDoctor = '0bb2b9';
+      const idDoctor = 1;
       const deleteResponse = {
         generatedMaps: [],
         raw: [],
@@ -716,7 +714,7 @@ describe('DoctorsService', () => {
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Repository error'));
@@ -733,7 +731,7 @@ describe('DoctorsService', () => {
 
   describe('findPatientsByDoctorId', () => {
     it('should call service.findPatientsByDoctorId with correct params', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const result = {
         message: 'Los pacientes del médico son:',
         data: [],
@@ -748,7 +746,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return not found message if the doctor does not exist', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const result = null;
       jest.spyOn(repository, 'find').mockResolvedValue(result);
 
@@ -767,7 +765,7 @@ describe('DoctorsService', () => {
     });
 
     it('should return not found message if the doctor has no associated patients', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
 
@@ -781,7 +779,7 @@ describe('DoctorsService', () => {
   });
 
     it('should return a list of patients if found', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       const patients = [{ id: '22be7c' }, { id: 'e951fe' }];
       const result = {
         message: 'Los pacientes del médico son:',
@@ -805,7 +803,7 @@ describe('DoctorsService', () => {
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
-      const doctorId = '0bb2b9';
+      const doctorId = 1;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Repository error'));

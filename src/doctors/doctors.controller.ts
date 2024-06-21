@@ -32,19 +32,19 @@ export class DoctorsController {
   }
   @Get('/shiftAvailable/:idDoctor')
   DoctorsTwo(
-    @Param('idDoctor') idDoctor: string,
+    @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctorsShift(idDoctor);
   }
   @Get('/shiftUnAvailable/:idDoctor')
   DoctorsThree(
-    @Param('idDoctor') idDoctor: string,
+    @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctorsUnAvailable(idDoctor);
   }
   @Get(':id')
   findOneDoctor(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.findOneDoctor(id);
   }
@@ -52,14 +52,14 @@ export class DoctorsController {
   @Put(':id')
   updateDoctor(
     @Body() updateDoctor: Partial<UpdateDoctorDto>,
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | UpdateDoctorDto | IResponse> {
     return this.doctorsService.updateDoctor(id, updateDoctor);
   }
 
   @Delete(':id')
   deleteDoctor(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.deleteDoctor(id);
   }
@@ -78,7 +78,7 @@ export class DoctorsController {
     return await this.doctorsService.removeCoverageFromDoctor(doctorData);
   }
   @Get('/patients/:id')
-  getPatientsByDoctorId(@Param('id') doctorId: string) {
+  getPatientsByDoctorId(@Param('id') doctorId: number) {
     return this.doctorsService.findPatientsByDoctorId(doctorId);
   }
 

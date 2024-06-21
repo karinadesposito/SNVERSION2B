@@ -1,26 +1,27 @@
-import { Doctor } from '../../doctors/entities/doctor.entity'
+import { Doctor } from '../../doctors/entities/doctor.entity';
 import { Shift } from '../../shift/entities/shift.entity';
+
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  BeforeInsert,
   JoinColumn,
   OneToOne,
 } from 'typeorm';
-const { v4: uuidv4 } = require('uuid');
+import { DeletionReason } from '../enum/deleteSchedule.enum';
 
 @Entity({ name: 'schedules' })
 export class Schedule {
-  @PrimaryGeneratedColumn('uuid')
-  idSchedule: string;
+  @PrimaryGeneratedColumn()
+  idSchedule: number;
+
   @Column({ type: 'date' })
   // se pone 2024,01,01
   day: string;
 
-  @Column({ type: 'uuid' })
-  idDoctor: string;
+  @Column()
+  idDoctor: number;
 
   @Column({ type: 'time' })
   start_Time: string;
@@ -31,14 +32,16 @@ export class Schedule {
   @Column()
   available: boolean;
 
+  @Column({ type: 'enum', enum: DeletionReason, nullable: true })
+  deletionReason: DeletionReason;
+
+  @Column({ default: false })
+  removed: boolean;
+
   @Column({ default: 30 })
   interval: string;
   static available: number;
 
-  @BeforeInsert()
-  createId() {
-    this.idSchedule = uuidv4().slice(0, 6);
-  }
   @ManyToOne(() => Doctor, (doctor) => doctor.schedule)
   @JoinColumn({ name: 'idDoctor' })
   idDoctors: Doctor;

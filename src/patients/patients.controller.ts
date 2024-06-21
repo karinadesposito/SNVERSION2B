@@ -34,7 +34,7 @@ export class PatientsController {
 
   @Get(':id')
   findOne(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | UpdatePatientDto | IResponse> {
     return this.patientsService.findOnePatient(id);
   }
@@ -42,14 +42,14 @@ export class PatientsController {
   @Put(':id')
   updatePatient(
     @Body() updatePatient: Partial<UpdatePatientDto>,
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | UpdatePatientDto | IResponse> {
     return this.patientsService.updatePatient(id, updatePatient);
   }
   @UseGuards(AuthGuard)
   @Delete(':id')
   deletePatient(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<HttpException | Patient | IResponse> {
     return this.patientsService.deletePatient(id);
   }

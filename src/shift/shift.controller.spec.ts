@@ -10,6 +10,8 @@ import { Shift } from './entities/shift.entity';
 describe('ShiftController', () => {
   let controller: ShiftController;
   let service: ShiftService;
+  const ids = { id: 1, idSchedule: 1, idPatient: 1 };
+  const id = 1;
 
   beforeEach(async () => {
     const mockShiftService = {
@@ -32,12 +34,7 @@ describe('ShiftController', () => {
   });
   describe('takeShift', () => {
     it('should call shiftService.takeShift and return the result', async () => {
-      const newShift: CreateShiftDto = {
-        id: '4d87d5',
-        idSchedule: '1ada55',
-        idPatient: '5cec5f',
-        createId: jest.fn(),
-      };
+      const newShift: CreateShiftDto = ids;
       const result: IResponse = {
         message: 'El turno se ha guardado',
         statusCode: HttpStatus.OK,
@@ -57,9 +54,7 @@ describe('ShiftController', () => {
 
   describe('getShift', () => {
     it('should call service.getShift and return the result', async () => {
-      const shifts: UpdateShiftDto[] = [
-        { id: '4d87d5', idPatient: '5cec5f', idSchedule: '1ada55' },
-      ];
+      const shifts: UpdateShiftDto[] = [ids];
       const result: IResponse = {
         message: 'Los turnos existentes son:',
         statusCode: HttpStatus.OK,
@@ -76,12 +71,7 @@ describe('ShiftController', () => {
 
   describe('findOneShift', () => {
     it('should call service.findOneShift with correct params', async () => {
-      const id = '4d87d5';
-      const shift: UpdateShiftDto = {
-        id: '4d87d5',
-        idPatient: '5cec5f',
-        idSchedule: '1ada55',
-      };
+      const shift: UpdateShiftDto = ids;
       const result: IResponse = {
         message: 'El turno hallado es:',
         statusCode: HttpStatus.OK,
@@ -98,7 +88,6 @@ describe('ShiftController', () => {
 
   describe('deleteShift', () => {
     it('should call service.deleteShift with correct params', async () => {
-      const id = '4d87d5';
       const shift: Shift = new Shift();
       const result: IResponse = {
         message: 'Se ha eliminado el turno:',

@@ -142,7 +142,7 @@ export class DoctorsService {
   }
   //Busca todos los turnos que se encuentren disponible del doctor especificado.
   async getDoctorsShift(
-    idDoctor: string,
+    idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const options: FindManyOptions<Doctor> = {
@@ -182,7 +182,7 @@ export class DoctorsService {
   }
   //Busca todos los turnos que se encuentren ya tomados del doctor especificado.
   async getDoctorsUnAvailable(
-    idDoctor: string,
+    idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const options: FindManyOptions<Doctor> = {
@@ -219,7 +219,7 @@ export class DoctorsService {
       );
     }
   }
-  async findOneDoctor(id: string): Promise<HttpException | Doctor | IResponse> {
+  async findOneDoctor(id: number): Promise<HttpException | Doctor | IResponse> {
     try {
       const doctor = await this.doctorRepository.findOne({
         where: { id: id },
@@ -243,7 +243,7 @@ export class DoctorsService {
     }
   }
   async updateDoctor(
-    id: string,
+    id: number,
     updateDoctor: Partial<UpdateDoctorDto>,
   ): Promise<HttpException | UpdateDoctorDto | IResponse> {
     try {
@@ -270,7 +270,7 @@ export class DoctorsService {
     }
   }
 
-  async deleteDoctor(id: string): Promise<HttpException | Doctor | IResponse> {
+  async deleteDoctor(id: number): Promise<HttpException | Doctor | IResponse> {
     try {
       const doctor = await this.doctorRepository.findOne({
         where: { id: id },
@@ -296,7 +296,7 @@ export class DoctorsService {
   }
 
   async findPatientsByDoctorId(
-    doctorId: string,
+    doctorId: number,
   ): Promise<HttpException | Patient[] | IResponse> {
     try {
       const options: FindOneOptions<Doctor> = {

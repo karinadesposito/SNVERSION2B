@@ -2,8 +2,8 @@ import { IsNotEmpty } from 'class-validator';
 
 export class AddCoverageToDoctorDto {
   @IsNotEmpty()
-  doctorId: string;
+  doctorId: number;
 
   @IsNotEmpty()
-  coverageId: string[];
+  coverageId: number[];
 }

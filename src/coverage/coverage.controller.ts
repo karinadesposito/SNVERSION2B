@@ -26,20 +26,20 @@ export class CoveragesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.coverageService.findOneCoverages(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateCoverageDto: UpdateCoverageDto,
   ) {
     return this.coverageService.updateCoverages(id, updateCoverageDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.coverageService.deleteCoverage(id);
   }
 }
