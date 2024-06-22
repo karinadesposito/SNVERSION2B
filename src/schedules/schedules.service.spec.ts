@@ -61,7 +61,7 @@ describe('SchedulesService', () => {
       recover: null,
       reload: null,
     },
-    shift: {
+    shiff: {
       id: 1,
       idPatient: {
         fullName: 'Luis Garcia',
@@ -77,7 +77,7 @@ describe('SchedulesService', () => {
         address: 'Sarmiento 224',
         deletedAt: null,
         restoredAt: null,
-        shifts: [],
+        shiffs: [],
         id: 1,
         createAt: null,
         hasId: null,
@@ -98,8 +98,10 @@ describe('SchedulesService', () => {
   const scheduleTwo = {
     ...schedule,
     available: false,
-    createId: jest.fn(),
   };
+  const id = 1;
+  const schedules = { ...schedule };
+  const falseId = 123456;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -178,7 +180,7 @@ describe('SchedulesService', () => {
   });
   describe('find', () => {
     it('should return a list of schedules', async () => {
-      const schedules = [{ ...schedule, createId: jest.fn() }];
+      const schedules = [{ ...schedule }];
       const result: IResponse = {
         message: 'Agendas registradas:',
         statusCode: HttpStatus.FOUND,
@@ -225,8 +227,6 @@ describe('SchedulesService', () => {
   });
   describe('findOne', () => {
     it('should return a schedule if found', async () => {
-      const id = 1;
-      const schedules = { ...schedule, createId: jest.fn() };
       const result: IResponse = {
         message: 'La agenda encontrada es:',
         statusCode: HttpStatus.FOUND,
@@ -241,7 +241,6 @@ describe('SchedulesService', () => {
       });
     });
     it('should return "Esa agenda no existe" when not found', async () => {
-      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       const response = await service.findOneSchedule(id);
@@ -256,13 +255,12 @@ describe('SchedulesService', () => {
       }
     });
     it('should handle error if coverage not found', async () => {
-      const id = 123456;
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
 
       try {
-        await service.findOneSchedule(id);
+        await service.findOneSchedule(falseId);
       } catch (error) {
         expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
       }
@@ -271,12 +269,11 @@ describe('SchedulesService', () => {
 
   describe('update', () => {
     it('should call service.updateSchedule whit correct params', async () => {
-      const id = 1;
       const updateSch: UpdateScheduleDto = {
         available: true,
       };
-      const existingSch: Schedule = { ...schedule};
-      const updatedSch: Schedule = { ...schedule};
+      const existingSch: Schedule = { ...schedule };
+      const updatedSch: Schedule = { ...schedule };
 
       const updateResult: UpdateResult = {
         affected: 1,
@@ -306,7 +303,6 @@ describe('SchedulesService', () => {
     });
 
     it('should handle error during update', async () => {
-      const id = 123456;
       const updateSch: UpdateScheduleDto = {
         available: true,
       };
@@ -316,7 +312,7 @@ describe('SchedulesService', () => {
         .mockRejectedValue(new Error('Update failed'));
 
       try {
-        await service.updateSchedule(id, updateSch);
+        await service.updateSchedule(falseId, updateSch);
       } catch (error) {
         expect(error.message).toBe('Update failed');
       }
@@ -325,8 +321,6 @@ describe('SchedulesService', () => {
 
   describe('delete', () => {
     it('should call delete', async () => {
-      const id = 1;
-
       const result = {
         message: 'Se ha eliminado la agenda con id: ',
         statusCode: HttpStatus.OK,
@@ -351,13 +345,12 @@ describe('SchedulesService', () => {
       }
     });
     it('should handle deletion error', async () => {
-      const id = 123456;
       jest
         .spyOn(repository, 'delete')
         .mockRejectedValue(new Error('No se pudo eliminar la agenda'));
 
       try {
-        await service.deleteSchedule(id, deletionReason);
+        await service.deleteSchedule(falseId, deletionReason);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('No se pudo eliminar la agenda');
@@ -365,11 +358,10 @@ describe('SchedulesService', () => {
       }
     });
     it('should handle coverage not found', async () => {
-      const id = 123456;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       try {
-        await service.deleteSchedule(id, deletionReason);
+        await service.deleteSchedule(falseId, deletionReason);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual('La agenda no existe');
@@ -381,7 +373,7 @@ describe('SchedulesService', () => {
     it('should return the found schedules of the day', async () => {
       const schedules: Schedule[] = [
         {
-          ...schedule
+          ...schedule,
         },
       ];
       const result: IResponse = {
@@ -403,13 +395,13 @@ describe('SchedulesService', () => {
           idDoctor: schedule.idDoctor,
           available: false,
         },
-        relations: ['idDoctors', 'shift'],
+        relations: ['idDoctors', 'shiff'],
       });
     });
   });
   describe('countScheduleByDoctor', () => {
     it('should return the count of schedules for the specified doctor and day', async () => {
-      const schedules = [{ ...schedule, createId: jest.fn() }];
+      const schedules = [{ ...schedule }];
       const result: IResponse = {
         message: `Los turnos del doctor ${schedule.idDoctor} son ${schedules.length} para el día ${schedule.day}`,
         statusCode: HttpStatus.OK,
@@ -430,7 +422,7 @@ describe('SchedulesService', () => {
           idDoctor: schedule.idDoctor,
           available: false,
         },
-        relations: ['idDoctors', 'shift'],
+        relations: ['idDoctors', 'shiff'],
       });
     });
 
@@ -453,12 +445,12 @@ describe('SchedulesService', () => {
           idDoctor: schedule.idDoctor,
           available: false,
         },
-        relations: ['idDoctors', 'shift'],
+        relations: ['idDoctors', 'shiff'],
       });
     });
 
     it('should throw HttpException when all schedules are available', async () => {
-      const schedules = [{ ...schedule, createId: jest.fn() }];
+      const schedules = [{ ...schedule }];
 
       jest.spyOn(repository, 'find').mockResolvedValue(schedules);
 
@@ -478,7 +470,7 @@ describe('SchedulesService', () => {
           idDoctor: schedule.idDoctor,
           available: false,
         },
-        relations: ['idDoctors', 'shift'],
+        relations: ['idDoctors', 'shiff'],
       });
     });
   });

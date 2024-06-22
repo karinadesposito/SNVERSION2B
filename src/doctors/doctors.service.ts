@@ -141,7 +141,7 @@ export class DoctorsService {
     }
   }
   //Busca todos los turnos que se encuentren disponible del doctor especificado.
-  async getDoctorsShift(
+  async getDoctorsShiff(
     idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
     try {
@@ -300,7 +300,7 @@ export class DoctorsService {
   ): Promise<HttpException | Patient[] | IResponse> {
     try {
       const options: FindOneOptions<Doctor> = {
-        relations: ['schedule', 'schedule.shift', 'schedule.shift.idPatient'],
+        relations: ['schedule', 'schedule.shiff', 'schedule.shiff.idPatient'],
         where: { id: doctorId },
       };
 
@@ -321,8 +321,8 @@ export class DoctorsService {
       }
 
       const patients = doctor.schedule
-        .filter((schedule) => schedule.shift)
-        .map((schedule) => schedule.shift.idPatient);
+        .filter((schedule) => schedule.shiff)
+        .map((schedule) => schedule.shiff.idPatient);
 
       return {
         message: 'Los pacientes del médico son:',

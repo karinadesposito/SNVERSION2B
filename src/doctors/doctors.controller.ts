@@ -30,13 +30,13 @@ export class DoctorsController {
   Doctors(): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctors();
   }
-  @Get('/shiftAvailable/:idDoctor')
+  @Get('/shiffAvailable/:idDoctor')
   DoctorsTwo(
     @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
-    return this.doctorsService.getDoctorsShift(idDoctor);
+    return this.doctorsService.getDoctorsShiff(idDoctor);
   }
-  @Get('/shiftUnAvailable/:idDoctor')
+  @Get('/shiffUnAvailable/:idDoctor')
   DoctorsThree(
     @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {

@@ -1,6 +1,6 @@
 import { Coverage } from '../../coverage/entities/coverage.entity';
 import { Person } from '../../person/person.entity';
-import { Shift } from '../../shift/entities/shift.entity';
+import { Shiff } from '../../shiff/entities/shiff.entity';
 import {
   Column,
   DeleteDateColumn,
@@ -29,8 +29,8 @@ export class Patient extends Person {
   restoredAt: Date;
 
   // el paciente puede tener muchos turnos
-  @OneToMany(() => Shift, (shift) => shift.idPatient)
-  shifts: Shift[];
+  @OneToMany(() => Shiff, (shiff) => shiff.idPatient)
+  shiffs: Shiff[];
 
   @OneToOne(() => Coverage)
   @JoinColumn()

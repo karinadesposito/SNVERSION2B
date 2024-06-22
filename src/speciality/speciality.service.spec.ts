@@ -61,15 +61,17 @@ describe('SpecialityService', () => {
       expect(repository.create).toHaveBeenCalledWith(createSpe);
       expect(repository.save).toHaveBeenCalledWith(speciality);
     });
-    it('should return speciality is it exist',async()=>{
-      jest.spyOn(repository, 'findOne').mockResolvedValue(speciality)
+    it('should return speciality is it exist', async () => {
+      jest.spyOn(repository, 'findOne').mockResolvedValue(speciality);
       try {
         await service.create(createSpe);
       } catch (error) {
-        expect(error.message).toBe(`La especialidad con nombre ${speciality.name} ya existe en la base de datos`);
+        expect(error.message).toBe(
+          `La especialidad con nombre ${speciality.name} ya existe en la base de datos`,
+        );
         expect(error.statusCode).toEqual(HttpStatus.CONFLICT);
       }
-    })
+    });
 
     it('should handle errors when creating a speciality', async () => {
       jest.spyOn(repository, 'create').mockImplementation(() => {
@@ -144,12 +146,11 @@ describe('SpecialityService', () => {
       const response = await service.findOneSpeciality(speciality.id);
       expect(response).toEqual(result);
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { id:speciality.id},
+        where: { id: speciality.id },
       });
     });
     it('should handle error if speciality not found', async () => {
-  
-      jest 
+      jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
       try {
@@ -160,7 +161,6 @@ describe('SpecialityService', () => {
     });
   });
   it('should return "La especialidad no fue encontrada" when not found', async () => {
-
     jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
     const response = await service.findOneSpeciality(falseId);
@@ -168,72 +168,78 @@ describe('SpecialityService', () => {
       'data' in response &&
       'statusCode' in response &&
       'message' in response
-    ) { 
+    ) {
       expect(response.message).toEqual('La especialidad no fue encontrada');
       expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
       expect(response.data).toBeUndefined();
     }
   });
-  describe ('update',()=>{
-    it('should call update speciality with correct params',async() =>{
+  describe('update', () => {
+    it('should call update speciality with correct params', async () => {
       const updateResult: UpdateResult = {
         affected: 1,
         raw: {},
         generatedMaps: [],
       };
-      const existingSpe: Speciality = { ...speciality};
-      const updatedSpe:Speciality = {...speciality};
+      const existingSpe: Speciality = { ...speciality };
+      const updatedSpe: Speciality = { ...speciality };
       const result: IResponse = {
         message: 'Las modificaciones son las siguientes: ',
         statusCode: HttpStatus.OK,
-        data: { 
-          createId:jest.fn(), 
-          datosAnteriores: existingSpe, 
-          id:updatedSpe.id,
-          idDoctor:updatedSpe.idDoctor,
-          name:updatedSpe.name          
-        }, 
+        data: {
+          datosAnteriores: existingSpe,
+          id: updatedSpe.id,
+          idDoctor: updatedSpe.idDoctor,
+          name: updatedSpe.name,
+        },
       };
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(existingSpe); // Simula encontrar el coverage existente
       jest.spyOn(repository, 'update').mockResolvedValue(updateResult); // Simula la operación de actualización
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(updatedSpe);
-      const response = await service.updateSpeciality(speciality.id,speciality);
+      const response = await service.updateSpeciality(
+        speciality.id,
+        speciality,
+      );
       if (
         'data' in response &&
         'statusCode' in response &&
-        'message' in response 
+        'message' in response
       ) {
-      expect(response.message).toEqual(result.message);
-      expect(response.statusCode).toEqual(result.statusCode); 
-    } 
-      expect(repository.findOne).toHaveBeenCalledWith({where: { id: speciality.id }})
-      expect(repository.update).toHaveBeenCalledWith(speciality.id,speciality);
-    })
-    it('should handle error during update',async ()=> {
-      jest.spyOn(repository,'update').mockRejectedValue(new Error("No se pudo actualizar la especialidad"))
-      try {
-        await service.updateSpeciality(speciality.id,speciality);
-      } catch (error) {
-        expect(error.message).toBe("No se pudo actualizar la especialidad")
+        expect(response.message).toEqual(result.message);
+        expect(response.statusCode).toEqual(result.statusCode);
       }
-    }) 
-    }) 
-    describe ('delete',()=>{
-      it('should call delete speciality with correct params',async() =>{
-        const result: IResponse = {
-          message: 'Se ha eliminado la especialidad: ',
-          statusCode: HttpStatus.OK,
-          data:speciality.name
-        };
-        const deleteResult: DeleteResult = {
-          affected: 1,
-          raw: {},
-        };
-        jest.spyOn(service, 'deleteSpeciality').mockResolvedValue(result);
-        jest.spyOn(repository,'delete').mockResolvedValue(deleteResult);
-       
-        const response = await service.deleteSpeciality(speciality.id);
-        expect(response).toBeDefined(); 
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: speciality.id },
+      });
+      expect(repository.update).toHaveBeenCalledWith(speciality.id, speciality);
+    });
+    it('should handle error during update', async () => {
+      jest
+        .spyOn(repository, 'update')
+        .mockRejectedValue(new Error('No se pudo actualizar la especialidad'));
+      try {
+        await service.updateSpeciality(speciality.id, speciality);
+      } catch (error) {
+        expect(error.message).toBe('No se pudo actualizar la especialidad');
+      }
+    });
+  });
+  describe('delete', () => {
+    it('should call delete speciality with correct params', async () => {
+      const result: IResponse = {
+        message: 'Se ha eliminado la especialidad: ',
+        statusCode: HttpStatus.OK,
+        data: speciality.name,
+      };
+      const deleteResult: DeleteResult = {
+        affected: 1,
+        raw: {},
+      };
+      jest.spyOn(service, 'deleteSpeciality').mockResolvedValue(result);
+      jest.spyOn(repository, 'delete').mockResolvedValue(deleteResult);
+
+      const response = await service.deleteSpeciality(speciality.id);
+      expect(response).toBeDefined();
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -242,17 +248,18 @@ describe('SpecialityService', () => {
         expect(response.message).toEqual('Se ha eliminado la especialidad: ');
         expect(response.data).toEqual(result.data);
         expect(response.statusCode).toEqual(HttpStatus.OK);
-      } 
+      }
     });
     it('should handle non-existing speciality', async () => {
-      
-      jest.spyOn(repository,'findOne').mockReturnValue(null);
+      jest.spyOn(repository, 'findOne').mockReturnValue(null);
 
       try {
         await service.deleteSpeciality(falseId);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('La especialidad no existe en la base de datos');
+        expect(error.message).toEqual(
+          'La especialidad no existe en la base de datos',
+        );
         expect(error.status).toEqual(HttpStatus.NOT_FOUND);
       }
       expect(repository.findOne).toHaveBeenCalledWith({
@@ -263,7 +270,9 @@ describe('SpecialityService', () => {
 
     it('should handle error during deletion', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(speciality);
-      jest.spyOn(repository, 'delete').mockRejectedValue(new Error('No se pudo eliminar la especialidad'));
+      jest
+        .spyOn(repository, 'delete')
+        .mockRejectedValue(new Error('No se pudo eliminar la especialidad'));
       try {
         await service.deleteSpeciality(speciality.id);
       } catch (error) {
@@ -274,7 +283,7 @@ describe('SpecialityService', () => {
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { id: speciality.id },
       });
-      expect(repository.delete).toHaveBeenCalledWith({ id: speciality.id }); 
-    }); 
+      expect(repository.delete).toHaveBeenCalledWith({ id: speciality.id });
+    });
   });
 });

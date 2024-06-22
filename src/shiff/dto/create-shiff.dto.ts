@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { PrimaryGeneratedColumn } from 'typeorm';
-export class CreateShiftDto {
+export class CreateShiffDto {
   @PrimaryGeneratedColumn()
   id: number;
 

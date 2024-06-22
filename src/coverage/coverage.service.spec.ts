@@ -15,10 +15,11 @@ describe('CoverageService', () => {
     coverages: 'ioma',
   };
   const cov: Coverage = {
-    id:1,
+    id: 1,
     coverages: 'ioma',
     doctors: [],
   };
+  const falseId = 123456;
 
   beforeEach(async () => {
     const mockRepository = {
@@ -111,7 +112,7 @@ describe('CoverageService', () => {
 
   describe('find', () => {
     it('should return a list of coverage', async () => {
-      const coverages: Coverage[] = [{ ...cov}];
+      const coverages: Coverage[] = [{ ...cov }];
       const result: IResponse = {
         message: 'La lista de obras sociales está compuesta por:',
         data: coverages,
@@ -160,15 +161,13 @@ describe('CoverageService', () => {
 
   describe('findOne', () => {
     it('should return a coverage ir found', async () => {
-      const id = 1;
-
       const result: IResponse = {
         message: 'La obra social encontrada es:',
         data: cov,
         statusCode: HttpStatus.FOUND,
       };
       jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
-      const response = await service.findOneCoverages(id);
+      const response = await service.findOneCoverages(cov.id);
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -179,14 +178,13 @@ describe('CoverageService', () => {
         expect(response.data).toEqual(result.data);
       }
       expect(repository.findOne).toHaveBeenLastCalledWith({
-        where: { id: id },
+        where: { id: cov.id },
       });
     });
     it('should return "La obra social no fue encontrada" when not found', async () => {
-      const id = 123456;
-      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+        jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
-      const response = await service.findOneCoverages(id);
+      const response = await service.findOneCoverages(falseId);
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -198,13 +196,12 @@ describe('CoverageService', () => {
       }
     });
     it('should handle error if coverage not found', async () => {
-      const id = 123456;
-      jest
+jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
 
       try {
-        await service.findOneCoverages(id);
+        await service.findOneCoverages(falseId);
       } catch (error) {
         expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
       }
@@ -213,7 +210,6 @@ describe('CoverageService', () => {
 
   describe('update', () => {
     it('should call service.updateCoverages', async () => {
-      const id = 1;
       const updateCov: Partial<UpdateCoverageDto> = {
         coverages: 'IOMA',
       };
@@ -245,16 +241,15 @@ describe('CoverageService', () => {
       jest.spyOn(repository, 'update').mockResolvedValue(updateResult); // Simula la operación de actualización
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(updatedCoverage); // Simula encontrar el coverage actualizado
 
-      const response = await service.updateCoverages(id, updateCov);
+      const response = await service.updateCoverages(cov.id, updateCov);
 
       expect(response).toEqual(result);
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id } });
+      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: cov.id } });
       expect(repository.update).toHaveBeenCalled();
     });
 
     it('should handle error during update', async () => {
-      const id = 123456;
-      const updateCov: UpdateCoverageDto = {
+ const updateCov: UpdateCoverageDto = {
         coverages: 'IOMA',
       };
 
@@ -263,7 +258,7 @@ describe('CoverageService', () => {
         .mockRejectedValue(new Error('Update failed'));
 
       try {
-        await service.updateCoverages(id, updateCov);
+        await service.updateCoverages(falseId, updateCov);
       } catch (error) {
         expect(error.message).toBe('Update failed');
       }
@@ -272,19 +267,18 @@ describe('CoverageService', () => {
 
   describe('delete', () => {
     it('should call delete', async () => {
-      const id = 1;
-      const result = {
+        const result = {
         message: 'Se ha eliminado la obra social: ',
         statusCode: HttpStatus.MOVED_PERMANENTLY,
         data: cov.coverages,
-      }; 
+      };
       const deleteResult: DeleteResult = {
         affected: 1,
         raw: {},
-      }; 
+      };
       jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       jest.spyOn(repository, 'delete').mockResolvedValue(deleteResult);
-      const response = await service.deleteCoverage(id);
+      const response = await service.deleteCoverage(cov.id);
       expect(response).toBeDefined(); // Verificamos que la respuesta no sea nula
       if (
         'data' in response &&
@@ -293,19 +287,18 @@ describe('CoverageService', () => {
       ) {
         expect(response.message).toEqual(result.message);
         expect(response.data).toEqual(result.data);
-        expect(response.statusCode).toEqual(result.statusCode)
+        expect(response.statusCode).toEqual(result.statusCode);
       }
     });
 
     it('should handle deletion error', async () => {
-      const id = 123456;
-      jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
+     jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       jest
         .spyOn(repository, 'delete')
         .mockRejectedValue(new Error('No se pudo eliminar la obra social'));
 
       try {
-        await service.deleteCoverage(id);
+        await service.deleteCoverage(falseId);
       } catch (error) {
         expect(error.message).toBe('No se pudo eliminar la obra social');
         expect(error).toBeInstanceOf(HttpException);
@@ -314,11 +307,10 @@ describe('CoverageService', () => {
       }
     });
     it('should handle coverage not found', async () => {
-      const id = 123456;
-      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
+  jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
       try {
-        await service.deleteCoverage(id);
+        await service.deleteCoverage(falseId);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
         expect(error.message).toEqual(

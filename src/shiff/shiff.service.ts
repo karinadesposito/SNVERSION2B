@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateShiftDto } from './dto/create-shift.dto';
-import { UpdateShiftDto } from './dto/update-shift.dto';
-import { Shift } from './entities/shift.entity';
+import { CreateShiffDto } from './dto/create-shiff.dto';
+import { UpdateShiffDto } from './dto/update-shiff.dto';
+import { Shiff } from './entities/shiff.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Schedule } from '../schedules/entities/schedule.entity';
@@ -10,19 +10,19 @@ import { ScheduleService } from '../schedules/schedules.service';
 import { IResponse } from '../interface/IResponse';
 
 @Injectable()
-export class ShiftService {
+export class ShiffService {
   constructor(
-    @InjectRepository(Shift) private shiftRepository: Repository<Shift>,
+    @InjectRepository(Shiff) private shiffRepository: Repository<Shiff>,
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
     @InjectRepository(Patient)
     private readonly patientRepository: Repository<Patient>,
     private readonly scheduleService: ScheduleService,
   ) {}
-  async takeShift(
+  async takeShiff(
     idSchedule: number,
     idPatient: number,
-  ): Promise<CreateShiftDto | IResponse> {
+  ): Promise<CreateShiffDto | IResponse> {
     try {
       const schedule = await this.scheduleRepository.findOne({
         where: { idSchedule },
@@ -40,16 +40,16 @@ export class ShiftService {
       if (!patient) {
         throw new HttpException('Paciente no encontrado', HttpStatus.NOT_FOUND);
       }
-      const shift = new Shift();
-      shift.idPatient = patient;
-      shift.schedule = schedule;
+      const shiff = new Shiff();
+      shiff.idPatient = patient;
+      shiff.schedule = schedule;
   
-      const savedShift = await this.shiftRepository.save(shift);
+      const savedShiff = await this.shiffRepository.save(shiff);
   
       await this.scheduleService.updateAvailability(idSchedule);
       return {
         message: 'El turno se ha guardado',
-        data: savedShift,
+        data: savedShiff,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
@@ -62,18 +62,18 @@ export class ShiftService {
       );
     }
   }
-  async getShift(): Promise<UpdateShiftDto[] | HttpException | IResponse> {
+  async getShiff(): Promise<UpdateShiffDto[] | HttpException | IResponse> {
     try {
-      const shift = await this.shiftRepository.find({
+      const shiff = await this.shiffRepository.find({
         relations: ['idDoctor', 'idPatient', 'schedule'],
       });
-      if (!shift.length) {
+      if (!shiff.length) {
         return {
           message: 'No existen turnos vigentes',
           statusCode: HttpStatus.OK,
         };
       } else {
-        const result = shift.map((d) => ({
+        const result = shiff.map((d) => ({
           id: d.id,
           Patient: d.idPatient,
           Schedules: d.schedule,
@@ -91,14 +91,14 @@ export class ShiftService {
       );
     }
   }
-  async findOneShift(
+  async findOneShiff(
     id: number,
-  ): Promise<HttpException | UpdateShiftDto | IResponse> {
+  ): Promise<HttpException | UpdateShiffDto | IResponse> {
     try {
-      const shift = await this.shiftRepository.findOne({
+      const shiff = await this.shiffRepository.findOne({
         where: { id: id },
       });
-      if (!shift) {
+      if (!shiff) {
         return {
           message: 'El turno no fue hallado',
           statusCode: HttpStatus.NOT_FOUND,
@@ -106,7 +106,7 @@ export class ShiftService {
       } else {
         return {
           message: 'El turno hallado es:',
-          data: shift, 
+          data: shiff, 
           statusCode: HttpStatus.OK,
         };  
       }
@@ -117,21 +117,21 @@ export class ShiftService {
       );
     }
   }
-  async deleteShift(id: number): Promise<HttpException | Shift | IResponse> {
+  async deleteShiff(id: number): Promise<HttpException | Shiff | IResponse> {
     try {
-      const shift = await this.shiftRepository.findOne({
+      const shiff = await this.shiffRepository.findOne({
         where: { id: id },
       });
-      if (!shift) {
+      if (!shiff) {
         return {
           message: 'El turno no ha sido encontrado',
           statusCode: HttpStatus.NOT_FOUND,
         };
       } else {
-        await this.shiftRepository.delete({ id: id });
+        await this.shiffRepository.delete({ id: id });
         return {
           message: 'Se ha eliminado el turno:',
-          data: shift,
+          data: shiff,
           statusCode: HttpStatus.OK,
         };
       }

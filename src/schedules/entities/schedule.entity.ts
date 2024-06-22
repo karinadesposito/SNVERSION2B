@@ -1,5 +1,5 @@
 import { Doctor } from '../../doctors/entities/doctor.entity';
-import { Shift } from '../../shift/entities/shift.entity';
+import { Shiff } from '../../shiff/entities/shiff.entity';
 
 import {
   Entity,
@@ -46,6 +46,6 @@ export class Schedule {
   @JoinColumn({ name: 'idDoctor' })
   idDoctors: Doctor;
 
-  @OneToOne(() => Shift, (shift) => shift.schedule)
-  shift: Shift;
+  @OneToOne(() => Shiff, (shiff) => shiff.schedule)
+  shiff: Shiff;
 }

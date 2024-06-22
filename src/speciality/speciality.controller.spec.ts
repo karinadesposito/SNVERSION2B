@@ -15,7 +15,7 @@ describe('SpecialityController', () => {
       name: 'Oftalmología',
     },
   ];
-const id= 1;
+  const id = 1;
   beforeEach(async () => {
     const mockSpecialityService = {
       create: jest.fn(),
@@ -75,7 +75,6 @@ const id= 1;
   });
   describe('findOneSpeciality', () => {
     it('should call service.findOneSpeciality with correct params', async () => {
-     
       const result: IResponse = {
         message: 'La especialidad encontrada es:',
         statusCode: HttpStatus.OK,
@@ -90,7 +89,6 @@ const id= 1;
   });
   describe('updateSpeciality', () => {
     it('should call service.updateSpeciality with correct params', async () => {
-  
       const updateSpecialityDto: Partial<UpdateSpecialityDto> = {
         name: 'Nutricionista',
       };

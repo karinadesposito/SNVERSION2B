@@ -225,7 +225,7 @@ export class ScheduleService {
     try {
       const schedules = await this.scheduleRepository.find({
         where: { day: day, idDoctor: idDoctor, available: false },
-        relations: ['idDoctors', 'shift'],
+        relations: ['idDoctors', 'shiff'],
       });
 
       if (!schedules.length) {
@@ -254,7 +254,7 @@ export class ScheduleService {
     try {
       const schedules = await this.scheduleRepository.find({
         where: { day: day, idDoctor: idDoctor, available: false },
-        relations: ['idDoctors', 'shift'],
+        relations: ['idDoctors', 'shiff'],
       });
 
       if (schedules.length) {

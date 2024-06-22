@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ShiftService } from './shift.service';
+import { ShiffService } from './shiff.service';
 import { DeleteResult, Repository } from 'typeorm';
-import { Shift } from './entities/shift.entity';
+import { Shiff } from './entities/shiff.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Patient } from '../patients/entities/patient.entity';
 import { Schedule } from '../schedules/entities/schedule.entity';
@@ -9,22 +9,23 @@ import { ScheduleService } from '../schedules/schedules.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { IResponse } from 'src/interface/IResponse';
 
-describe('ShiftService', () => {
-  let service: ShiftService;
-  let shiftRepository: Repository<Shift>;
+describe('ShiffService', () => {
+  let service: ShiffService;
+  let shiffRepository: Repository<Shiff>;
   let scheduleRepository: Repository<Schedule>;
   let patientRepository: Repository<Patient>;
   let scheduleService: ScheduleService;
   const idSchedule = 1;
   const idPatient = 1;
-  const mockShift: Shift = {
+  const mockShiff: Shiff = {
     id: 1,
     schedule: { idSchedule, available: true } as Schedule,
     idPatient: { id: idPatient } as Patient,
-  } as Shift;
-
+  } as Shiff;
+  const id = 1;
+  const falseId=123456;
   beforeEach(async () => {
-    const mockShiftRepository = {
+    const mockShiffRepository = {
       create: jest.fn(),
       find: jest.fn(),
       findOne: jest.fn(),
@@ -43,8 +44,8 @@ describe('ShiftService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ShiftService,
-        { provide: getRepositoryToken(Shift), useValue: mockShiftRepository },
+        ShiffService,
+        { provide: getRepositoryToken(Shiff), useValue: mockShiffRepository },
         {
           provide: getRepositoryToken(Schedule),
           useValue: mockScheduleRepository,
@@ -57,8 +58,8 @@ describe('ShiftService', () => {
       ],
     }).compile();
 
-    service = module.get<ShiftService>(ShiftService);
-    shiftRepository = module.get<Repository<Shift>>(getRepositoryToken(Shift));
+    service = module.get<ShiffService>(ShiffService);
+    shiffRepository = module.get<Repository<Shiff>>(getRepositoryToken(Shiff));
     scheduleRepository = module.get<Repository<Schedule>>(
       getRepositoryToken(Schedule),
     );
@@ -71,11 +72,11 @@ describe('ShiftService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-  describe('takeShift', () => {
-    it('should create shift and return the result', async () => {
+  describe('takeShiff', () => {
+    it('should create shiff and return the result', async () => {
       const result: IResponse = {
         message: 'El turno se ha guardado',
-        data: mockShift,
+        data: mockShiff,
         statusCode: HttpStatus.OK,
       };
 
@@ -85,7 +86,7 @@ describe('ShiftService', () => {
       jest
         .spyOn(patientRepository, 'findOne')
         .mockResolvedValue({ id: idPatient } as Patient);
-      jest.spyOn(shiftRepository, 'save').mockResolvedValue(mockShift);
+      jest.spyOn(shiffRepository, 'save').mockResolvedValue(mockShiff);
 
       const updateAvailabilityResult: IResponse = {
         message: 'Availability updated',
@@ -95,7 +96,7 @@ describe('ShiftService', () => {
         .spyOn(scheduleService, 'updateAvailability')
         .mockResolvedValue(updateAvailabilityResult);
 
-      const response = await service.takeShift(idSchedule, idPatient);
+      const response = await service.takeShiff(idSchedule, idPatient);
       expect(response).toEqual(result);
       expect(scheduleRepository.findOne).toHaveBeenCalledWith({
         where: { idSchedule },
@@ -103,18 +104,18 @@ describe('ShiftService', () => {
       expect(patientRepository.findOne).toHaveBeenCalledWith({
         where: { id: idPatient },
       });
-      expect(shiftRepository.save).toHaveBeenCalledWith(expect.any(Shift));
+      expect(shiffRepository.save).toHaveBeenCalledWith(expect.any(Shiff));
     });
 
     it('should throw error if schedule not found', async () => {
 
       jest.spyOn(scheduleRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.takeShift(idSchedule, idPatient)).rejects.toThrow(
+      await expect(service.takeShiff(idSchedule, idPatient)).rejects.toThrow(
         HttpException,
       );
       await expect(
-        service.takeShift(idSchedule, idPatient),
+        service.takeShiff(idSchedule, idPatient),
       ).rejects.toMatchObject({
         response: 'Horario no encontrado',
         status: HttpStatus.NOT_FOUND,
@@ -127,11 +128,11 @@ describe('ShiftService', () => {
         .mockResolvedValue({ idSchedule, available: true } as Schedule);
       jest.spyOn(patientRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.takeShift(idSchedule, idPatient)).rejects.toThrow(
+      await expect(service.takeShiff(idSchedule, idPatient)).rejects.toThrow(
         HttpException,
       );
       await expect(
-        service.takeShift(idSchedule, idPatient),
+        service.takeShiff(idSchedule, idPatient),
       ).rejects.toMatchObject({
         response: 'Paciente no encontrado',
         status: HttpStatus.NOT_FOUND,
@@ -143,11 +144,11 @@ describe('ShiftService', () => {
         .spyOn(scheduleRepository, 'findOne')
         .mockResolvedValue({ idSchedule, available: false } as Schedule);
 
-      await expect(service.takeShift(idSchedule, idPatient)).rejects.toThrow(
+      await expect(service.takeShiff(idSchedule, idPatient)).rejects.toThrow(
         HttpException,
       );
       await expect(
-        service.takeShift(idSchedule, idPatient),
+        service.takeShiff(idSchedule, idPatient),
       ).rejects.toMatchObject({
         response: 'Horario no disponible',
         status: HttpStatus.NOT_FOUND,
@@ -159,57 +160,55 @@ describe('ShiftService', () => {
         .spyOn(scheduleRepository, 'findOne')
         .mockRejectedValue(new Error('Database error'));
 
-      await expect(service.takeShift(idSchedule, idPatient)).rejects.toThrow(
+      await expect(service.takeShiff(idSchedule, idPatient)).rejects.toThrow(
         HttpException,
       );
       await expect(
-        service.takeShift(idSchedule, idPatient),
+        service.takeShiff(idSchedule, idPatient),
       ).rejects.toMatchObject({
         response: 'No se pudo seleccionar el horario',
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       });
     });
   });
-  describe(' getShift', () => {
-    it('should return a list of the shift', async () => {
-      const shifts = [mockShift];
+  describe(' getShiff', () => {
+    it('should return a list of the shiff', async () => {
+      const shiffs = [mockShiff];
       const result: IResponse = {
         message: 'Los turnos existentes son:',
         statusCode: HttpStatus.OK,
-        data: shifts.map((d) => ({
+        data: shiffs.map((d) => ({
           id: d.id,
           Patient: d.idPatient,
           Schedules: d.schedule,
         })),
       };
-      jest.spyOn(shiftRepository, 'find').mockResolvedValue(shifts);
+      jest.spyOn(shiffRepository, 'find').mockResolvedValue(shiffs);
 
-      const response = await service.getShift();
+      const response = await service.getShiff();
       expect(response).toEqual(result);
-      expect(shiftRepository.find).toHaveBeenCalledWith({
+      expect(shiffRepository.find).toHaveBeenCalledWith({
         relations: ['idDoctor', 'idPatient', 'schedule'],
       });
     });
   });
-  describe('findOneShift', () => {
-    it('should return the found shift', async () => {
-      const id = 1;
+  describe('findOneShiff', () => {
+    it('should return the found shiff', async () => {
       const result: IResponse = {
         message: 'El turno hallado es:',
         statusCode: HttpStatus.OK,
-        data: mockShift,
+        data: mockShiff,
       };
-      jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(mockShift);
+      jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(mockShiff);
 
-      const response = await service.findOneShift(id);
+      const response = await service.findOneShiff(id);
       expect(response).toEqual(result);
-      expect(shiftRepository.findOne).toHaveBeenCalledWith({ where: { id } });
+      expect(shiffRepository.findOne).toHaveBeenCalledWith({ where: { id } });
     });
 
-    it('should handle error if shift not found', async () => {
-      const id = 123456;
-      jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(null);
-      const response = await service.findOneShift(id);
+    it('should handle error if shiff not found', async () => {
+      jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(null);
+      const response = await service.findOneShiff(falseId);
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -222,9 +221,8 @@ describe('ShiftService', () => {
     });
 
     it('should handle internal server error', async () => {
-      const id = 1;
-      jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(null);
-      const response = await service.findOneShift(id);
+      jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(null);
+      const response = await service.findOneShiff(id);
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -238,22 +236,21 @@ describe('ShiftService', () => {
       }
     });
   });
-  describe('deleteShift', () => {
-    it('should delete shift and return the result', async () => {
-      const id = 1;
+  describe('deleteShiff', () => {
+    it('should delete shiff and return the result', async () => {
       const result: IResponse = {
         message: 'Se ha eliminado el turno:',
         statusCode: HttpStatus.OK,
-        data: mockShift,
+        data: mockShiff,
       };
 
       const deleteResult: DeleteResult = {
         affected: 1,
         raw: {},
       };
-      jest.spyOn(shiftRepository, 'delete').mockResolvedValue(deleteResult);
-      jest.spyOn(service, 'deleteShift').mockResolvedValue(result);
-      const response = await service.deleteShift(id);
+      jest.spyOn(shiffRepository, 'delete').mockResolvedValue(deleteResult);
+      jest.spyOn(service, 'deleteShiff').mockResolvedValue(result);
+      const response = await service.deleteShiff(id);
       expect(response).toEqual(result);
       if (
         'data' in response &&
@@ -266,15 +263,14 @@ describe('ShiftService', () => {
       }
     });
     it('should handle error during deletion', async () => {
-      const id = 1;
-      jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(mockShift);
+      jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(mockShiff);
       jest
-        .spyOn(shiftRepository, 'delete')
+        .spyOn(shiffRepository, 'delete')
         .mockRejectedValue(
           new Error('Ha ocurrido un error. No se logró eliminar el turno'),
         );
       try {
-        await service.deleteShift(id);
+        await service.deleteShiff(id);
       } catch (error) {
         expect(error.message).toBe(
           'Ha ocurrido un error. No se logró eliminar el turno',
@@ -282,11 +278,11 @@ describe('ShiftService', () => {
         expect(error.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
-    it('should handle non-existing shift', async () => {
-      const id = 1;
-      jest.spyOn(shiftRepository, 'findOne').mockResolvedValue(null);
+    it('should handle non-existing shiff', async () => {
 
-      const response = await service.deleteShift(id);
+      jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(null);
+
+      const response = await service.deleteShiff(id);
 
       expect(response).toEqual({
         message: 'El turno no ha sido encontrado',

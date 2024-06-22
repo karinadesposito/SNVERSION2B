@@ -24,7 +24,7 @@ describe('PatientsController', () => {
       doctors: [],
     },
   };
-
+  const id = 1;
   beforeEach(async () => {
     const mockPatientsService = {
       create: jest.fn(),
@@ -82,7 +82,6 @@ describe('PatientsController', () => {
   });
   describe('findOne', () => {
     it('should call service.findOnePatient with correct params', async () => {
-      const id = 1;
       const result: IResponse = {
         message: 'Patient found successfully',
         statusCode: HttpStatus.OK,
@@ -100,7 +99,6 @@ describe('PatientsController', () => {
 
   describe('updatePatient', () => {
     it('should call service.updatePatient with correct params', async () => {
-      const id = 1;
       const updatePatientDto: Partial<UpdatePatientDto> = {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
@@ -122,7 +120,6 @@ describe('PatientsController', () => {
 
   describe('deletePatient', () => {
     it('should call service.deletePatient with correct params', async () => {
-      const id = 1;
       const result = {
         message: 'Patient deleted successfully',
         statusCode: HttpStatus.OK,

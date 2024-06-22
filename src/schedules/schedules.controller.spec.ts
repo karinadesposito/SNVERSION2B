@@ -139,7 +139,6 @@ describe('ScheduleController', () => {
 
   describe('updateAvailability', () => {
     it('should call service.updateAvailability with correct params and return the result', async () => {
-      const idSchedule = 1;
       const result: IResponse = {
         message: 'El turno ha sido reservado correctamente',
         statusCode: HttpStatus.OK,
@@ -147,8 +146,8 @@ describe('ScheduleController', () => {
 
       jest.spyOn(service, 'updateAvailability').mockResolvedValue(result);
 
-      const response = await controller.updateAvailability(idSchedule);
-      expect(service.updateAvailability).toHaveBeenCalledWith(idSchedule);
+      const response = await controller.updateAvailability(id);
+      expect(service.updateAvailability).toHaveBeenCalledWith(id);
       expect(response).toEqual(result);
     });
   });

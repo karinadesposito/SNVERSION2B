@@ -29,7 +29,7 @@ describe('PatientsService', () => {
     ...newPat,
     deletedAt: null,
     restoredAt: null,
-    shifts: [],
+    shiffs: [],
     id: 1,
     createAt: null,
     hasId: null,
@@ -39,6 +39,7 @@ describe('PatientsService', () => {
     recover: null,
     reload: null,
   };
+  const falseId = 123456;
   beforeEach(async () => {
     const mockRepository = {
       create: jest.fn(),
@@ -137,7 +138,6 @@ describe('PatientsService', () => {
   });
   describe('findOne', () => {
     it('should return a patient if found', async () => {
-      const id = 1;
       const result: IResponse = {
         message: 'El paciente encontrado es:',
         statusCode: HttpStatus.OK,
@@ -145,27 +145,26 @@ describe('PatientsService', () => {
       };
       jest.spyOn(repository, 'findOne').mockResolvedValue(patient);
 
-      const response = await service.findOnePatient(id);
+      const response = await service.findOnePatient(patient.id);
       expect(response).toEqual(result);
       expect(repository.findOne).toHaveBeenCalled();
     });
     it('should handle error if doctor not found', async () => {
-      const id = 123456;
+
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
 
       try {
-        await service.findOnePatient(id);
+        await service.findOnePatient(falseId);
       } catch (error) {
         expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
       }
     });
     it('should return "El paciente no fue encontrado" when not found', async () => {
-      const id = 1;
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
-      const response = await service.findOnePatient(id);
+      const response = await service.findOnePatient(patient.id);
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -179,7 +178,6 @@ describe('PatientsService', () => {
   });
   describe('update', () => {
     it('should return patient updated', async () => {
-      const id = 1;
       const updatePatient = {
         fullName: 'Juan Garcia',
         mail: 'larcia@gmail.com',
@@ -187,7 +185,6 @@ describe('PatientsService', () => {
         coverage: {
           id: 1,
           coverages: 'ioma',
-          createId: jest.fn(),
           doctors: [],
         },
         dni: '18485754',
@@ -195,10 +192,9 @@ describe('PatientsService', () => {
         address: 'Sarmiento 224',
         deletedAt: null,
         restoredAt: null,
-        shifts: [],
+        shiffs: [],
         id: 1,
         createAt: null,
-        createId: null,
         hasId: null,
         save: null,
         remove: null,
@@ -224,15 +220,14 @@ describe('PatientsService', () => {
       jest.spyOn(repository, 'update').mockResolvedValue(updateResult); // Simula la operación de actualización
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(updatePatient); // Simula encontrar el paciente actualizado
 
-      const response = await service.updatePatient(id, updatePatient);
+      const response = await service.updatePatient(patient.id, updatePatient);
 
       expect(response).toEqual(result);
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id } });
-      expect(repository.update).toHaveBeenCalledWith(id, updatePatient);
+      expect(repository.findOne).toHaveBeenCalledWith({ where: { id:patient.id } });
+      expect(repository.update).toHaveBeenCalledWith(patient.id, updatePatient);
     });
 
     it('should handle error during update', async () => {
-      const id = 123456;
       const updatePatient: Partial<UpdatePatientDto> = { 
         fullName: 'Juan Garcia',
       };
@@ -242,7 +237,7 @@ describe('PatientsService', () => {
         .mockRejectedValue(new Error('Update failed'));
 
       try {
-        await service.updatePatient(id, updatePatient);
+        await service.updatePatient(falseId, updatePatient);
       } catch (error) {
         expect(error.message).toBe('Update failed');
       }
@@ -251,7 +246,6 @@ describe('PatientsService', () => {
 
   describe('delete', () => {
     it('should call service.deletePatient whit correct params', async () => {
-      const id = 1;
       const result = {
         message: 'Se ha eliminado el paciente: ',
         statusCode: HttpStatus.OK,
@@ -265,7 +259,7 @@ describe('PatientsService', () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(patient);
       jest.spyOn(repository, 'delete').mockResolvedValue(deleteResult);
 
-      const response = await service.deletePatient(id);
+      const response = await service.deletePatient(patient.id);
       expect(response).toBeDefined(); // Verificamos que la respuesta no sea nula
       if ('statusCode' in response && 'message' in response && 'data' in response) {
         expect(response.message).toEqual('Se ha eliminado el paciente: ');
@@ -275,14 +269,13 @@ describe('PatientsService', () => {
     });
   });
   it('should handle error during deletion', async () => {
-    const id = 123456;
     jest.spyOn(repository, 'findOne').mockResolvedValue(patient);
     jest
       .spyOn(repository, 'delete')
       .mockRejectedValue(new Error('No se pudo eliminar el paciente'));
 
     try {
-      await service.deletePatient(id);
+      await service.deletePatient(falseId);
     } catch (error) {
       expect(error.message).toBe('No se pudo eliminar el paciente');
       expect(error).toBeInstanceOf(HttpException);
@@ -291,9 +284,8 @@ describe('PatientsService', () => {
     }
   });
   it('should handle coverage not found', async () => {
-    const id = 123456;
     jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
-    const response = await service.deletePatient(id);
+    const response = await service.deletePatient(falseId);
     if ('statusCode' in response && 'message' in response) {
       expect(response.message).toEqual('El paciente no ha sido encontrado: ');
       expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
