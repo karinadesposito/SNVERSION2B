@@ -17,7 +17,6 @@ describe('DoctorsService', () => {
 
   const dataDoc = {
     deletedAt: undefined,
-    restoredAt: undefined,
     createAt: undefined,
     hasId: null,
     save: null,
@@ -32,7 +31,9 @@ describe('DoctorsService', () => {
     phone: '02281457800',
     license: 'MP 75405',
     speciality: {
+      id:1,
       name: 'Oftalmología',
+      idDoctor:[]
     },
   };
   const doctor: Doctor = {

@@ -28,7 +28,6 @@ describe('PatientsService', () => {
   const patient: Patient = {
     ...newPat,
     deletedAt: null,
-    restoredAt: null,
     shiffs: [],
     id: 1,
     createAt: null,
@@ -191,7 +190,6 @@ describe('PatientsService', () => {
         birthday: new Date('1974-12-02'),
         address: 'Sarmiento 224',
         deletedAt: null,
-        restoredAt: null,
         shiffs: [],
         id: 1,
         createAt: null,

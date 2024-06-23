@@ -15,7 +15,7 @@ describe('DoctorsController', () => {
     mail: 'docjgomez@gmail.com',
     phone: '02281457800',
     license: 'MP 75405',
-    speciality: { name: 'Oftalmología' },
+    speciality: {id:1,idDoctor:[], name: 'Oftalmología' },
   };
   const id = 1;
   const search = [newDoctor];

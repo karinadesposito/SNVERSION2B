@@ -8,7 +8,6 @@ import {
   JoinColumn,
   OneToMany,
   OneToOne,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'patients' })
@@ -24,9 +23,6 @@ export class Patient extends Person {
 
   @DeleteDateColumn({ name: 'deletedAt', nullable: true, type: 'datetime' })
   deletedAt: Date;
-
-  @UpdateDateColumn({ name: 'restoredAt', nullable: true, type: 'datetime' })
-  restoredAt: Date;
 
   // el paciente puede tener muchos turnos
   @OneToMany(() => Shiff, (shiff) => shiff.idPatient)

@@ -12,7 +12,6 @@ import {
   ManyToOne,
   OneToMany,
   Unique,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'doctors' })
@@ -23,9 +22,6 @@ export class Doctor extends Person {
 
   @DeleteDateColumn({ name: 'deletedAt', nullable: true, type: 'datetime' })
   deletedAt: Date;
-
-  @UpdateDateColumn({ name: 'restoredAt', nullable: true, type: 'datetime' })
-  restoredAt: Date;
 
   @OneToMany(() => Schedule, (schedule) => schedule.idDoctors)
   schedule: Schedule[];
