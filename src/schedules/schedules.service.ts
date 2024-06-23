@@ -281,4 +281,25 @@ export class ScheduleService {
       }
     }
   }
+  async getSchedulesByDoctor(idDoctor: number): Promise<HttpException | Schedule[] | IResponse> {
+    try {
+      const schedules = await this.scheduleRepository.find({ where: { idDoctor, available: true } });
+
+      if (!schedules.length)
+        return {
+          message: 'No existen agendas registradas para este doctor',
+          statusCode: HttpStatus.NO_CONTENT,
+        };
+      return {
+        message: 'Turnos disponibles para el doctor:',
+        data: schedules,
+        statusCode: HttpStatus.FOUND,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Ha ocurrido un error. No se pudo traer la lista de agendas para este doctor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

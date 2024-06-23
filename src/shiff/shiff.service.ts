@@ -30,7 +30,7 @@ export class ShiffService {
       if (!schedule) {
         throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
       }
-  
+
       if (!schedule.available) {
         throw new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
       }
@@ -43,9 +43,9 @@ export class ShiffService {
       const shiff = new Shiff();
       shiff.idPatient = patient;
       shiff.schedule = schedule;
-  
+
       const savedShiff = await this.shiffRepository.save(shiff);
-  
+
       await this.scheduleService.updateAvailability(idSchedule);
       return {
         message: 'El turno se ha guardado',
@@ -54,7 +54,7 @@ export class ShiffService {
       };
     } catch (error) {
       if (error instanceof HttpException) {
-        throw error;  
+        throw error;
       }
       throw new HttpException(
         'No se pudo seleccionar el horario',
@@ -106,9 +106,9 @@ export class ShiffService {
       } else {
         return {
           message: 'El turno hallado es:',
-          data: shiff, 
+          data: shiff,
           statusCode: HttpStatus.OK,
-        };  
+        };
       }
     } catch {
       throw new HttpException(
@@ -117,25 +117,32 @@ export class ShiffService {
       );
     }
   }
+  //elimina el shiff ademas de modificar el estado de available de schedule
   async deleteShiff(id: number): Promise<HttpException | Shiff | IResponse> {
     try {
       const shiff = await this.shiffRepository.findOne({
         where: { id: id },
+        relations: ['schedule'],
       });
+
       if (!shiff) {
         return {
           message: 'El turno no ha sido encontrado',
           statusCode: HttpStatus.NOT_FOUND,
         };
-      } else {
-        await this.shiffRepository.delete({ id: id });
-        return {
-          message: 'Se ha eliminado el turno:',
-          data: shiff,
-          statusCode: HttpStatus.OK,
-        };
       }
-    } catch {
+      const idSchedule = shiff.schedule.idSchedule;
+
+      await this.shiffRepository.delete({ id: id });
+
+      await this.scheduleService.updateAvailability(idSchedule);
+
+      return {
+        message: 'Se ha eliminado el turno:',
+        data: shiff,
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
       throw new HttpException(
         'Ha ocurrido un error. No se logró eliminar el turno',
         HttpStatus.INTERNAL_SERVER_ERROR,

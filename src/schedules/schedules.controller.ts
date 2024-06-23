@@ -67,4 +67,8 @@ export class ScheduleController {
     const { idDoctor, day } = body;
     return this.scheduleService.countScheduleByDoctor(day, idDoctor);
   }
+  @Get('/by-doctor/:idDoctor')
+  getSchedulesByDoctor(@Param('idDoctor') idDoctor: number): Promise<HttpException | Schedule[] | IResponse> {
+    return this.scheduleService.getSchedulesByDoctor(idDoctor);
+  }
 }
