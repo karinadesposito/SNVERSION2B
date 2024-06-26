@@ -3,9 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { SpecialityService } from './speciality.service';
 import { CreateSpecialityDto } from './dto/create-speciality.dto';
@@ -30,7 +30,7 @@ export class SpecialityController {
     return this.specialityService.findOneSpeciality(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: number,
     @Body() updateSpecialityDto: UpdateSpecialityDto,

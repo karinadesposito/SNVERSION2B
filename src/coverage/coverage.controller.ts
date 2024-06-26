@@ -3,9 +3,9 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { CreateCoverageDto } from './dto/create-coverage.dto';
 import { UpdateCoverageDto } from './dto/update-coverage.dto';
@@ -30,7 +30,7 @@ export class CoveragesController {
     return this.coverageService.findOneCoverages(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: number,
     @Body() updateCoverageDto: UpdateCoverageDto,

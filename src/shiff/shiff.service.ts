@@ -64,33 +64,46 @@ export class ShiffService {
   }
   async getShiff(): Promise<UpdateShiffDto[] | HttpException | IResponse> {
     try {
-      const shiff = await this.shiffRepository.find({
-        relations: ['idDoctor', 'idPatient', 'schedule'],
-      });
-      if (!shiff.length) {
-        return {
-          message: 'No existen turnos vigentes',
-          statusCode: HttpStatus.OK,
-        };
-      } else {
-        const result = shiff.map((d) => ({
-          id: d.id,
-          Patient: d.idPatient,
-          Schedules: d.schedule,
-        }));
-        return {
-          message: 'Los turnos existentes son:',
-          data: result,
-          statusCode: HttpStatus.OK,
-        };
-      }
-    } catch {
-      throw new HttpException(
-        'Ha ocurrido un error. No se accedió a la lista de turnos',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        const shiffs = await this.shiffRepository.find({
+            relations: ['idPatient', 'schedule', 'schedule.idDoctors'],
+        });
+
+        if (!shiffs.length) {
+            return {
+                message: 'No existen turnos vigentes',
+                statusCode: HttpStatus.OK,
+            };
+        } else {
+            const result = shiffs.map((shiff) => ({
+                id: shiff.id,
+                Patient: {
+                    id: shiff.idPatient.id,
+                    fullName: shiff.idPatient.fullName,
+                    dni: shiff.idPatient.dni,
+                    phone: shiff.idPatient.phone,
+                },
+                Schedules: {
+                    idSchedule: shiff.schedule.idSchedule,
+                    day: shiff.schedule.day,
+                    start_Time: shiff.schedule.start_Time,
+                    end_Time: shiff.schedule.end_Time,
+                    doctorFullName: shiff.schedule.idDoctors.fullName,
+                },
+            }));
+
+            return {
+                message: 'Los turnos existentes son:',
+                data: result,
+                statusCode: HttpStatus.OK,
+            };
+        }
+    } catch (error) {
+        throw new HttpException(
+            'Ha ocurrido un error. No se accedió a la lista de turnos',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );
     }
-  }
+}
   async findOneShiff(
     id: number,
   ): Promise<HttpException | UpdateShiffDto | IResponse> {
