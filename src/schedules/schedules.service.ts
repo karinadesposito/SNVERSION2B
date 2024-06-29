@@ -18,19 +18,17 @@ export class ScheduleService {
     createScheduleDto: CreateScheduleDto,
   ): Promise<HttpException | CreateScheduleDto | IResponse> {
     try {
-      const { day, idDoctor, start_Time, end_Time, interval } =
-        createScheduleDto;
+      const { day, idDoctor, start_Time, end_Time, interval } = createScheduleDto;
 
       // Verificar si ya existe una agenda para este día y médico
       const existingSchedule = await this.scheduleRepository.findOne({
         where: { day, idDoctor, start_Time },
       });
       if (existingSchedule) {
-        return {
-          message: `La agenda para este día y médico ya existe`,
-          data: existingSchedule,
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException(
+          `La agenda para este día y médico ya existe`,
+          HttpStatus.CONFLICT,
+        );
       } else {
         const startTime = new Date(`01-01-2024 ${start_Time} GMT-0300`);
         const endTime = new Date(`01-01-2024 ${end_Time} GMT-0300`);
@@ -71,13 +69,17 @@ export class ScheduleService {
           statusCode: HttpStatus.CREATED,
         };
       }
-    } catch (error) {
+    }  catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error
+      }
       throw new HttpException(
-        'No se pudo crear la agenda',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
+
 
   async getSchedules(): Promise<HttpException | Schedule[] | IResponse> {
     try {

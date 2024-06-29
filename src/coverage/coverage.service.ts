@@ -21,10 +21,10 @@ export class CoveragesService {
       });
 
       if (nameFound) {
-        return {
-          message: `La obra social con nombre ${nameFound.coverages} ya existe en la base de datos`,
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException(
+          `La obra social con nombre ${nameFound.coverages} ya existe en la base de datos`,
+          HttpStatus.CONFLICT,
+        );
       }
       const newCoverage = this.coverageRepository.create(coverage);
       const savedCoverage = await this.coverageRepository.save(newCoverage);
@@ -36,8 +36,11 @@ export class CoveragesService {
         };
       }
     } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error;
+      }
       throw new HttpException(
-        'No se pudo crear la obra social',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -48,22 +51,25 @@ export class CoveragesService {
       const coverages = await this.coverageRepository.find();
 
       if (!coverages.length)
-        return {
-          message: 'No existen obras sociales registradas',
-          statusCode: HttpStatus.NO_CONTENT,
-        };
+        throw new HttpException(
+          "No existen obras sociales registradas",
+          HttpStatus.NOT_FOUND,
+        );
       else {
         return {
           message: 'La lista de obras sociales está compuesta por:',
           data: coverages,
-          statusCode: HttpStatus.FOUND,
+          statusCode: HttpStatus.OK,
         };
       }
-    } catch (error) {
+    }  catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'Ha ocurrido un error.No se pudo traer la lista de obras sociales',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -75,19 +81,22 @@ export class CoveragesService {
         where: { id: id },
       });
       if (!coverages) {
-        return {
-          message: 'La obra social no fue encontrada',
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException(
+          'La obra social no fue encontrada',
+          HttpStatus.CONFLICT,
+        );
       }
       return {
         message: 'La obra social encontrada es:',
         data: coverages,
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error;
+      }
       throw new HttpException(
-        'Ha ocurrido una falla en la busqueda',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -95,28 +104,34 @@ export class CoveragesService {
   async updateCoverages(
     id: number,
     updateCoverages: Partial<UpdateCoverageDto>,
-  ): Promise<HttpException | UpdateCoverageDto | IResponse> {
+  ): Promise<HttpException | Coverage | IResponse> {
     try {
       const coverages = await this.coverageRepository.findOne({
         where: { id: id },
       });
+
       if (!coverages) {
-        return new HttpException(
+        throw new HttpException(
           'La obra social no existe en la base de datos',
           HttpStatus.NOT_FOUND,
         );
       }
+
       await this.coverageRepository.update(id, updateCoverages);
+
       return {
-        message: 'Las modificaciones son las siguientes: ',
+        message: 'Las modificaciones son las siguientes:',
         data: { ...updateCoverages, datosAnteriores: coverages },
         statusCode: HttpStatus.OK,
       };
-    } catch (error) {
+    }  catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'No se pudo actualizar la obra social',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -128,20 +143,22 @@ export class CoveragesService {
         where: { id: id },
       });
       if (!coverages) {
-        return new HttpException(
-          'La especialidad no existe en la base de datos',
+        throw new HttpException(
+          'La cobertura no existe en la base de datos',
           HttpStatus.NOT_FOUND,
         );
       }
       await this.coverageRepository.delete({ id: id });
-      return {
-        message: 'Se ha eliminado la obra social: ',
-        data: coverages.coverages,
-        statusCode: HttpStatus.MOVED_PERMANENTLY,
-      };
-    } catch (error) {
       throw new HttpException(
-        'No se pudo eliminar la obra social',
+        'Se ha eliminado la obra social: ',
+        HttpStatus.MOVED_PERMANENTLY,
+      );
+    } catch (error) {
+      if (error.status === HttpStatus.MOVED_PERMANENTLY || HttpStatus.NOT_FOUND) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -22,10 +22,10 @@ export class AdminService {
       });
 
       if (adminFound) {
-        return {
-          message: `El administrador con username ${adminFound.username} ya existe en la base de datos`,
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException (
+         `El administrador con username ${adminFound.username} ya existe en la base de datos`,
+         HttpStatus.CONFLICT,
+        );
       }
       const hashedPassword = await bcrypt.hash(admin.password, 10);
       const newAdmin = this.adminRepository.create({
@@ -44,10 +44,13 @@ export class AdminService {
         
       }
     } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error
+      }
       throw new HttpException(
-        'No se pudo crear al administrador',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Hubo un error al crear el administrador",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 

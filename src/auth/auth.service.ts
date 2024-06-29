@@ -36,10 +36,13 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error; 
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
       }
-      throw new HttpException('Error interno del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
 }
 }

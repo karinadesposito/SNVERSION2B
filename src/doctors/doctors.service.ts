@@ -22,34 +22,33 @@ export class DoctorsService {
     @InjectRepository(Coverage)
     private coverageRepository: Repository<Coverage>,
   ) {}
-
-  async create(
-    doctor: CreateDoctorDto,
-  ): Promise<HttpException | CreateDoctorDto | IResponse> {
+  async create(doctor: CreateDoctorDto): Promise<IResponse> {
     try {
       const doctorFound = await this.doctorRepository.findOne({
         where: { license: doctor.license },
       });
 
       if (doctorFound) {
-        return {
-          message: `El doctor con matricula ${doctorFound.license} ya existe en la base de datos`,
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException(
+          `El doctor con matricula ${doctorFound.license} ya existe en la base de datos`,
+          HttpStatus.CONFLICT,
+        );
       }
 
       const newDoctor = this.doctorRepository.create(doctor);
       const savedDoctor = await this.doctorRepository.save(newDoctor);
-      if (savedDoctor) {
-        return {
-          message: `El doctor ha sido creado exitosamente`,
-          data: savedDoctor,
-          statusCode: HttpStatus.CREATED,
-        };
-      }
+
+      return {
+        message: 'El doctor ha sido creado exitosamente',
+        data: savedDoctor,
+        statusCode: HttpStatus.CREATED,
+      };
     } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error;
+      }
       throw new HttpException(
-        'No se pudo crear al doctor',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -59,35 +58,57 @@ export class DoctorsService {
     doctorId,
     coverageId,
   }: AddCoverageToDoctorDto): Promise<Doctor> {
-    const doctor = await this.doctorRepository
-      .findOne({
+    try {
+      const doctor = await this.doctorRepository.findOne({
         where: { id: doctorId },
         relations: ['coverages'],
-      })
-      .catch(() => {
-        throw new NotFoundException(
-          `Doctor con ID ${doctorId} no fue encontrado`,
-        );
       });
+      if (!doctor) {
+        throw new HttpException(
+          `Doctor con ID ${doctorId} no fue encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
-    if (!doctor.coverages) {
-      doctor.coverages = [];
-    }
+      if (!doctor.coverages) {
+        doctor.coverages = [];
+      }
 
-    for (const id of coverageId) {
-      const coverage = await this.coverageRepository
-        .findOne({ where: { id } })
-        .catch(() => {
-          throw new NotFoundException(
-            `Coverage con ID ${id} no fue encontrado`,
-          );
+      for (const id of coverageId) {
+        const coverage = await this.coverageRepository.findOne({
+          where: { id },
         });
-      doctor.coverages.push(coverage);
-    }
 
-    return this.doctorRepository.save(doctor);
+        if (!coverage) {
+          throw new HttpException(
+            `Coverage con ID ${id} no fue encontrado`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const existing = doctor.coverages.some((cov) => cov.id === id);
+
+        if (existing) {
+          throw new HttpException(
+            `El doctor ya tiene asociada la cobertura con ID ${id}`,
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        doctor.coverages.push(coverage);
+      }
+
+      return this.doctorRepository.save(doctor);
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND || HttpStatus.CONFLICT) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-  async removeCoverageFromDoctor({
+  /*async removeCoverageFromDoctor({
     doctorId,
     coverageId,
   }: AddCoverageToDoctorDto): Promise<Doctor> {
@@ -113,8 +134,58 @@ export class DoctorsService {
     );
 
     return this.doctorRepository.save(doctor);
-  }
+  }*/
+  async removeCoverageFromDoctor({
+    doctorId,
+    coverageId,
+  }: AddCoverageToDoctorDto): Promise<Doctor | IResponse> {
+    try {
+      const doctor = await this.doctorRepository.findOne({
+        where: { id: doctorId },
+        relations: ['coverages'],
+      });
+      if (!doctor) {
+        throw new HttpException(
+          `Doctor con ID ${doctorId} no fue encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
+      if (!doctor.coverages || doctor.coverages.length === 0) {
+        throw new HttpException(
+          `El doctor con ID ${doctorId} no tiene coberturas`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      for (const id of coverageId) {
+        const coverageExists = await this.coverageRepository.findOne({
+          where: { id },
+        });
+        if (!coverageExists) {
+          throw new HttpException(
+            `Coverage con ID ${id} no fue encontrado`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }
+      doctor.coverages = doctor.coverages.filter(
+        (coverage) => !coverageId.includes(coverage.id),
+      );
+      this.doctorRepository.save(doctor);
+      return {
+        message: `Se ha desasociado la cobertura ${coverageId} del doctor ${doctorId}`,
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   async getDoctors(): Promise<HttpException | Doctor[] | IResponse> {
     try {
       const doctors = await this.doctorRepository.find({
@@ -122,20 +193,23 @@ export class DoctorsService {
       });
 
       if (!doctors.length)
-        return {
-          message: 'No existen doctores registrados',
-          statusCode: HttpStatus.NO_CONTENT,
-        };
+        throw new HttpException(
+          'No existen doctores registrados',
+          HttpStatus.NO_CONTENT,
+        );
       else {
         return {
           message: 'La lista de doctores está compuesta por:',
           data: doctors,
-          statusCode: HttpStatus.FOUND,
+          statusCode: HttpStatus.OK,
         };
       }
     } catch (error) {
+      if (error.status === HttpStatus.NO_CONTENT) {
+        throw error;
+      }
       throw new HttpException(
-        'Ha ocurrido un error.No se pudo traer la lista de doctores',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -154,19 +228,19 @@ export class DoctorsService {
       const doctors = await this.doctorRepository.find(options);
 
       if (!doctors.length) {
-        return {
-          message: 'No existe el doctor especificado',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
+        throw new HttpException(
+          `No existe el doctor especificado con id ${idDoctor}`,
+          HttpStatus.NOT_FOUND,
+        );
       }
       const availableSchedules = doctors[0]?.schedule.filter(
         (schedule) => schedule.available,
       );
       if (!availableSchedules.length) {
-        return {
-          message: 'No hay turnos disponibles para el doctor especificado',
-          statusCode: HttpStatus.NO_CONTENT,
-        };
+        throw new HttpException(
+          `No hay turnos disponibles para el doctor especificado con id ${idDoctor}`,
+          HttpStatus.NOT_FOUND,
+        );
       }
       return {
         message: 'Turnos disponibles del doctor:',
@@ -174,10 +248,13 @@ export class DoctorsService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'Ha ocurrido un error. No se pudo obtener la lista de doctores',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
   //Busca todos los turnos que se encuentren ya tomados del doctor especificado.
@@ -193,19 +270,19 @@ export class DoctorsService {
       };
       const doctors = await this.doctorRepository.find(options);
       if (!doctors.length) {
-        return {
-          message: 'No existe el doctor especificado',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
+        throw new HttpException(
+         `No existe el doctor especificado con id ${idDoctor} `,
+           HttpStatus.NOT_FOUND,
+        );
       }
       const availableSchedules = doctors[0]?.schedule.filter(
         (schedule) => !schedule.available,
       );
       if (!availableSchedules.length) {
-        return {
-          message: 'No hay turnos disponibles para el doctor especificado',
-          statusCode: HttpStatus.NO_CONTENT,
-        };
+        throw new HttpException(
+          `No hay turnos disponibles para el doctor especificado con id ${idDoctor}`,
+        HttpStatus.NOT_FOUND,
+        );
       }
       return {
         message: 'Turnos ya asignados del doctor:',
@@ -213,10 +290,13 @@ export class DoctorsService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'Ha ocurrido un error. No se pudo obtener la lista de doctores',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
   async findOneDoctor(id: number): Promise<HttpException | Doctor | IResponse> {
@@ -225,21 +305,24 @@ export class DoctorsService {
         where: { id: id },
       });
       if (!doctor) {
-        return {
-          message: 'El doctor no fue encontrado',
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException(
+         `El doctor con ${id} no fue encontrado`,
+          HttpStatus.CONFLICT,
+        );
       }
       return {
         message: 'El doctor encontrado es:',
         data: doctor,
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.CONFLICT) {
+        throw error
+      }
       throw new HttpException(
-        'Ha ocurrido una falla en la busqueda',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
   async updateDoctor(
@@ -251,8 +334,8 @@ export class DoctorsService {
         where: { id: id },
       });
       if (!doctor) {
-        return new HttpException(
-          'El Doctor no existe en la base de datos',
+        throw new HttpException(
+          `El Doctor con ${id} no existe en la base de datos`,
           HttpStatus.NOT_FOUND,
         );
       }
@@ -262,11 +345,14 @@ export class DoctorsService {
         data: { ...updateDoctor, datosAnteriores: doctor },
         statusCode: HttpStatus.OK,
       };
-    } catch (error) {
+    }  catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'No se pudo actualizar el doctor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -276,22 +362,24 @@ export class DoctorsService {
         where: { id: id },
       });
       if (!doctor) {
-        return new HttpException(
-          'El Doctor no existe en la base de datos',
+        throw new HttpException(
+          `El Doctor con id ${id} no existe en la base de datos`,
           HttpStatus.NOT_FOUND,
         );
       }
       await this.doctorRepository.softDelete({ id: id });
       return {
-        message: 'Se ha eliminado el doctor con la matricula: ',
-        data: doctor.license,
-        statusCode: HttpStatus.MOVED_PERMANENTLY,
+        message: `Se ha eliminado el doctor con la matrícula ${doctor.license}`,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.MOVED_PERMANENTLY || HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'No se pudo eliminar el doctor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 

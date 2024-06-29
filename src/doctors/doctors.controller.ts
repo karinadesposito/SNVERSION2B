@@ -74,7 +74,7 @@ export class DoctorsController {
   @Delete('/remove/coverage')
   async removeCoverageFromDoctor(
     @Body() doctorData: AddCoverageToDoctorDto,
-  ): Promise<Doctor> {
+  ): Promise<Doctor | IResponse> {
     return await this.doctorsService.removeCoverageFromDoctor(doctorData);
   }
   @Get('/patients/:id')
