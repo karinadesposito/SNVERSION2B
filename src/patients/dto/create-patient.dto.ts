@@ -18,5 +18,7 @@ export class CreatePatientDto {
   @IsNotEmpty()
   birthday: Date;
   @IsNotEmpty()
+  @MinLength(4)
+  @MaxLength(25)
   address: string;
 }

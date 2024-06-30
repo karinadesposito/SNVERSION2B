@@ -318,7 +318,7 @@ export class ScheduleService {
         );
       }
       const schedules = await this.scheduleRepository.find({
-        where: { idDoctor, available: true },
+        where: { idDoctor, available: true , removed: false },
       });
 
       if (!schedules.length)
