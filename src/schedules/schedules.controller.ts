@@ -38,14 +38,6 @@ export class ScheduleController {
     return this.scheduleService.findOneSchedule(id);
   }
 
-  @Put(':id')
-  update(
-    @Param('id') id: number,
-    @Body() updateScheduleDto: UpdateScheduleDto,
-  ) {
-    return this.scheduleService.updateSchedule(id, updateScheduleDto);
-  }
-
   @Delete(':id')
   async remove(
     @Param('id') id: number,
@@ -70,5 +62,13 @@ export class ScheduleController {
   @Get('/by-doctor/:idDoctor')
   getSchedulesByDoctor(@Param('idDoctor') idDoctor: number): Promise<HttpException | Schedule[] | IResponse> {
     return this.scheduleService.getSchedulesByDoctor(idDoctor);
+  }
+
+  @Get('/schedules/byDay')
+  async findScheduleByDay(
+    @Body() body: { idDoctor: number, day: string }
+  ): Promise<IResponse | HttpException | Schedule[]> {
+    const { idDoctor, day } = body;
+    return this.scheduleService.findScheduleByDay(day, idDoctor);
   }
 }

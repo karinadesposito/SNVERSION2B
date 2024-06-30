@@ -46,7 +46,7 @@ export class PatientsController {
   ): Promise<HttpException | UpdatePatientDto | IResponse> {
     return this.patientsService.updatePatient(id, updatePatient);
   }
-  @UseGuards(AuthGuard)
+ //@UseGuards(AuthGuard)
   @Delete(':id')
   deletePatient(
     @Param('id') id: number,

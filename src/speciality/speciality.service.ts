@@ -21,10 +21,10 @@ export class SpecialityService {
       });
 
       if (nameFound) {
-        return {
-          message: `La especialidad con nombre ${nameFound.name} ya existe en la base de datos`,
-          statusCode: HttpStatus.CONFLICT,
-        };
+       throw new HttpException(
+         `La especialidad con nombre ${nameFound.name} ya existe en la base de datos`,
+           HttpStatus.CONFLICT,
+        )
       }
       const newSpeciality = this.specialityRepository.create(name);
       const savedSpeciality =
@@ -37,8 +37,11 @@ export class SpecialityService {
         };
       }
     } catch (error) {
+      if (error.status === HttpStatus.CONFLICT ) {
+        throw error;
+      }
       throw new HttpException(
-        'No se pudo crear la especialidad',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -49,10 +52,10 @@ export class SpecialityService {
       const specialitys = await this.specialityRepository.find();
 
       if (!specialitys.length)
-        return {
-          message: 'No existen especialidades registradas',
-          statusCode: HttpStatus.NO_CONTENT,
-        };
+      throw new HttpException(
+          'No existen especialidades registradas',
+         HttpStatus.NOT_FOUND,
+        )
       else {
         return {
           message: 'La lista de especialidades está compuesta por:',
@@ -61,8 +64,11 @@ export class SpecialityService {
         };
       }
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
       throw new HttpException(
-        'Ha ocurrido un error.No se pudo traer la lista de especialidades',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -76,19 +82,22 @@ export class SpecialityService {
         where: { id: id },
       });
       if (!speciality) {
-        return {
-          message: 'La especialidad no fue encontrada',
-          statusCode: HttpStatus.CONFLICT,
-        };
+        throw new HttpException(
+         'La especialidad no fue encontrada',
+        HttpStatus.NOT_FOUND,
+        )
       }
       return {
         message: 'La especialidad encontrada es:',
         data: speciality,
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
       throw new HttpException(
-        'Ha ocurrido una falla en la busqueda',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -102,7 +111,7 @@ export class SpecialityService {
         where: { id: id },
       });
       if (!speciality) {
-        return new HttpException(
+        throw new HttpException(
           'La especialidad no existe en la base de datos',
           HttpStatus.NOT_FOUND,
         );
@@ -114,8 +123,11 @@ export class SpecialityService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
       throw new HttpException(
-        'No se pudo actualizar la especialidad',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -123,26 +135,29 @@ export class SpecialityService {
 
   async deleteSpeciality(
     id: number,
-  ): Promise<HttpException | Speciality | IResponse> {
+  ): Promise<HttpException | IResponse | Speciality> {
     try {
-      const speciality = await this.specialityRepository.findOne({
-        where: { id: id },
-      });
+      const speciality = await this.specialityRepository.findOne({ where: { id } });
+
       if (!speciality) {
-        return new HttpException(
+        throw new HttpException(
           'La especialidad no existe en la base de datos',
           HttpStatus.NOT_FOUND,
         );
       }
-      await this.specialityRepository.delete({ id: id });
+
+      await this.specialityRepository.remove(speciality);
+
       return {
-        message: 'Se ha eliminado la especialidad: ',
-        data: speciality.name,
+        message: `Se ha eliminado la especialidad: ${speciality.name}`,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
       throw new HttpException(
-        'No se pudo eliminar la especialidad', 
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

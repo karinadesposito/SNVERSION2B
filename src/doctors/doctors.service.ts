@@ -2,7 +2,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -108,33 +107,6 @@ export class DoctorsService {
       );
     }
   }
-  /*async removeCoverageFromDoctor({
-    doctorId,
-    coverageId,
-  }: AddCoverageToDoctorDto): Promise<Doctor> {
-    const doctor = await this.doctorRepository
-      .findOne({
-        where: { id: doctorId },
-        relations: ['coverages'],
-      })
-      .catch(() => {
-        throw new NotFoundException(
-          `Doctor con ID ${doctorId} no fue encontrado`,
-        );
-      });
-
-    if (!doctor.coverages || doctor.coverages.length === 0) {
-      throw new NotFoundException(
-        `El doctor con ID ${doctorId} no tiene coberturas`,
-      );
-    }
-
-    doctor.coverages = doctor.coverages.filter(
-      (coverage) => !coverageId.includes(coverage.id),
-    );
-
-    return this.doctorRepository.save(doctor);
-  }*/
   async removeCoverageFromDoctor({
     doctorId,
     coverageId,
@@ -395,17 +367,17 @@ export class DoctorsService {
       const doctor = await this.doctorRepository.findOne(options);
 
       if (!doctor) {
-        return new HttpException(
-          'El Doctor no existe en la base de datos',
+        throw new HttpException(
+          `El Doctor con ${doctorId} no existe en la base de datos`,
           HttpStatus.NOT_FOUND,
         );
       }
 
       if (doctor.schedule.length === 0) {
-        return {
-          message: 'No se encontraron pacientes asociados al médico',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
+        throw new HttpException(
+          `No se encontraron pacientes asociados al médico con id ${doctorId}`,
+           HttpStatus.NOT_FOUND,
+          )
       }
 
       const patients = doctor.schedule
@@ -415,14 +387,18 @@ export class DoctorsService {
       return {
         message: 'Los pacientes del médico son:',
         data: patients,
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
       throw new HttpException(
-        'Ha ocurrido un error. No se pudo obtener la lista de pacientes',
+        'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  
   }
 
   async findBySpeciality(
@@ -433,22 +409,24 @@ export class DoctorsService {
         where: { speciality: { name: specialityName } },
       });
       if (!specialityDoctor.length) {
-        return {
-          message: 'La especialidad no fue encontrada',
-          statusCode: HttpStatus.NOT_FOUND,
-        };
+        throw new HttpException(
+          `La especialidad ${specialityName} no fue encontrada`,
+           HttpStatus.NOT_FOUND,
+          )
       } else {
         return {
-          message: 'Los doctores con dicha especialidad son:',
+          message: `Los doctores con la especialidad ${specialityName} son:`,
           data: specialityDoctor,
-          statusCode: HttpStatus.FOUND,
+          statusCode: HttpStatus.OK,
         };
       }
-    } catch (error) {
+    }  catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error
+      }
       throw new HttpException(
-        'Ha ocurrido una falla en la busqueda',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+        "Error del servidor",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+    }}
 }
