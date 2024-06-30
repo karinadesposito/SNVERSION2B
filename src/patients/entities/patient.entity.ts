@@ -21,9 +21,6 @@ export class Patient extends Person {
   @Column({ type: 'date' })
   birthday: Date;
 
-  @DeleteDateColumn({ name: 'deletedAt', nullable: true, type: 'datetime' })
-  deletedAt: Date;
-
   // el paciente puede tener muchos turnos
   @OneToMany(() => Shiff, (shiff) => shiff.idPatient)
   shiffs: Shiff[];

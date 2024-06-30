@@ -27,6 +27,7 @@ export class ShiffService {
       const schedule = await this.scheduleRepository.findOne({
         where: { idSchedule },
       });
+
       if (!schedule) {
         throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
       }
@@ -34,12 +35,37 @@ export class ShiffService {
       if (!schedule.available) {
         throw new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
       }
+
       const patient = await this.patientRepository.findOne({
         where: { id: idPatient },
+        relations: ['shiffs', 'shiffs.schedule'],
       });
+
       if (!patient) {
         throw new HttpException('Paciente no encontrado', HttpStatus.NOT_FOUND);
       }
+
+      for (const shiff of patient.shiffs) {
+        if (!shiff.schedule) {
+          throw new HttpException(
+            'La relación del turno no está cargada',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }
+      const existingShiff = patient.shiffs.find(
+        (shiff) =>
+          shiff.schedule.idDoctor === schedule.idDoctor &&
+          shiff.schedule.day === schedule.day,
+      );
+
+      if (existingShiff) {
+        throw new HttpException(
+          `El paciente con DNI ${patient.dni} ya tiene un turno con el doctor ${schedule.idDoctor} para el día ${schedule.day}`,
+          HttpStatus.CONFLICT,
+        );
+      }
+
       const shiff = new Shiff();
       shiff.idPatient = patient;
       shiff.schedule = schedule;
@@ -47,13 +73,15 @@ export class ShiffService {
       const savedShiff = await this.shiffRepository.save(shiff);
 
       await this.scheduleService.updateAvailability(idSchedule);
+
       return {
         message: 'El turno se ha guardado',
         data: savedShiff,
         statusCode: HttpStatus.CREATED,
       };
     } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
+      console.error('Error en la función takeShiff:', error);
+      if (error.status === HttpStatus.NOT_FOUND || HttpStatus.BAD_REQUEST) {
         throw error;
       }
       throw new HttpException(
@@ -62,6 +90,7 @@ export class ShiffService {
       );
     }
   }
+
   async getShiff(): Promise<UpdateShiffDto[] | HttpException | IResponse> {
     try {
       const shiffs = await this.shiffRepository.find({
@@ -71,8 +100,8 @@ export class ShiffService {
       if (!shiffs.length) {
         throw new HttpException(
           'No existen turnos vigentes',
-         HttpStatus.NOT_FOUND,
-        )
+          HttpStatus.NOT_FOUND,
+        );
       } else {
         const result = shiffs.map((shiff) => ({
           id: shiff.id,
@@ -96,7 +125,7 @@ export class ShiffService {
           statusCode: HttpStatus.OK,
         };
       }
-    }catch (error) {
+    } catch (error) {
       if (error.status === HttpStatus.NOT_FOUND) {
         throw error;
       }
@@ -168,5 +197,6 @@ export class ShiffService {
         'Error del servidor',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    }}
+    }
+  }
 }

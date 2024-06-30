@@ -167,7 +167,7 @@ export class DoctorsService {
       if (!doctors.length)
         throw new HttpException(
           'No existen doctores registrados',
-          HttpStatus.NO_CONTENT,
+          HttpStatus.NOT_FOUND,
         );
       else {
         return {
@@ -177,7 +177,7 @@ export class DoctorsService {
         };
       }
     } catch (error) {
-      if (error.status === HttpStatus.NO_CONTENT) {
+      if (error.status === HttpStatus.NOT_FOUND) {
         throw error;
       }
       throw new HttpException(
@@ -229,48 +229,7 @@ export class DoctorsService {
       )
     }
   }
-  //Busca todos los turnos que se encuentren ya tomados del doctor especificado.
-  async getDoctorsUnAvailable(
-    idDoctor: number,
-  ): Promise<HttpException | Doctor[] | IResponse> {
-    try {
-      const options: FindManyOptions<Doctor> = {
-        relations: ['schedule'],
-        where: {
-          id: idDoctor,
-        },
-      };
-      const doctors = await this.doctorRepository.find(options);
-      if (!doctors.length) {
-        throw new HttpException(
-         `No existe el doctor especificado con id ${idDoctor} `,
-           HttpStatus.NOT_FOUND,
-        );
-      }
-      const availableSchedules = doctors[0]?.schedule.filter(
-        (schedule) => !schedule.available,
-      );
-      if (!availableSchedules.length) {
-        throw new HttpException(
-          `No hay turnos disponibles para el doctor especificado con id ${idDoctor}`,
-        HttpStatus.NOT_FOUND,
-        );
-      }
-      return {
-        message: 'Turnos ya asignados del doctor:',
-        data: availableSchedules,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error
-      }
-      throw new HttpException(
-        "Error del servidor",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
-    }
-  }
+
   async findOneDoctor(id: number): Promise<HttpException | Doctor | IResponse> {
     try {
       const doctor = await this.doctorRepository.findOne({
@@ -401,32 +360,4 @@ export class DoctorsService {
   
   }
 
-  async findBySpeciality(
-    specialityName: string,
-  ): Promise<HttpException | Doctor[] | IResponse> {
-    try {
-      const specialityDoctor = await this.doctorRepository.find({
-        where: { speciality: { name: specialityName } },
-      });
-      if (!specialityDoctor.length) {
-        throw new HttpException(
-          `La especialidad ${specialityName} no fue encontrada`,
-           HttpStatus.NOT_FOUND,
-          )
-      } else {
-        return {
-          message: `Los doctores con la especialidad ${specialityName} son:`,
-          data: specialityDoctor,
-          statusCode: HttpStatus.OK,
-        };
-      }
-    }  catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error
-      }
-      throw new HttpException(
-        "Error del servidor",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
-    }}
 }

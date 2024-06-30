@@ -36,12 +36,6 @@ export class DoctorsController {
   ): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctorsShiff(idDoctor);
   }
-  @Get('/shiffUnAvailable/:idDoctor')
-  DoctorsThree(
-    @Param('idDoctor') idDoctor: number,
-  ): Promise<HttpException | Doctor[] | IResponse> {
-    return this.doctorsService.getDoctorsUnAvailable(idDoctor);
-  }
   @Get(':id')
   findOneDoctor(
     @Param('id') id: number,
@@ -82,10 +76,4 @@ export class DoctorsController {
     return this.doctorsService.findPatientsByDoctorId(doctorId);
   }
 
-  @Get('speciality/:sname')
-  findBySpeciality(
-    @Param('sname') specialityName: string,
-  ): Promise<HttpException | Doctor[] | IResponse> {
-    return this.doctorsService.findBySpeciality(specialityName);
-  }
 }
