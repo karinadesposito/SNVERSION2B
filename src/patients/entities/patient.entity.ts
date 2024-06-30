@@ -3,7 +3,6 @@ import { Person } from '../../person/person.entity';
 import { Shiff } from '../../shiff/entities/shiff.entity';
 import {
   Column,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToMany,

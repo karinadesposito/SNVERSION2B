@@ -149,12 +149,12 @@ export class CoveragesService {
         );
       }
       await this.coverageRepository.delete({ id: id });
-      throw new HttpException(
-        'Se ha eliminado la obra social: ',
-        HttpStatus.MOVED_PERMANENTLY,
-      );
+      return {
+        message: 'Se ha eliminado la obra social: ',
+        statusCode: HttpStatus.OK,
+      }
     } catch (error) {
-      if (error.status === HttpStatus.MOVED_PERMANENTLY || HttpStatus.NOT_FOUND) {
+      if (error.status ===  HttpStatus.NOT_FOUND) {
         throw error;
       }
       throw new HttpException(

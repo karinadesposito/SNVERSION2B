@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
-import { UpdateDoctorDto } from 'src/doctors/dto/update-doctor.dto';
 
 //injectRepository es quien nos permite poder vincular el crud con los datos que estamos almacenando en el entity
 
@@ -24,7 +23,7 @@ export class PatientsService {
       });
       if (patientFound) {
         throw new HttpException(
-        ` El paciente ya existe en la base de datos con id ${patientFound.id} y su DNI es ${patientFound.dni}`,
+        `Un paciente ya existe en la base de datos con éste DNI ${patientFound.dni},su id es ${patientFound.id}`,
           HttpStatus.CONFLICT,
         )
       } else {
