@@ -157,6 +157,7 @@ export class ShiffService {
             day: shiff.schedule.day,
             start_Time: shiff.schedule.start_Time,
             end_Time: shiff.schedule.end_Time,
+            fullName: shiff.schedule.idDoctors.fullName,
           },
         }));
 
