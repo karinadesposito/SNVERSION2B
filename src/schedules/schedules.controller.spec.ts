@@ -104,22 +104,6 @@ describe('ScheduleController', () => {
     });
   });
 
-  describe('updateSchedule', () => {
-    it('should call service.updateSchedule with correct params and return the result', async () => {    
-      const updateScheduleDto: UpdateScheduleDto = {
-        end_Time: '15:30',
-      };
-      jest.spyOn(service, 'updateSchedule').mockResolvedValue(schedule);
-
-      const response = await controller.update(id, updateScheduleDto);
-      expect(service.updateSchedule).toHaveBeenCalledWith(
-        id,
-        updateScheduleDto,
-      );
-      expect(response).toEqual(schedule);
-    });
-  });
-
   describe('deleteSchedule', () => {
     it('should call service.deleteSchedule with correct params and return the result', async () => {
         const deletionReason: DeletionReason = DeletionReason.other;

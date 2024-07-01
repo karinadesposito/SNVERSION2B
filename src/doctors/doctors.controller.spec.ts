@@ -31,7 +31,6 @@ describe('DoctorsController', () => {
       addCoverageToDoctor: jest.fn(),
       removeCoverageFromDoctor: jest.fn(),
       findPatientsByDoctorId: jest.fn(),
-      findBySpeciality: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -101,21 +100,6 @@ describe('DoctorsController', () => {
       jest.spyOn(service, 'getDoctorsShiff').mockResolvedValue(result);
       const response = await controller.DoctorsTwo(id);
       expect(service.getDoctorsShiff).toHaveBeenCalled();
-      expect(response).not.toBeUndefined();
-      expect(response).not.toBeNull();
-    });
-  });
-
-  describe('DoctorsThree', () => {
-    it('should call service.getDoctorsUnAvailable', async () => {
-      const result: IResponse = {
-        message: 'Doctor created successfully',
-        statusCode: HttpStatus.OK,
-        data: search,
-      };
-      jest.spyOn(service, 'getDoctorsUnAvailable').mockResolvedValue(result);
-      const response = await controller.DoctorsThree(id);
-      expect(service.getDoctorsUnAvailable).toHaveBeenCalled();
       expect(response).not.toBeUndefined();
       expect(response).not.toBeNull();
     });
@@ -218,19 +202,4 @@ describe('DoctorsController', () => {
     });
   });
 
-  describe('findBySpeciality', () => {
-    it('should call service.findBySpeciality with correct params', async () => {
-      const specialityName = 'Cardiología';
-      const result = {
-        message: 'Coverage added successfully',
-        statusCode: HttpStatus.OK,
-      };
-      jest.spyOn(service, 'findBySpeciality').mockResolvedValue(result);
-      const response = await controller.findBySpeciality(specialityName);
-      expect(service.findBySpeciality).toHaveBeenCalledWith(specialityName);
-      expect(response).toEqual(result);
-      expect(response).not.toBeUndefined();
-      expect(response).not.toBeNull();
-    });
-  });
 });

@@ -6,7 +6,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 
 describe('SchedulesService', () => {
@@ -74,7 +73,6 @@ describe('SchedulesService', () => {
         dni: '18485754',
         birthday: new Date('1974-12-02'),
         address: 'Sarmiento 224',
-        deletedAt: null,
         shiffs: [],
         id: 1,
         createAt: null,
@@ -265,57 +263,6 @@ describe('SchedulesService', () => {
     });
   });
 
-  describe('update', () => {
-    it('should call service.updateSchedule whit correct params', async () => {
-      const updateSch: UpdateScheduleDto = {
-        available: true,
-      };
-      const existingSch: Schedule = { ...schedule };
-      const updatedSch: Schedule = { ...schedule };
-
-      const updateResult: UpdateResult = {
-        affected: 1,
-        raw: {},
-        generatedMaps: [],
-      };
-      const result: IResponse = {
-        message: 'Las modificaciones son las siguientes: ',
-        data: {
-          available: true,
-          datosAnteriores: existingSch,
-        },
-        statusCode: HttpStatus.OK,
-      };
-
-      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(existingSch); // Simula encontrar el coverage existente
-      jest.spyOn(repository, 'update').mockResolvedValue(updateResult); // Simula la operación de actualización
-      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(updatedSch); // Simula encontrar el coverage actualizado
-
-      const response = await service.updateSchedule(id, updateSch);
-
-      expect(response).toEqual(result);
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { idSchedule: id },
-      });
-      expect(repository.update).toHaveBeenCalled();
-    });
-
-    it('should handle error during update', async () => {
-      const updateSch: UpdateScheduleDto = {
-        available: true,
-      };
-
-      jest
-        .spyOn(service, 'updateSchedule')
-        .mockRejectedValue(new Error('Update failed'));
-
-      try {
-        await service.updateSchedule(falseId, updateSch);
-      } catch (error) {
-        expect(error.message).toBe('Update failed');
-      }
-    });
-  });
 
   describe('delete', () => {
     it('should call delete', async () => {

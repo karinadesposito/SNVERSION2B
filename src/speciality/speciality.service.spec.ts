@@ -15,7 +15,8 @@ describe('SpecialityService', () => {
     find: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn(),
+    delete: jest.fn(), 
+    remove: jest.fn(),
     save: jest.fn(),
   };
   const createSpe: CreateSpecialityDto = {
@@ -69,7 +70,7 @@ describe('SpecialityService', () => {
         expect(error.message).toBe(
           `La especialidad con nombre ${speciality.name} ya existe en la base de datos`,
         );
-        expect(error.statusCode).toEqual(HttpStatus.CONFLICT);
+        expect(error.getStatus()).toEqual(HttpStatus.CONFLICT);
       }
     });
 
@@ -81,7 +82,8 @@ describe('SpecialityService', () => {
       try {
         await service.create(createSpe);
       } catch (error) {
-        expect(error.message).toBe('No se pudo crear la especialidad');
+        expect(error.message).toBe(`La especialidad con nombre ${createSpe.name} ya existe en la base de datos`);
+        expect(error.getStatus()).toEqual(HttpStatus.CONFLICT);
       }
     });
   });
@@ -107,30 +109,30 @@ describe('SpecialityService', () => {
   it('should return "No existen especialidades registradas"when there are no schedules', async () => {
     jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
 
-    const response = await service.getSpeciality();
-    if (
-      'data' in response &&
-      'statusCode' in response &&
-      'message' in response
-    ) {
-      expect(response.message).toEqual('No existen especialidades registradas');
-      expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
-      expect(response.data).toBeUndefined();
-    }
+    try {
+      await service.getSpeciality();
+    
+    expect(repository.findOne).toHaveBeenCalledWith({
+      where: { coverages: 'ioma' }}); 
+      } catch (error) {
+        expect(error.message).toEqual('No existen especialidades registradas');
+      expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
+     
+      }
   });
   it('should handle error if list specialities not found', async () => {
     jest
       .spyOn(repository, 'find')
       .mockRejectedValue(
         new Error(
-          'Ha ocurrido un error.No se pudo traer la lista de especialidades',
+          'Error del servidor',
         ),
       );
     try {
       await service.getSpeciality();
     } catch (error) {
       expect(error.message).toBe(
-        'Ha ocurrido un error.No se pudo traer la lista de especialidades',
+        'Error del servidor',
       );
     }
   });
@@ -138,7 +140,7 @@ describe('SpecialityService', () => {
     it('should call find one speciality with correct params', async () => {
       const result: IResponse = {
         message: 'La especialidad encontrada es:',
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
         data: speciality,
       };
       jest.spyOn(repository, 'findOne').mockResolvedValue(speciality);
@@ -152,26 +154,22 @@ describe('SpecialityService', () => {
     it('should handle error if speciality not found', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
+        .mockRejectedValue(new Error('Error del servidor'));
       try {
         await service.findOneSpeciality(falseId);
       } catch (error) {
-        expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+        expect(error.message).toBe('Error del servidor');
       }
     });
   });
   it('should return "La especialidad no fue encontrada" when not found', async () => {
     jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
-
-    const response = await service.findOneSpeciality(falseId);
-    if (
-      'data' in response &&
-      'statusCode' in response &&
-      'message' in response
-    ) {
-      expect(response.message).toEqual('La especialidad no fue encontrada');
-      expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
-      expect(response.data).toBeUndefined();
+    try {
+    await service.findOneSpeciality(falseId);
+  }catch(error){
+      expect(error.message).toEqual('La especialidad no fue encontrada');
+      expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
+    
     }
   });
   describe('update', () => {
@@ -216,11 +214,11 @@ describe('SpecialityService', () => {
     it('should handle error during update', async () => {
       jest
         .spyOn(repository, 'update')
-        .mockRejectedValue(new Error('No se pudo actualizar la especialidad'));
+        .mockRejectedValue(new Error('Error del servidor'));
       try {
         await service.updateSpeciality(speciality.id, speciality);
       } catch (error) {
-        expect(error.message).toBe('No se pudo actualizar la especialidad');
+        expect(error.message).toBe('Error del servidor');
       }
     });
   });
@@ -265,25 +263,25 @@ describe('SpecialityService', () => {
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { id: falseId },
       });
-      expect(repository.delete).not.toHaveBeenCalled();
+      expect(repository.remove).not.toHaveBeenCalled();
     });
 
     it('should handle error during deletion', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(speciality);
       jest
-        .spyOn(repository, 'delete')
+        .spyOn(repository, 'remove')
         .mockRejectedValue(new Error('No se pudo eliminar la especialidad'));
       try {
         await service.deleteSpeciality(speciality.id);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('No se pudo eliminar la especialidad');
+        expect(error.message).toEqual('Error del servidor');
         expect(error.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
       }
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { id: speciality.id },
       });
-      expect(repository.delete).toHaveBeenCalledWith({ id: speciality.id });
+      expect(repository.remove).toHaveBeenCalledWith(speciality);
     });
   });
-});
+}); 

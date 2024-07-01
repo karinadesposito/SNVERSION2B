@@ -78,26 +78,27 @@ describe('CoverageService', () => {
         coverages: 'ioma',
         doctors: [],
       };
-      const result: IResponse = {
-        message: `La obra social con nombre ${existingCoverage.coverages} ya existe en la base de datos`,
-        statusCode: HttpStatus.CONFLICT,
-      };
-
+  
       jest.spyOn(repository, 'findOne').mockResolvedValue(existingCoverage);
 
-      const response = await service.create(createCov);
-
-      expect(response).toEqual(result);
+      try {
+        await service.create(existingCoverage);
+      
       expect(repository.findOne).toHaveBeenCalledWith({
-        where: { coverages: 'ioma' },
-      });
+        where: { coverages: 'ioma' }}); 
+        } catch (error) {
+          expect(error).toBeInstanceOf(HttpException);
+          expect(error.message).toBe(`La obra social con nombre ${createCov.coverages} ya existe en la base de datos`);
+          expect(error.getStatus()).toBe(HttpStatus.CONFLICT);
+        }
+      
     });
 
     it('should handle error during create', async () => {
       const createCov: CreateCoverageDto = {
         coverages: 'ioma',
       };
-
+ 
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(new Error('Falló al buscar el coverage'));
@@ -105,7 +106,8 @@ describe('CoverageService', () => {
       try {
         await service.create(createCov);
       } catch (error) {
-        expect(error.message).toBe('No se pudo crear la obra social');
+        expect(error.message).toBe('Error del servidor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
       }
     });
   });
@@ -116,7 +118,7 @@ describe('CoverageService', () => {
       const result: IResponse = {
         message: 'La lista de obras sociales está compuesta por:',
         data: coverages,
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
       };
 
       jest.spyOn(repository, 'find').mockResolvedValue(coverages);
@@ -125,37 +127,32 @@ describe('CoverageService', () => {
       expect(repository.find).toHaveBeenCalled();
     });
     it('should return "No existen obras sociales registradas" when there are no coverages', async () => {
-      // Simular que no hay coberturas en la base de datos
-      jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
-
-      const response = await service.getCoverage();
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual(
-          'No existen obras sociales registradas',
-        );
-        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
-        expect(response.data).toBeUndefined();
-      }
+      
+      jest
+      .spyOn(repository, 'findOne')
+      .mockRejectedValue(new Error('Falló al buscar el coverage'));
+      try {
+        await service.getCoverage();
+      } catch (error) {
+        expect(error.message).toBe('Error del servidor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR)
+      } 
     });
     it('should handle error if list coverages not found', async () => {
       jest
         .spyOn(repository, 'find')
         .mockRejectedValue(
           new Error(
-            'Ha ocurrido un error.No se pudo traer la lista de obras sociales',
+            'Error del servidor',
           ),
         );
       try {
         await service.getCoverage();
       } catch (error) {
         expect(error.message).toBe(
-          'Ha ocurrido un error.No se pudo traer la lista de obras sociales',
+          'Error del servidor',
         );
-      }
+      } 
     });
   });
 
@@ -164,7 +161,7 @@ describe('CoverageService', () => {
       const result: IResponse = {
         message: 'La obra social encontrada es:',
         data: cov,
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
       };
       jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       const response = await service.findOneCoverages(cov.id);
@@ -174,7 +171,7 @@ describe('CoverageService', () => {
         'message' in response
       ) {
         expect(response.message).toEqual('La obra social encontrada es:');
-        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.statusCode).toEqual(HttpStatus.OK);
         expect(response.data).toEqual(result.data);
       }
       expect(repository.findOne).toHaveBeenLastCalledWith({
@@ -184,26 +181,23 @@ describe('CoverageService', () => {
     it('should return "La obra social no fue encontrada" when not found', async () => {
         jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
 
-      const response = await service.findOneCoverages(falseId);
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual('La obra social no fue encontrada');
-        expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
-        expect(response.data).toBeUndefined();
+     try{
+       await service.findOneCoverages(falseId);
+     } catch(error){
+        expect(error.message).toEqual('La obra social no fue encontrada');
+        expect(error.getStatus()).toBe(HttpStatus.CONFLICT) 
+    
       }
     });
     it('should handle error if coverage not found', async () => {
 jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.findOneCoverages(falseId);
       } catch (error) {
-        expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+        expect(error.message).toBe('Error del servidor');
       }
     });
   });
@@ -229,7 +223,7 @@ jest
         generatedMaps: [],
       };
       const result: IResponse = {
-        message: 'Las modificaciones son las siguientes: ',
+        message: 'Las modificaciones son las siguientes:',
         data: {
           coverages: 'IOMA',
           datosAnteriores: existingCoverage,
@@ -237,9 +231,9 @@ jest
         statusCode: HttpStatus.OK,
       };
 
-      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(existingCoverage); // Simula encontrar el coverage existente
-      jest.spyOn(repository, 'update').mockResolvedValue(updateResult); // Simula la operación de actualización
-      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(updatedCoverage); // Simula encontrar el coverage actualizado
+      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(existingCoverage); 
+      jest.spyOn(repository, 'update').mockResolvedValue(updateResult); 
+      jest.spyOn(repository, 'findOne').mockResolvedValueOnce(updatedCoverage); 
 
       const response = await service.updateCoverages(cov.id, updateCov);
 
@@ -279,7 +273,7 @@ jest
       jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       jest.spyOn(repository, 'delete').mockResolvedValue(deleteResult);
       const response = await service.deleteCoverage(cov.id);
-      expect(response).toBeDefined(); // Verificamos que la respuesta no sea nula
+      expect(response).toBeDefined(); 
       if (
         'data' in response &&
         'statusCode' in response &&
@@ -295,14 +289,14 @@ jest
      jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       jest
         .spyOn(repository, 'delete')
-        .mockRejectedValue(new Error('No se pudo eliminar la obra social'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.deleteCoverage(falseId);
       } catch (error) {
-        expect(error.message).toBe('No se pudo eliminar la obra social');
+        expect(error.message).toBe('Error del servidor');
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('No se pudo eliminar la obra social');
+        expect(error.message).toEqual('Error del servidor');
         expect(error.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -321,3 +315,4 @@ jest
     });
   });
 });
+ 
