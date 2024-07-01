@@ -20,7 +20,7 @@ export class ShiffService {
     private readonly scheduleService: ScheduleService,
   ) {}
  
-      async takeShiff(
+    async takeShiff(
         idSchedule: number,
         idPatient: number,
       ): Promise<CreateShiffDto | IResponse> {
@@ -88,6 +88,49 @@ export class ShiffService {
           );
         } }
     
+        async takeShift(
+          idSchedule: number,
+          idPatient: number,
+        ): Promise<HttpException | CreateShiffDto | IResponse> {
+          try {
+            const schedule = await this.scheduleRepository.findOne({
+              where: { idSchedule },
+            });
+            if (!schedule) {
+              return new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
+            }
+      
+            if (!schedule.available) {
+              return new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
+            }
+            const patient = await this.patientRepository.findOne({
+              where: { id: idPatient },
+            });
+            if (!patient) {
+              return new HttpException(
+                'Paciente no encontrado',
+                HttpStatus.NOT_FOUND,
+              );
+            }
+            const shift = new Shiff();
+            shift.idPatient = patient;
+            shift.schedule = schedule;
+      
+            const savedShift = await this.shiffRepository.save(shift);
+      
+            await this.scheduleService.updateAvailability(idSchedule);
+            return {
+              message: 'El turno se ha guardado',
+              data: savedShift,
+              statusCode: HttpStatus.OK,
+            };
+          } catch {
+            throw new HttpException(
+              'No se pudo seleccionar el horario',
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+          }
+        }
 
   async getShiff(): Promise<UpdateShiffDto[] | HttpException | IResponse> {
     try {

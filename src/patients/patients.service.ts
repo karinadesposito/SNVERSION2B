@@ -46,6 +46,7 @@ export class PatientsService {
     }
   }
 
+
   async getPatients(): Promise<UpdatePatientDto[] | IResponse | HttpException> {
     try {
       const patients = await this.patientsRepository.find({
@@ -173,4 +174,26 @@ export class PatientsService {
         HttpStatus.INTERNAL_SERVER_ERROR
       )
     }}
+    async findByDni(dni: string): Promise<HttpException | UpdatePatientDto | IResponse> {
+      try {
+      const patient = await this.patientsRepository.findOne({ where: { dni } });
+    
+        if (!patient) {
+          throw new HttpException(`El Paciente con DNI ${dni} no fue encontrado`, HttpStatus.NOT_FOUND);
+        }
+    else{
+        return {
+          message: `El Paciente encontrado con DNI ${dni} es`,
+          data: patient,
+          statusCode: HttpStatus.OK,
+        }};
+      } catch (error) {
+        if (error.status === HttpStatus.NOT_FOUND ) {
+          throw error
+        }
+        throw new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+  
+  
 }

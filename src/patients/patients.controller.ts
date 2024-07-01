@@ -53,4 +53,10 @@ export class PatientsController {
   ): Promise<HttpException | Patient | IResponse> {
     return this.patientsService.deletePatient(id);
   }
+  @Get('by-dni/:dni')
+  findByDni(
+    @Param('dni') dni:string,
+  ): Promise<HttpException | UpdatePatientDto | IResponse> {
+    return this.patientsService.findByDni(dni);
+  }
 }
