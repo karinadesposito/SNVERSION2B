@@ -1,73 +1,216 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+SaludNet
+SaludNet es una página web interactiva sobre consultorios médicos, donde los usuarios pueden observar a los profesionales que allí atienden y obtener un turno si lo desean.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Objetivo
+Nuestro objetivo es brindarle la posibilidad a un grupo de profesionales de la salud a que puedan administrar su propio sitio seguro, accesible solo a través de un usuario registrado. Los profesionales pueden incorporar, editar o eliminar su lista de oferta profesional y su agenda laboral.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Tecnologías Utilizadas
+Base de datos: MySQL Workbench
+Backend: NestJs
+Frontend: React
+Repositorios
+Frontend: SaludNetFront
+Backend: SaludNetTorm2
+Dependencias
+Backend
+@nestjs/common
+@nestjs/core "^10.0.0"
+@nestjs/jwt
+@nestjs/mapped-types
+@nestjs/platform-express
+@nestjs/typeorm
+bcryptjs
+class-transformer
+class-validator
+dotenv
+mysql2
+reflect-metadata
+rxjs
+typeorm
+Frontend
+@fortawesome/free-brands-svg-icons
+@fortawesome/free-solid-svg-icons
+@fortawesome/react-fontawesome
+react
+react-calendar
+react-dom
+react-loader-spinner
+react-modal
+react-parallax
+react-router-dom
+react-select
+react-slick
+react-spinners
+slick-carousel
+sweetalert2
+Variables de Entorno
+SECRET=
+DB_TYPE=
+HOST=
+USER_DB_NAME=
+USER_DB_PASSWORD=
+PORT=
+DB_NAME=
 
-## Description
+Base de Datos
+Utilizamos MySQL Workbench para gestionar nuestra base de datos. A continuación, se detalla la estructura de las entidades y sus relaciones.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Entidades
 
-## Installation
+Admin
+coverages
+Person
+Doctor (hereda de Person)
+Patient (hereda de Person)
+Schedule
+Shiff
+Speciality
 
-```bash
-$ npm install
-```
+Backend (NestJS)
+Estructura del Proyecto
+src/
+|-- controllers/
+|-- services/
+|-- models/
+|-- ...
+Controladores
+AdminController
+POST /admin/login - Iniciar sesión de un administrador
+GET /admin/:email - Obtener información de un administrador por email
+AuthController
+POST /auth/login - Iniciar sesión de un usuario
+CoverageController
+POST /coverage - Crear una cobertura
+GET /coverage - Obtener todas las coberturas
+GET /coverage/:id - Obtener una cobertura por ID
+PUT /coverage/:id - Actualizar una cobertura por ID
+DELETE /coverage/:id - Eliminar una cobertura por ID
+DoctorsController
+POST /doctors - Crear un doctor
+GET /doctors - Obtener todos los doctores
+GET /doctors/shiffAvailable/:idDoctor - Obtener turnos disponibles de un doctor
+GET /doctors/:id - Obtener un doctor por ID
+PUT /doctors/:id - Actualizar un doctor por ID
+DELETE /doctors/:id - Eliminar un doctor por ID
+POST /doctors/addCoverage - Agregar una cobertura a un doctor
+DELETE /doctors/remove/coverage - Eliminar una cobertura de un doctor
+GET /doctors/patients/:id - Obtener pacientes de un doctor por ID de doctor
+PatientsController
+POST /patients - Crear un paciente
+GET /patients - Obtener todos los pacientes
+GET /patients/:id - Obtener un paciente por ID
+PUT /patients/:id - Actualizar un paciente por ID
+DELETE /patients/:id - Eliminar un paciente por ID
+GET /patients/by-dni/:dni - Obtener un paciente por DNI
+ScheduleController
+POST /schedules - Crear un horario
+GET /schedules - Obtener todos los horarios
+GET /schedules/:id - Obtener un horario por ID
+DELETE /schedules/:id - Eliminar un horario por ID
+PUT /schedules/updateAvailability/:idSchedule - Actualizar disponibilidad de un horario
+GET /schedules/count - Contar horarios
+GET /schedules/byDay - Obtener horarios por día
+GET /schedules/by-doctor/:idDoctor - Obtener horarios por ID de doctor
+ShiffController
+POST /shiff - Crear un turno
+GET /shiff - Obtener todos los turnos
+GET /shiff/:id - Obtener un turno por ID
+DELETE /shiff/:id - Eliminar un turno por ID
+SpecialityController
+POST /speciality - Crear una especialidad
+GET /speciality - Obtener todas las especialidades
+GET /speciality/:id - Obtener una especialidad por ID
+PUT /speciality/:id - Actualizar una especialidad por ID
+DELETE /speciality/:id - Eliminar una especialidad por ID
+Servicios
+AdminService
+create - Crear un administrador
+findByEmail - Encontrar un administrador por email
+AuthService
+login - Iniciar sesión de un usuario
+CoveragesService
+create - Crear una cobertura
+getCoverage - Obtener todas las coberturas
+findOneCoverages - Encontrar una cobertura por ID
+updateCoverages - Actualizar una cobertura por ID
+deleteCoverage - Eliminar una cobertura por ID
+DoctorsService
+create - Crear un doctor
+addCoverageToDoctor - Agregar una cobertura a un doctor
+removeCoverageFromDoctor - Eliminar una cobertura de un doctor
+getDoctors - Obtener todos los doctores
+getDoctorsShiff - Obtener turnos de un doctor
+findOneDoctor - Encontrar un doctor por ID
+updateDoctor - Actualizar un doctor por ID
+deleteDoctor - Eliminar un doctor por ID
+findPatientsByDoctorId - Encontrar pacientes por ID de doctor
+PatientsService
+create - Crear un paciente
+getPatients - Obtener todos los pacientes
+findOnePatient - Encontrar un paciente por ID
+updatePatient - Actualizar un paciente por ID
+deletePatient - Eliminar un paciente por ID
+findByDni - Encontrar un paciente por DNI
+ScheduleService
+createScheduleWithInterval - Crear un horario con intervalo
+getSchedules - Obtener todos los horarios
+findOneSchedule - Encontrar un horario por ID
+deleteSchedule - Eliminar un horario por ID
+updateAvailability - Actualizar disponibilidad de un horario
+findScheduleByDay - Encontrar horarios por día
+countScheduleByDoctor - Contar horarios por doctor
+getSchedulesByDoctor - Obtener horarios por doctor
+ShiffService
+takeShiff - Tomar un turno
+getShiff - Obtener todos los turnos
+findOneShiff - Encontrar un turno por ID
+deleteShiff - Eliminar un turno por ID
+SpecialityService
+create - Crear una especialidad
+getSpeciality - Obtener todas las especialidades
+findOneSpeciality - Encontrar una especialidad por ID
+updateSpeciality - Actualizar una especialidad por ID
+deleteSpeciality - Eliminar una especialidad por ID
 
-## Running the app
+Testing
+npm run test
+npm run test:e2e
+npm run test:cov
 
-```bash
-# development
-$ npm run start
+Frontend (React)
+Estructura del Proyecto
+src/
+|-- components/
+|-- pages/
+|-- ...
+Componentes
+Contacto.jsx datos del lugar
+Coverage.jsx agrega obras sociales
+CreateSchedule.jsx crea los turnos disponibles para un doctor
+CreateSpeciality.jsx crea la especialidad del doctor
+DeleteOneSchedule.jsx elimina un turno disponible
+DeleteSchedule.jsx elimina un turno disponible
+EditShifts.jsx elimina turnos reservados
+Footer.jsx
+FormPatient.jsx
+FormProfesionals.jsx Crea un doctor
+ListProfesionals.jsx edita datos del doctor
+Marketing.jsx diseño
+NavBar.jsx
+SpanContinue.jsx
+Spinner.jsx
+UserContext.jsx
+VerTurnos.jsx listado de turnos reservados por día y doctor
 
-# watch mode
-$ npm run start:dev
+Pages
 
-# production mode
-$ npm run start:prod
-```
+Admin.jsx
+Home.jsx
+Login.jsx
+NotFound.jsx
+Novedades.jsx
+Profesionales.jsx
+SobreNosotros.jsx
+Turnos.jsx
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+Creador: SaludNet Team: Marina Erasun, Ignacio Molina, Manuel Sevedro, Karina D'Espósito
