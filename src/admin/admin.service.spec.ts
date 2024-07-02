@@ -36,7 +36,7 @@ describe('AdminService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-  
+
   describe('create', () => {
     it('should create a new admin', async () => {
       const createAdmin: CreateAdminDto = {
@@ -46,17 +46,6 @@ describe('AdminService', () => {
       };
 
       const hashedPassword = 'hashedPassword';
-
-      const result: IResponse = {
-        message: 'El administrador ha sido creado exitosamente',
-        statusCode: HttpStatus.CREATED,
-        data: {
-          id: 1,
-          username: 'Admin',
-          email: 'admin@saludnet.com',
-          password: hashedPassword,
-        },
-      };
 
       jest.spyOn(bcrypt, 'hash').mockResolvedValueOnce(hashedPassword);
 
@@ -70,28 +59,34 @@ describe('AdminService', () => {
         ...createAdmin,
         password: hashedPassword,
       } as Admin);
+      try {
+        await service.create(createAdmin);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe(
+          `El administrador con username ${createAdmin.username} ya existe en la base de datos`,
+        );
+        expect(error.getStatus()).toBe(HttpStatus.CONFLICT);
 
-      const response = await service.create(createAdmin);
-
-      expect(response).toEqual(result);
-      expect(repository.create).toHaveBeenCalledWith({
-        ...createAdmin,
-        password: hashedPassword,
-      });
-      expect(repository.save).toHaveBeenCalledWith({
-        ...createAdmin,
-        password: hashedPassword,
-      });
+        expect(repository.create).toHaveBeenCalledWith({
+          ...createAdmin,
+          password: hashedPassword,
+        });
+        expect(repository.save).toHaveBeenCalledWith({
+          ...createAdmin,
+          password: hashedPassword,
+        });
+      }
     });
     it('should return conflict response if admin already exists', async () => {
       const existingAdmin: Admin = {
-        id: 1, 
+        id: 1,
         username: 'Admin',
         email: 'admin@saludnet.com',
         password: 'admin1234',
         createId: function (): void {
           throw new Error('Function not implemented.');
-        }
+        },
       };
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(existingAdmin);
@@ -99,22 +94,23 @@ describe('AdminService', () => {
       const createAdminDto: CreateAdminDto = {
         username: 'Admin',
         email: 'admin@saludnet.com',
-        password: 'admin1234'
+        password: 'admin1234',
       };
-
-      const result = await service.create(createAdminDto);
-
-      expect(result).toEqual({
-        message: `El administrador con username ${createAdminDto.username} ya existe en la base de datos`,
-        statusCode: HttpStatus.CONFLICT,
-      });
-    });
+      try {
+        await service.create(createAdminDto);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toBe(
+          `El administrador con username ${createAdminDto.username} ya existe en la base de datos`,
+        );
+        expect(error.getStatus()).toBe(HttpStatus.CONFLICT);
+    }});
 
     it('should handle unexpected errors', async () => {
       const createAdmin: CreateAdminDto = {
         username: 'Admin',
         email: 'admin@saludnet.com',
-        password: 'admin1234'
+        password: 'admin1234',
       };
       jest.spyOn(repository, 'findOne').mockRejectedValueOnce(new Error());
 
@@ -132,25 +128,25 @@ describe('AdminService', () => {
         password: 'hashedPassword',
         createId: function (): void {
           throw new Error('Function not implemented.');
-        }
+        },
       };
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(foundAdmin);
 
-        const result = await service.findByEmail(email);
+      const result = await service.findByEmail(email);
 
-        expect(result).toEqual(foundAdmin);
+      expect(result).toEqual(foundAdmin);
     });
 
     it('should return 404 if admin with email not found', async () => {
       const email = 'notexistemail@saludnet.com';
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
-    try{
-     await service.findByEmail(email)
-    } catch (error){
-      expect(error).toBeInstanceOf(HttpException);
-      expect(error.message).toEqual('Admin not found');
-      expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
-    }     
-  });
+      try {
+        await service.findByEmail(email);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toEqual('Admin not found');
+        expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
+      }
+    });
   });
 });

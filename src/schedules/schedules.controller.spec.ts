@@ -4,7 +4,6 @@ import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpStatus } from '@nestjs/common';
-import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 
 describe('ScheduleController', () => {

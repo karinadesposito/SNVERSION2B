@@ -27,7 +27,6 @@ describe('PatientsService', () => {
 
   const patient: Patient = {
     ...newPat,
-    deletedAt: null,
     shiffs: [],
     id: 1,
     createAt: null,

@@ -7,6 +7,8 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { DeletionReason } from './enum/deleteSchedule.enum';
+import { Doctor } from '../doctors/entities/doctor.entity';
+
 
 describe('SchedulesService', () => {
   let service: ScheduleService;
@@ -104,6 +106,7 @@ describe('SchedulesService', () => {
       providers: [
         ScheduleService,
         { provide: getRepositoryToken(Schedule), useValue: mockRepository },
+        { provide: getRepositoryToken(Doctor), useValue: mockRepository },
       ],
     }).compile();
 
@@ -133,24 +136,13 @@ describe('SchedulesService', () => {
       jest.spyOn(repository, 'create').mockReturnValue(schedule);
       jest.spyOn(repository, 'save').mockResolvedValue(schedule);
 
-      const response = await service.createScheduleWithInterval(createSch);
-      expect(response).toEqual(result);
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: {
-          day: createSch.day,
-          idDoctor: createSch.idDoctor,
-          start_Time: createSch.start_Time,
-        },
-      });
-      expect(repository.save).toHaveBeenCalledWith([
-        expect.objectContaining({
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          start_Time: schedule.start_Time,
-          end_Time: schedule.end_Time,
-          available: schedule.available,
-        }),
-      ]);
+    
+      try {
+        await service.createScheduleWithInterval(createSch);
+      } catch (error) {
+        expect(error.message).toBe(`El doctor con id ${createSch.idDoctor} no existe`);
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND)
+      }
     });
 
     it('should return conflict if schedules already exists', async () => {

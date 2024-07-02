@@ -92,8 +92,8 @@ describe('CoverageService', () => {
           expect(error.getStatus()).toBe(HttpStatus.CONFLICT);
         }
       
-    });
-
+    }); 
+  
     it('should handle error during create', async () => {
       const createCov: CreateCoverageDto = {
         coverages: 'ioma',

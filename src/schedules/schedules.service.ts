@@ -6,9 +6,8 @@ import { Schedule } from './entities/schedule.entity';
 import { Repository } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
-import { Doctor } from 'src/doctors/entities/doctor.entity';
-
-@Injectable()
+import { Doctor } from '../doctors/entities/doctor.entity';
+@Injectable() 
 export class ScheduleService {
   constructor(
     @InjectRepository(Schedule)
