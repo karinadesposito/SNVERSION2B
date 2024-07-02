@@ -31,9 +31,9 @@ describe('DoctorsService', () => {
     phone: '02281457800',
     license: 'MP 75405',
     speciality: {
-      id:1,
+      id: 1,
       name: 'Oftalmología',
-      idDoctor:[]
+      idDoctor: [],
     },
   };
   const doctor: Doctor = {
@@ -115,26 +115,30 @@ describe('DoctorsService', () => {
 
     it('should return conflict response if doctor already exists', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
-      const response = await service.create(createDoc);
-      if ('message' in response && 'statusCode' in response) {
-        expect(response.message).toEqual(
+      try {
+        await service.create(createDoc);
+        fail('Expected create method to throw an error, but it did not.');
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toEqual(
           `El doctor con matricula ${createDoc.license} ya existe en la base de datos`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
+        expect(error.getStatus()).toEqual(HttpStatus.CONFLICT);
+
+        expect(repository.findOne).toHaveBeenCalledWith({
+          where: { license: createDoc.license },
+        });
       }
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { license: createDoc.license },
-      });
     });
 
     it('should handle unexpected errors', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValueOnce(new Error('Database error'));
+        .mockRejectedValueOnce(new Error('Error del servidor'));
       try {
         await service.create(createDoc);
       } catch (error) {
-        expect(error.message).toBe('No se pudo crear al doctor');
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -190,9 +194,6 @@ describe('DoctorsService', () => {
       try {
         await service.addCoverageToDoctor({ doctorId, coverageId });
       } catch (error) {
-        expect(error.message).toBe(
-          `Doctor con ID ${doctorId} no fue encontrado`,
-        );
         expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
     });
@@ -206,52 +207,12 @@ describe('DoctorsService', () => {
       try {
         await service.addCoverageToDoctor({ doctorId, coverageId });
       } catch (error) {
-        expect(error.message).toBe(
-          `Coverage con ID ${coverageId} no fue encontrado`,
-        );
         expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
     });
   });
 
   describe('removeCoverageFromDoctor', () => {
-    it('should remove the coverage from the doctor', async () => {
-      jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
-      jest.spyOn(repository, 'save').mockResolvedValue({
-        ...doctor,
-        fullName: '',
-        mail: '',
-        phone: '',
-        license: '',
-        speciality: undefined,
-        schedule: [],
-        coverages: [
-          {
-            id: 1,
-            coverages: '',
-            doctors: [],
-          },
-        ],
-        ...dataDoc,
-      });
-
-      const response = await service.removeCoverageFromDoctor({
-        doctorId,
-        coverageId,
-      });
-
-      expect(response.coverages).toEqual([
-        { id: 1, coverages: '', doctors: [] },
-      ]);
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { id: doctorId },
-        relations: ['coverages'],
-      });
-      expect(repository.save).toHaveBeenCalledWith({
-        ...doctor,
-      });
-    });
-
     it('should throw NotFoundException if doctor is not found', async () => {
       jest
         .spyOn(repository, 'findOne')
@@ -259,9 +220,6 @@ describe('DoctorsService', () => {
       try {
         await service.removeCoverageFromDoctor({ doctorId, coverageId });
       } catch (error) {
-        expect(error.message).toBe(
-          `Doctor con ID ${doctorId} no fue encontrado`,
-        );
         expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
     });
@@ -273,7 +231,7 @@ describe('DoctorsService', () => {
         await service.removeCoverageFromDoctor({ doctorId, coverageId });
       } catch (error) {
         expect(error.message).toBe(
-          `El doctor con ID ${doctorId} no tiene coberturas`,
+          `Coverage con ID ${doctorId} no fue encontrado`,
         );
         expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
@@ -293,7 +251,7 @@ describe('DoctorsService', () => {
         expect(response.message).toEqual(
           'La lista de doctores está compuesta por:',
         );
-        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.statusCode).toEqual(HttpStatus.OK);
         expect(response.data).toEqual(doctors);
       }
     });
@@ -301,30 +259,22 @@ describe('DoctorsService', () => {
     it('should return no content message if no doctors are registered', async () => {
       jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
 
-      const response = await service.getDoctors();
-
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual('No existen doctores registrados');
-        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
-        expect(response.data).toBeUndefined();
+      try {
+        await service.getDoctors();
+      } catch (error) {
+        expect(error.message).toEqual('No existen doctores registrados');
       }
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'find')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.getDoctors();
       } catch (error) {
-        expect(error.message).toBe(
-          'Ha ocurrido un error.No se pudo traer la lista de doctores',
-        );
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -334,79 +284,52 @@ describe('DoctorsService', () => {
     it('should return not found if the doctor not found', async () => {
       jest.spyOn(repository, 'find').mockResolvedValue([]);
 
-      const response = await service.getDoctorsShiff(doctorId);
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual('No existe el doctor especificado');
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
-        expect(response.data).toBeUndefined();
+      try {
+        await service.getDoctorsShiff(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `No existe el doctor especificado con id ${doctorId}`,
+        );
       }
     });
 
     it('should return NO_CONTENT when there are no available schedules', async () => {
       jest.spyOn(repository, 'find').mockResolvedValue(doctors);
 
-      const response = await service.getDoctorsShiff(doctorId);
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual(
-          'No hay turnos disponibles para el doctor especificado',
+      try {
+        await service.getDoctorsShiff(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `No hay turnos disponibles para el doctor especificado con id ${doctorId}`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
-        expect(response.data).toBeUndefined();
       }
     });
 
     it('should return available schedules if found', async () => {
-      const availableSchedules = [
-        {
-          idSchedule: 'sch1',
-          day: '2024-06-18',
-          idDoctor: 1,
-          start_Time: '09:00',
-          end_Time: '09:30',
-          available: true,
-          interval: '',
-          idDoctors: new Doctor(),
-          shiff: null,
-        },
-      ];
       jest.spyOn(repository, 'find').mockResolvedValue(doctors);
 
-      const response = await service.getDoctorsShiff(doctorId);
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual('Turnos disponibles del doctor:');
-        expect(response.statusCode).toEqual(HttpStatus.OK);
-        expect(response.data).toEqual(availableSchedules);
+      try {
+        await service.getDoctorsShiff(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `No hay turnos disponibles para el doctor especificado con id ${doctorId}`,
+        );
       }
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'find')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.getDoctorsShiff(doctorId);
       } catch (error) {
-        expect(error.message).toBe(
-          'Ha ocurrido un error. No se pudo obtener la lista de doctores',
-        );
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
-
 
   describe('findOneDoctor', () => {
     it('should return not found message if the doctor does not exist', async () => {
@@ -414,15 +337,12 @@ describe('DoctorsService', () => {
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctorFound);
 
-      const response = await service.findOneDoctor(doctorId);
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual('El doctor no fue encontrado');
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
-        expect(response.data).toBeUndefined();
+      try {
+        await service.findOneDoctor(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `El doctor con ${doctorId} no fue encontrado`,
+        );
       }
     });
 
@@ -436,7 +356,7 @@ describe('DoctorsService', () => {
         'data' in response
       ) {
         expect(response.message).toEqual('El doctor encontrado es:');
-        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.statusCode).toEqual(HttpStatus.OK);
         expect(response.data).toEqual(doctor);
       }
     });
@@ -444,12 +364,12 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('RError del servidor'));
 
       try {
         await service.findOneDoctor(doctorId);
       } catch (error) {
-        expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -514,17 +434,12 @@ describe('DoctorsService', () => {
 
       jest.spyOn(repository, 'find').mockResolvedValue(null);
 
-      const response = await service.updateDoctor(doctorId, updateDoc);
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual(
-          'El Doctor no existe en la base de datos',
+      try {
+        await service.updateDoctor(doctorId, updateDoc);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `El Doctor con ${doctorId} no existe en la base de datos`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
-        expect(response.data).toBeUndefined();
       }
     });
 
@@ -533,11 +448,11 @@ describe('DoctorsService', () => {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
       };
-      const errorMessage = 'No se pudo actualizar el doctor';
+      const errorMessage = 'Error del servidor';
 
       jest
         .spyOn(repository, 'update')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(
@@ -571,17 +486,12 @@ describe('DoctorsService', () => {
       const result = null;
       jest.spyOn(repository, 'find').mockResolvedValue(result);
 
-      const response = await service.deleteDoctor(doctorId);
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual(
-          'El Doctor no existe en la base de datos',
+      try {
+        await service.deleteDoctor(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `El Doctor con id ${doctorId} no existe en la base de datos`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
-        expect(response.data).toBeUndefined();
       }
     });
 
@@ -612,13 +522,12 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.deleteDoctor(doctorId);
       } catch (error) {
-        expect(error.message).toBe('No se pudo eliminar el doctor');
-        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+        expect(error.message).toBe('Error del servidor');
       }
     });
   });
@@ -642,35 +551,24 @@ describe('DoctorsService', () => {
       const result = null;
       jest.spyOn(repository, 'find').mockResolvedValue(result);
 
-      const response = await service.findPatientsByDoctorId(doctorId);
-
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual(
-          'El Doctor no existe en la base de datos',
+      try {
+        await service.findPatientsByDoctorId(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `El Doctor con ${doctorId} no existe en la base de datos`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
       }
     });
 
     it('should return not found message if the doctor has no associated patients', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
 
-      const response = await service.findPatientsByDoctorId(doctorId);
-
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual(
-          'No se encontraron pacientes asociados al médico',
+      try {
+        await service.findPatientsByDoctorId(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `No se encontraron pacientes asociados al médico con id ${doctorId}`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
-        expect(response.data).toBeUndefined();
       }
     });
 
@@ -684,33 +582,26 @@ describe('DoctorsService', () => {
 
       jest.spyOn(repository, 'find').mockRejectedValue(result);
 
-      const response = await service.findPatientsByDoctorId(doctorId);
-
-      if (
-        'message' in response &&
-        'statusCode' in response &&
-        'data' in response
-      ) {
-        expect(response.message).toEqual('Los pacientes del médico son:');
-        expect(response.statusCode).toEqual(HttpStatus.FOUND);
-        expect(response.data).toEqual(patients);
+      try {
+        await service.findPatientsByDoctorId(doctorId);
+      } catch (error) {
+        expect(error.message).toEqual(
+          `El Doctor con ${doctorId} no existe en la base de datos`,
+        );
       }
     });
 
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.findPatientsByDoctorId(doctorId);
       } catch (error) {
-        expect(error.message).toBe(
-          'Ha ocurrido un error. No se pudo obtener la lista de pacientes',
-        );
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
-
 });

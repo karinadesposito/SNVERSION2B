@@ -103,9 +103,8 @@ describe('AuthService', () => {
       expect(adminService.findByEmail).toHaveBeenCalledWith(admin.email);
     });
 
-//se comprueba que devuelva una excepcion de que no tiene autorizacion si la contraseña es incorrecta
     it('should throw UnauthorizedException if password is incorrect', async () => {
-//creamos una version del admin encontrado con una contraseña incorrecta hasheada
+      // Creamos una versión del admin encontrado con una contraseña incorrecta hasheada
       const foundAdmin = {
         ...admin,
         password: await bcrypt.hash('wrongpassword', 10),
@@ -113,23 +112,18 @@ describe('AuthService', () => {
           throw new Error('Function not implemented.');
         },
       };
-
-//se simula la busqueda de admin con el metodo del service de Admin, y resuelve con el admin encontrado
+    
+      // Se simula la búsqueda de admin con el método del service de Admin, y resuelve con el admin encontrado
       jest.spyOn(adminService, 'findByEmail').mockResolvedValue(foundAdmin);
-//se simula que la compracion de las contraseñas es falsa y falla 
+      // Se simula que la comparación de las contraseñas es falsa y falla 
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
-
-//aseguramos que la llamada a login lance una excepcion
-      await expect(service.login(admin)).rejects.toThrow(
-        UnauthorizedException,
-      );
-
-//aseguramos que se hayan realizado las llamadas a los metodos
+    
+      // Aseguramos que la llamada a login lance una excepción
+      await expect(service.login(admin)).rejects.toThrow(UnauthorizedException);
+    
+      // Aseguramos que se hayan realizado las llamadas a los métodos
       expect(adminService.findByEmail).toHaveBeenCalledWith(admin.email);
       expect(bcrypt.compare).toHaveBeenCalledWith(
         admin.password,
         foundAdmin.password,
-      );
-    });
-  });
-});
+    )})})});

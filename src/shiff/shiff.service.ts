@@ -19,119 +19,78 @@ export class ShiffService {
     private readonly patientRepository: Repository<Patient>,
     private readonly scheduleService: ScheduleService,
   ) {}
- 
-    async takeShiff(
-        idSchedule: number,
-        idPatient: number,
-      ): Promise<CreateShiffDto | IResponse> {
-        try {
-          const schedule = await this.scheduleRepository.findOne({
-            where: { idSchedule },
-          });
-    
-          if (!schedule) {
-            throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
-          }
-          if (schedule.removed === true) {
-            throw new HttpException('Horario ha sido eliminado', HttpStatus.NOT_FOUND);
-          }
-          if (!schedule.available) {
-            throw new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
-          }
-    
-          const patient = await this.patientRepository.findOne({
-            where: { id: idPatient },
-          });
-    
-          if (!patient) {
-            throw new HttpException('Paciente no encontrado', HttpStatus.NOT_FOUND);
-          }
- 
-          const existingShiff = await this.shiffRepository.findOne({
-            where: {
-              idPatient: patient,
-              schedule: {
-                idDoctor: schedule.idDoctor,
-                day: schedule.day,
-              },
-            },
-            relations: ['idPatient', 'schedule', 'schedule.idDoctors'],
-          });
-    
-          if (existingShiff) {
-            throw new HttpException(
-              `El paciente con DNI ${patient.dni} ya tiene un turno con el doctor ${schedule.idDoctor} para el día ${schedule.day}`,
-              HttpStatus.CONFLICT,
-            );
-          }
 
-          const shiff = new Shiff();
-          shiff.idPatient = patient;
-          shiff.schedule = schedule;
-    
-          const savedShiff = await this.shiffRepository.save(shiff);
-    
-          await this.scheduleService.updateAvailability(idSchedule);
-    
-          return {
-            message: 'El turno se ha guardado',
-            data: savedShiff,
-            statusCode: HttpStatus.CREATED,
-          };
-        } catch (error) {
-          if (error.status === HttpStatus.NOT_FOUND ||HttpStatus.CONFLICT) {
-            throw error;
-          }
-          throw new HttpException(
-            'Error del servidor',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        } }
-    
-        async takeShift(
-          idSchedule: number,
-          idPatient: number,
-        ): Promise<HttpException | CreateShiffDto | IResponse> {
-          try {
-            const schedule = await this.scheduleRepository.findOne({
-              where: { idSchedule },
-            });
-            if (!schedule) {
-              return new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
-            }
-      
-            if (!schedule.available) {
-              return new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
-            }
-            const patient = await this.patientRepository.findOne({
-              where: { id: idPatient },
-            });
-            if (!patient) {
-              return new HttpException(
-                'Paciente no encontrado',
-                HttpStatus.NOT_FOUND,
-              );
-            }
-            const shift = new Shiff();
-            shift.idPatient = patient;
-            shift.schedule = schedule;
-      
-            const savedShift = await this.shiffRepository.save(shift);
-      
-            await this.scheduleService.updateAvailability(idSchedule);
-            return {
-              message: 'El turno se ha guardado',
-              data: savedShift,
-              statusCode: HttpStatus.OK,
-            };
-          } catch {
-            throw new HttpException(
-              'No se pudo seleccionar el horario',
-              HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-          }
-        }
+  async takeShiff(
+    idSchedule: number,
+    idPatient: number,
+  ): Promise<CreateShiffDto | IResponse> {
+    try {
+      const schedule = await this.scheduleRepository.findOne({
+        where: { idSchedule },
+      });
 
+      if (!schedule) {
+        throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
+      }
+      if (schedule.removed === true) {
+        throw new HttpException(
+          'Horario ha sido eliminado',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      if (!schedule.available) {
+        throw new HttpException('Horario no disponible', HttpStatus.NOT_FOUND);
+      }
+
+      const patient = await this.patientRepository.findOne({
+        where: { id: idPatient },
+      });
+
+      if (!patient) {
+        throw new HttpException('Paciente no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      const existingShiff = await this.shiffRepository.findOne({
+        where: {
+          idPatient: patient,
+          schedule: {
+            idDoctor: schedule.idDoctor,
+            day: schedule.day,
+          },
+        },
+        relations: ['idPatient', 'schedule', 'schedule.idDoctors'],
+      });
+
+      if (existingShiff) {
+        throw new HttpException(
+          `El paciente con DNI ${patient.dni} ya tiene un turno con el doctor ${schedule.idDoctor} para el día ${schedule.day}`,
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const shiff = new Shiff();
+      shiff.idPatient = patient;
+      shiff.schedule = schedule;
+
+      const savedShiff = await this.shiffRepository.save(shiff);
+
+      await this.scheduleService.updateAvailability(idSchedule);
+
+      return {
+        message: 'El turno se ha guardado',
+        data: savedShiff,
+        statusCode: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND || HttpStatus.CONFLICT) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   async getShiff(): Promise<UpdateShiffDto[] | HttpException | IResponse> {
     try {
       const shiffs = await this.shiffRepository.find({

@@ -328,7 +328,7 @@ export class DoctorsService {
       if (!doctor) {
         throw new HttpException(
           `El Doctor con ${doctorId} no existe en la base de datos`,
-          HttpStatus.NOT_FOUND,
+          HttpStatus.NOT_FOUND, 
         );
       }
 

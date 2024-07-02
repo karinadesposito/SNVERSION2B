@@ -36,7 +36,7 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
+      if (error.status === HttpStatus.NOT_FOUND  || HttpStatus.UNAUTHORIZED) {
         throw error
       }
       throw new HttpException(

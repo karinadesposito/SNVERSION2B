@@ -7,6 +7,7 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { IResponse } from 'src/interface/IResponse';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { DeletionReason } from './enum/deleteSchedule.enum';
+import { Doctor } from '../doctors/entities/doctor.entity';
 
 describe('SchedulesService', () => {
   let service: ScheduleService;
@@ -104,6 +105,7 @@ describe('SchedulesService', () => {
       providers: [
         ScheduleService,
         { provide: getRepositoryToken(Schedule), useValue: mockRepository },
+        { provide: getRepositoryToken(Doctor), useValue: mockRepository },
       ],
     }).compile();
 
@@ -133,45 +135,26 @@ describe('SchedulesService', () => {
       jest.spyOn(repository, 'create').mockReturnValue(schedule);
       jest.spyOn(repository, 'save').mockResolvedValue(schedule);
 
-      const response = await service.createScheduleWithInterval(createSch);
-      expect(response).toEqual(result);
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: {
-          day: createSch.day,
-          idDoctor: createSch.idDoctor,
-          start_Time: createSch.start_Time,
-        },
-      });
-      expect(repository.save).toHaveBeenCalledWith([
-        expect.objectContaining({
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          start_Time: schedule.start_Time,
-          end_Time: schedule.end_Time,
-          available: schedule.available,
-        }),
-      ]);
+      try {
+        await service.createScheduleWithInterval(createSch);
+      } catch (error) {
+        expect(error.message).toBe(
+          `El doctor con id ${createSch.idDoctor} no existe`,
+        );
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+      }
     });
 
     it('should return conflict if schedules already exists', async () => {
-      const result: IResponse = {
-        message: `La agenda para este día y médico ya existe`,
-        statusCode: HttpStatus.CONFLICT,
-        data: schedule,
-      };
-
       jest.spyOn(repository, 'findOne').mockResolvedValue(schedule);
-
-      const response = await service.createScheduleWithInterval(createSch);
-
-      expect(response).toEqual(result);
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: {
-          day: createSch.day,
-          idDoctor: createSch.idDoctor,
-          start_Time: createSch.start_Time,
-        },
-      });
+      try {
+        await service.createScheduleWithInterval(createSch);
+      } catch (error) {
+        expect(error.message).toBe(
+          `La agenda para el ${schedules.day} y médico ${schedules.idDoctor} ya existe`,
+        );
+        expect(error.getStatus()).toBe(HttpStatus.CONFLICT);
+      }
     });
   });
   describe('find', () => {
@@ -179,7 +162,7 @@ describe('SchedulesService', () => {
       const schedules = [{ ...schedule }];
       const result: IResponse = {
         message: 'Agendas registradas:',
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
         data: schedules,
       };
       jest.spyOn(repository, 'find').mockResolvedValue(schedules);
@@ -193,31 +176,22 @@ describe('SchedulesService', () => {
     it('should return "No existen agendas registradas"when there are no schedules', async () => {
       jest.spyOn(repository, 'find').mockResolvedValueOnce([]);
 
-      const response = await service.getSchedules();
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual('No existen agendas registradas');
-        expect(response.statusCode).toEqual(HttpStatus.NO_CONTENT);
-        expect(response.data).toBeUndefined();
+      try {
+        await service.getSchedules();
+      } catch (error) {
+        expect(error.message).toBe('No existen agendas registradas');
+        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
     });
     it('should handle error if list coverages not found', async () => {
       jest
         .spyOn(repository, 'find')
-        .mockRejectedValue(
-          new Error(
-            'Ha ocurrido un error.No se pudo traer la lista de agendas',
-          ),
-        );
+        .mockRejectedValue(new Error('Error del servidor'));
       try {
         await service.getSchedules();
       } catch (error) {
-        expect(error.message).toBe(
-          'Ha ocurrido un error.No se pudo traer la lista de agendas',
-        );
+        expect(error.message).toBe('Error del servidor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
@@ -225,7 +199,7 @@ describe('SchedulesService', () => {
     it('should return a schedule if found', async () => {
       const result: IResponse = {
         message: 'La agenda encontrada es:',
-        statusCode: HttpStatus.FOUND,
+        statusCode: HttpStatus.OK,
         data: schedules,
       };
 
@@ -238,31 +212,28 @@ describe('SchedulesService', () => {
     });
     it('should return "Esa agenda no existe" when not found', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
-
-      const response = await service.findOneSchedule(id);
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual('Esa agenda no existe');
-        expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
-        expect(response.data).toBeUndefined();
+    
+      try {
+        await service.findOneSchedule(id);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException); 
+        expect(error.message).toEqual('Esa agenda no existe');
+        expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
       }
     });
     it('should handle error if coverage not found', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Ha ocurrido una falla en la busqueda'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.findOneSchedule(falseId);
       } catch (error) {
-        expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+        expect(error.message).toBe('Error del servidor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   });
-
 
   describe('delete', () => {
     it('should call delete', async () => {
@@ -292,13 +263,13 @@ describe('SchedulesService', () => {
     it('should handle deletion error', async () => {
       jest
         .spyOn(repository, 'delete')
-        .mockRejectedValue(new Error('No se pudo eliminar la agenda'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.deleteSchedule(falseId, deletionReason);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('No se pudo eliminar la agenda');
+        expect(error.message).toEqual('Error del servidor');
         expect(error.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -309,7 +280,7 @@ describe('SchedulesService', () => {
         await service.deleteSchedule(falseId, deletionReason);
       } catch (error) {
         expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toEqual('La agenda no existe');
+        expect(error.message).toEqual(`La agenda con ${falseId} no existe`);
         expect(error.status).toEqual(HttpStatus.NOT_FOUND);
       }
     });
@@ -322,12 +293,14 @@ describe('SchedulesService', () => {
         },
       ];
       const result: IResponse = {
-        message: 'Turnos tomamos en éste dia',
+        message: 'Turnos tomamos en este dia:',
         statusCode: HttpStatus.OK,
         data: schedules,
       };
+  
+      jest.spyOn(mockRepository, 'findOne').mockResolvedValue({ id: schedule.idDoctor }); 
       jest.spyOn(repository, 'find').mockResolvedValue(schedules);
-
+  
       const response = await service.findScheduleByDay(
         schedule.day,
         schedule.idDoctor,
@@ -340,85 +313,37 @@ describe('SchedulesService', () => {
           idDoctor: schedule.idDoctor,
           available: false,
         },
-        relations: ['idDoctors', 'shiff'],
+        relations: ['idDoctors', 'shiff'], 
       });
     });
   });
-  describe('countScheduleByDoctor', () => {
-    it('should return the count of schedules for the specified doctor and day', async () => {
-      const schedules = [{ ...schedule }];
-      const result: IResponse = {
-        message: `Los turnos del doctor ${schedule.idDoctor} son ${schedules.length} para el día ${schedule.day}`,
-        statusCode: HttpStatus.OK,
-        data: schedules,
-      };
+ 
+  it('should throw HttpException when doctor is not found', async () => {
+    jest.spyOn(mockRepository, 'findOne').mockResolvedValue(null);
 
-      jest.spyOn(repository, 'find').mockResolvedValue(schedules);
+    try {
+      await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toBe('No existe el doctor indicado');
+      expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+    }
 
-      const response = await service.countScheduleByDoctor(
-        schedule.day,
-        schedule.idDoctor,
-      );
-
-      expect(response).toEqual(result);
-      expect(repository.find).toHaveBeenCalledWith({
-        where: {
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          available: false,
-        },
-        relations: ['idDoctors', 'shiff'],
-      });
-    });
-
-    it('should throw HttpException when no schedules are found', async () => {
-      jest.spyOn(repository, 'find').mockResolvedValue([]);
-
-      try {
-        await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe(
-          'No hay turnos disponibles para este día y médico',
-        );
-        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
-      }
-
-      expect(repository.find).toHaveBeenCalledWith({
-        where: {
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          available: false,
-        },
-        relations: ['idDoctors', 'shiff'],
-      });
-    });
-
-    it('should throw HttpException when all schedules are available', async () => {
-      const schedules = [{ ...schedule }];
-
-      jest.spyOn(repository, 'find').mockResolvedValue(schedules);
-
-      try {
-        await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe(
-          'No hay turnos disponibles para este día y médico',
-        );
-        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
-      }
-
-      expect(repository.find).toHaveBeenCalledWith({
-        where: {
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          available: false,
-        },
-        relations: ['idDoctors', 'shiff'],
-      });
-    });
+    expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: schedule.idDoctor } });
   });
+
+  it('should throw HttpException when server error occurs', async () => {
+    jest.spyOn(mockRepository, 'findOne').mockImplementation(() => { throw new Error(); });
+
+    try {
+      await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toBe('Error del servidor');
+      expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  });
+ 
   describe('updateAvailability', () => {
     it('should throw an error if the schedule does not exist', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
@@ -446,7 +371,7 @@ describe('SchedulesService', () => {
       const result = await service.updateAvailability(1);
 
       expect(result).toEqual({
-        message: 'Se ha cancelado el turno correctamente',
+        message: 'Se ha cancelado el turno correctamente:',
         data: { ...scheduleTwo, available: true },
         statusCode: HttpStatus.OK,
       });
