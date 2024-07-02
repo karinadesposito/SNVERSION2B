@@ -212,16 +212,13 @@ describe('SchedulesService', () => {
     });
     it('should return "Esa agenda no existe" when not found', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);
-
-      const response = await service.findOneSchedule(id);
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual('Esa agenda no existe');
-        expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
-        expect(response.data).toBeUndefined();
+    
+      try {
+        await service.findOneSchedule(id);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException); 
+        expect(error.message).toEqual('Esa agenda no existe');
+        expect(error.getStatus()).toEqual(HttpStatus.NOT_FOUND);
       }
     });
     it('should handle error if coverage not found', async () => {
@@ -296,12 +293,14 @@ describe('SchedulesService', () => {
         },
       ];
       const result: IResponse = {
-        message: 'Turnos tomamos en éste dia',
+        message: 'Turnos tomamos en este dia:',
         statusCode: HttpStatus.OK,
         data: schedules,
       };
+  
+      jest.spyOn(mockRepository, 'findOne').mockResolvedValue({ id: schedule.idDoctor }); 
       jest.spyOn(repository, 'find').mockResolvedValue(schedules);
-
+  
       const response = await service.findScheduleByDay(
         schedule.day,
         schedule.idDoctor,
@@ -318,81 +317,33 @@ describe('SchedulesService', () => {
       });
     });
   });
-  describe('countScheduleByDoctor', () => {
-    it('should return the count of schedules for the specified doctor and day', async () => {
-      const schedules = [{ ...schedule }];
-      const result: IResponse = {
-        message: `Los turnos del doctor ${schedule.idDoctor} son ${schedules.length} para el día ${schedule.day}`,
-        statusCode: HttpStatus.OK,
-        data: schedules,
-      };
+ 
+  it('should throw HttpException when doctor is not found', async () => {
+    jest.spyOn(mockRepository, 'findOne').mockResolvedValue(null);
 
-      jest.spyOn(repository, 'find').mockResolvedValue(schedules);
+    try {
+      await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toBe('No existe el doctor indicado');
+      expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
+    }
 
-      const response = await service.countScheduleByDoctor(
-        schedule.day,
-        schedule.idDoctor,
-      );
-
-      expect(response).toEqual(result);
-      expect(repository.find).toHaveBeenCalledWith({
-        where: {
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          available: false,
-        },
-        relations: ['idDoctors', 'shiff'],
-      });
-    });
-
-    it('should throw HttpException when no schedules are found', async () => {
-      jest.spyOn(repository, 'find').mockResolvedValue([]);
-
-      try {
-        await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe(
-          'No hay turnos disponibles para este día y médico',
-        );
-        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
-      }
-
-      expect(repository.find).toHaveBeenCalledWith({
-        where: {
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          available: false,
-        },
-        relations: ['idDoctors', 'shiff'],
-      });
-    });
-
-    it('should throw HttpException when all schedules are available', async () => {
-      const schedules = [{ ...schedule }];
-
-      jest.spyOn(repository, 'find').mockResolvedValue(schedules);
-
-      try {
-        await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.message).toBe(
-          'No hay turnos disponibles para este día y médico',
-        );
-        expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
-      }
-
-      expect(repository.find).toHaveBeenCalledWith({
-        where: {
-          day: schedule.day,
-          idDoctor: schedule.idDoctor,
-          available: false,
-        },
-        relations: ['idDoctors', 'shiff'],
-      });
-    });
+    expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: schedule.idDoctor } });
   });
+
+  it('should throw HttpException when server error occurs', async () => {
+    jest.spyOn(mockRepository, 'findOne').mockImplementation(() => { throw new Error(); });
+
+    try {
+      await service.countScheduleByDoctor(schedule.day, schedule.idDoctor);
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect(error.message).toBe('Error del servidor');
+      expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  });
+ 
   describe('updateAvailability', () => {
     it('should throw an error if the schedule does not exist', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);

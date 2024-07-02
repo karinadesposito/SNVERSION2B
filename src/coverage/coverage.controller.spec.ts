@@ -78,25 +78,33 @@ describe('CoverageController', () => {
       expect(response).not.toBeNull();
     });
   });
-  describe('updatecoverages', () => {
-    it('should call service.updateCoverages with correct params', async () => {
-      const updateCoverages: Partial<UpdateCoverageDto> = {
-        coverages: 'IOMA',
-      };
-      const result = { id: 1, coverages: 'IOMA' };
-      jest.spyOn(service, 'updateCoverages').mockResolvedValue(result);
-      const response = await controller.update(id, updateCoverages);
-      expect(service.updateCoverages).toHaveBeenCalledWith(id, updateCoverages);
-      expect(response).toEqual(result);
-      expect(response).not.toBeUndefined();
-      expect(response).not.toBeNull();
-    });
+  it('should call service.updateCoverages with correct params', async () => {
+    const id = 1;
+    const updateCoverages: Partial<UpdateCoverageDto> = {
+      coverages: 'IOMA',
+    };
+
+    const result = {
+      message: 'Las modificaciones son las siguientes:',
+      data: { ...updateCoverages, datosAnteriores: { id: 1, coverages: 'OldCoverage' } },
+      statusCode: HttpStatus.OK,
+    };
+
+    jest.spyOn(service, 'updateCoverages').mockResolvedValue(result);
+
+    const response = await controller.update(id, updateCoverages);
+
+    expect(service.updateCoverages).toHaveBeenCalledWith(id, updateCoverages);
+    expect(response).toEqual(result);
+    expect(response).not.toBeUndefined();
+    expect(response).not.toBeNull();
   });
+
   describe('deleteCoverage', () => {
     it('should call service.deleteCoverages with correct params', async () => {
       const result = {
         message: 'Doctor deleted successfully',
-        statusCode: HttpStatus.OK,
+        statusCode: HttpStatus.OK, 
       };
       jest.spyOn(service, 'deleteCoverage').mockResolvedValue(result);
       const response = await controller.remove(id);
@@ -107,3 +115,4 @@ describe('CoverageController', () => {
     });
   });
 });
+ 

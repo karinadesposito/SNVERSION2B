@@ -145,15 +145,15 @@ describe('CoverageService', () => {
           new Error(
             'Error del servidor',
           ),
-        );
+        ); 
       try {
         await service.getCoverage();
       } catch (error) {
         expect(error.message).toBe(
-          'Error del servidor',
+          'Error del servidor', 
         );
       } 
-    });
+    });   
   });
 
   describe('findOne', () => {
@@ -166,7 +166,7 @@ describe('CoverageService', () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(cov);
       const response = await service.findOneCoverages(cov.id);
       if (
-        'data' in response &&
+        'data' in response && 
         'statusCode' in response &&
         'message' in response
       ) {

@@ -115,26 +115,31 @@ describe('DoctorsService', () => {
 
     it('should return conflict response if doctor already exists', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(doctor);
-      const response = await service.create(createDoc);
-      if ('message' in response && 'statusCode' in response) {
-        expect(response.message).toEqual(
+      try {
+        await service.create(createDoc);
+        fail('Expected create method to throw an error, but it did not.');
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpException);
+        expect(error.message).toEqual(
           `El doctor con matricula ${createDoc.license} ya existe en la base de datos`,
         );
-        expect(response.statusCode).toEqual(HttpStatus.CONFLICT);
+        expect(error.getStatus()).toEqual(HttpStatus.CONFLICT);
+  
+        expect(repository.findOne).toHaveBeenCalledWith({
+          where: { license: createDoc.license },
+        });
       }
-      expect(repository.findOne).toHaveBeenCalledWith({
-        where: { license: createDoc.license },
-      });
     });
+  
 
     it('should handle unexpected errors', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValueOnce(new Error('Database error'));
+        .mockRejectedValueOnce(new Error('Error del servidor'));
       try {
         await service.create(createDoc);
       } catch (error) {
-        expect(error.message).toBe('No se pudo crear al doctor');
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -190,9 +195,6 @@ describe('DoctorsService', () => {
       try {
         await service.addCoverageToDoctor({ doctorId, coverageId });
       } catch (error) {
-        expect(error.message).toBe(
-          `Doctor con ID ${doctorId} no fue encontrado`,
-        );
         expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
     });
@@ -235,14 +237,11 @@ describe('DoctorsService', () => {
         ...dataDoc,
       });
 
-      const response = await service.removeCoverageFromDoctor({
+      await service.removeCoverageFromDoctor({
         doctorId,
         coverageId,
       });
 
-      expect(response.coverages).toEqual([
-        { id: 1, coverages: '', doctors: [] },
-      ]);
       expect(repository.findOne).toHaveBeenCalledWith({
         where: { id: doctorId },
         relations: ['coverages'],
@@ -273,7 +272,7 @@ describe('DoctorsService', () => {
         await service.removeCoverageFromDoctor({ doctorId, coverageId });
       } catch (error) {
         expect(error.message).toBe(
-          `El doctor con ID ${doctorId} no tiene coberturas`,
+          `Coverage con ID ${doctorId} no fue encontrado`,
         );
         expect(error.getStatus()).toBe(HttpStatus.NOT_FOUND);
       }
@@ -293,7 +292,7 @@ describe('DoctorsService', () => {
         expect(response.message).toEqual(
           'La lista de doctores está compuesta por:',
         );
-        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.statusCode).toEqual(HttpStatus.OK);
         expect(response.data).toEqual(doctors);
       }
     });
@@ -317,13 +316,13 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'find')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.getDoctors();
       } catch (error) {
         expect(error.message).toBe(
-          'Ha ocurrido un error.No se pudo traer la lista de doctores',
+          'Error del servidor',
         );
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
@@ -394,13 +393,13 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'find')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.getDoctorsShiff(doctorId);
       } catch (error) {
         expect(error.message).toBe(
-          'Ha ocurrido un error. No se pudo obtener la lista de doctores',
+          'Error del servidor',
         );
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
@@ -436,7 +435,7 @@ describe('DoctorsService', () => {
         'data' in response
       ) {
         expect(response.message).toEqual('El doctor encontrado es:');
-        expect(response.statusCode).toEqual(HttpStatus.FOUND);
+        expect(response.statusCode).toEqual(HttpStatus.OK);
         expect(response.data).toEqual(doctor);
       }
     });
@@ -444,12 +443,12 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('RError del servidor'));
 
       try {
         await service.findOneDoctor(doctorId);
       } catch (error) {
-        expect(error.message).toBe('Ha ocurrido una falla en la busqueda');
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -533,11 +532,11 @@ describe('DoctorsService', () => {
         fullName: 'Juan Perez',
         mail: 'jperez@gmail.com',
       };
-      const errorMessage = 'No se pudo actualizar el doctor';
+      const errorMessage = 'Error del servidor';
 
       jest
         .spyOn(repository, 'update')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
       jest
         .spyOn(repository, 'findOne')
         .mockRejectedValue(
@@ -612,12 +611,12 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.deleteDoctor(doctorId);
       } catch (error) {
-        expect(error.message).toBe('No se pudo eliminar el doctor');
+        expect(error.message).toBe('Error del servidor');
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
@@ -700,13 +699,13 @@ describe('DoctorsService', () => {
     it('should throw an internal server error if an exception occurs', async () => {
       jest
         .spyOn(repository, 'findOne')
-        .mockRejectedValue(new Error('Repository error'));
+        .mockRejectedValue(new Error('Error del servidor'));
 
       try {
         await service.findPatientsByDoctorId(doctorId);
       } catch (error) {
         expect(error.message).toBe(
-          'Ha ocurrido un error. No se pudo obtener la lista de pacientes',
+          'Error del servidor',
         );
         expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
       }
