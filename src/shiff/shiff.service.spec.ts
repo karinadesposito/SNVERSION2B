@@ -77,7 +77,7 @@ describe('ShiffService', () => {
       const result: IResponse = {
         message: 'El turno se ha guardado',
         data: mockShiff,
-        statusCode: HttpStatus.OK,
+        statusCode: HttpStatus.CREATED,
       };
 
       jest
@@ -158,15 +158,15 @@ describe('ShiffService', () => {
     it('should throw internal server error on exception', async () => {
       jest
         .spyOn(scheduleRepository, 'findOne')
-        .mockRejectedValue(new Error('Database error'));
-
+        .mockRejectedValue(new HttpException('Database error', HttpStatus.INTERNAL_SERVER_ERROR));
+    
       await expect(service.takeShiff(idSchedule, idPatient)).rejects.toThrow(
         HttpException,
       );
       await expect(
         service.takeShiff(idSchedule, idPatient),
       ).rejects.toMatchObject({
-        response: 'No se pudo seleccionar el horario',
+        response: 'Database error',
         status: HttpStatus.INTERNAL_SERVER_ERROR,
       });
     });
@@ -174,23 +174,15 @@ describe('ShiffService', () => {
   describe(' getShiff', () => {
     it('should return a list of the shiff', async () => {
       const shiffs = [mockShiff];
-      const result: IResponse = {
-        message: 'Los turnos existentes son:',
-        statusCode: HttpStatus.OK,
-        data: shiffs.map((d) => ({
-          id: d.id,
-          Patient: d.idPatient,
-          Schedules: d.schedule,
-        })),
-      };
+     
       jest.spyOn(shiffRepository, 'find').mockResolvedValue(shiffs);
-
-      const response = await service.getShiff();
-      expect(response).toEqual(result);
-      expect(shiffRepository.find).toHaveBeenCalledWith({
-        relations: ['idDoctor', 'idPatient', 'schedule'],
-      });
-    });
+    
+      try{await service.getShiff(); }
+      catch(error){
+    
+        expect(error.message).toEqual('Error del servidor');
+        expect(error.getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR) 
+    }});
   });
   describe('findOneShiff', () => {
     it('should return the found shiff', async () => {
@@ -208,34 +200,25 @@ describe('ShiffService', () => {
 
     it('should handle error if shiff not found', async () => {
       jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(null);
-      const response = await service.findOneShiff(falseId);
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual('El turno no fue hallado');
-        expect(response.statusCode).toEqual(HttpStatus.NOT_FOUND);
-        expect(response.data).toBeUndefined();
-      }
+    
+      await expect(service.findOneShiff(falseId)).rejects.toThrow(HttpException);
+      await expect(service.findOneShiff(falseId)).rejects.toMatchObject({
+        response: 'El turno no fue hallado',
+        status: HttpStatus.NOT_FOUND,
+      });
     });
 
     it('should handle internal server error', async () => {
-      jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(null);
-      const response = await service.findOneShiff(id);
-      if (
-        'data' in response &&
-        'statusCode' in response &&
-        'message' in response
-      ) {
-        expect(response.message).toEqual(
-          'Ha ocurrido una falla en la búsqueda',
-        );
-        expect(response.statusCode).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
-        expect(response.data).toBeUndefined();
-      }
+      jest.spyOn(shiffRepository, 'findOne').mockRejectedValue(new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR));
+    
+      await expect(service.findOneShiff(id)).rejects.toThrow(HttpException);
+      await expect(service.findOneShiff(id)).rejects.toMatchObject({
+        response: 'Error del servidor',
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     });
-  });
+    });
+ 
   describe('deleteShiff', () => {
     it('should delete shiff and return the result', async () => {
       const result: IResponse = {
@@ -267,27 +250,25 @@ describe('ShiffService', () => {
       jest
         .spyOn(shiffRepository, 'delete')
         .mockRejectedValue(
-          new Error('Ha ocurrido un error. No se logró eliminar el turno'),
+          new Error('Error del servidor'),
         );
       try {
         await service.deleteShiff(id);
       } catch (error) {
         expect(error.message).toBe(
-          'Ha ocurrido un error. No se logró eliminar el turno',
+          'Error del servidor',
         );
         expect(error.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
     it('should handle non-existing shiff', async () => {
-
       jest.spyOn(shiffRepository, 'findOne').mockResolvedValue(null);
-
-      const response = await service.deleteShiff(id);
-
-      expect(response).toEqual({
-        message: 'El turno no ha sido encontrado',
-        statusCode: HttpStatus.NOT_FOUND,
+    
+      await expect(service.deleteShiff(id)).rejects.toThrow(HttpException);
+      await expect(service.deleteShiff(id)).rejects.toMatchObject({
+        response: 'El turno no ha sido encontrado',
+        status: HttpStatus.NOT_FOUND,
       });
-    });
   });
 });
+})

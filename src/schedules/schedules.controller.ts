@@ -6,7 +6,7 @@ import {
   Param,
   Delete,
   HttpException,
-  Put
+  Put,
 } from '@nestjs/common';
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -25,7 +25,7 @@ export class ScheduleController {
   ): Promise<HttpException | CreateScheduleDto | IResponse | void> {
     return this.scheduleService.createScheduleWithInterval(newSchedule);
   }
-
+ 
   @Get()
   findAllSchedules() {
     return this.scheduleService.getSchedules();
@@ -47,28 +47,42 @@ export class ScheduleController {
   }
   @Put('/updateAvailability/:idSchedule')
   async updateAvailability(
-    @Param('idSchedule') idSchedule:number,
+    @Param('idSchedule') idSchedule: number,
   ): Promise<HttpException | UpdateScheduleDto | IResponse> {
     return await this.scheduleService.updateAvailability(idSchedule);
   }
 
   @Get('/schedules/count')
   async getCountTake(
-    @Body() body: { idDoctor: number, day: string }
+    @Body() body: { idDoctor: number; day: string },
   ): Promise<IResponse | HttpException | Schedule[]> {
     const { idDoctor, day } = body;
     return this.scheduleService.countScheduleByDoctor(day, idDoctor);
   }
   @Get('/by-doctor/:idDoctor')
-  getSchedulesByDoctor(@Param('idDoctor') idDoctor: number): Promise<HttpException | Schedule[] | IResponse> {
+  getSchedulesByDoctor(
+    @Param('idDoctor') idDoctor: number,
+  ): Promise<HttpException | Schedule[] | IResponse> {
     return this.scheduleService.getSchedulesByDoctor(idDoctor);
   }
 
   @Get('/schedules/byDay')
   async findScheduleByDay(
-    @Body() body: { idDoctor: number, day: string }
+    @Body() body: { idDoctor: number; day: string },
   ): Promise<IResponse | HttpException | Schedule[]> {
     const { idDoctor, day } = body;
     return this.scheduleService.findScheduleByDay(day, idDoctor);
+  }
+  @Delete(':doctorId/:date')
+  async deleteSchedule(
+    @Param('doctorId') doctorId: number,
+    @Param('date') date: string,
+    @Body('deletionReason') deletionReason: DeletionReason,
+  ): Promise<HttpException | IResponse> {
+    return this.scheduleService.deleteSchedulesByDoctorAndDate(
+      doctorId,
+      date,
+      deletionReason,
+    );
   }
 }

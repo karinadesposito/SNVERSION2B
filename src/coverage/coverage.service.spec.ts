@@ -176,7 +176,7 @@ describe('CoverageService', () => {
       }
       expect(repository.findOne).toHaveBeenLastCalledWith({
         where: { id: cov.id },
-      });
+      }); 
     });
     it('should return "La obra social no fue encontrada" when not found', async () => {
         jest.spyOn(repository, 'findOne').mockResolvedValueOnce(null);

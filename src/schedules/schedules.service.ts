@@ -339,4 +339,42 @@ export class ScheduleService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }}
+    async deleteSchedulesByDoctorAndDate(
+      doctorId: number,
+      date: string,
+      deletionReason: DeletionReason,
+    ): Promise<HttpException | IResponse> {
+      try {
+        const schedules = await this.scheduleRepository.find({
+          where: { idDoctor: doctorId, day: date, removed: false },
+        });
+    
+        if (schedules.length === 0) {
+          throw new HttpException(
+            `No se encontraron horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+    
+        for (const schedule of schedules) {
+          schedule.deletionReason = deletionReason;
+          schedule.removed = true; // Marcar como eliminado
+          await this.scheduleRepository.save(schedule);
+        }
+    
+        return {
+          message: `Se han eliminado ${schedules.length} horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
+          data: schedules.map((schedule) => schedule.idSchedule),
+          statusCode: HttpStatus.OK,
+        };
+      } catch (error) {
+        if (error.status === HttpStatus.NOT_FOUND) {
+          throw error;
+        }
+        throw new HttpException(
+          'Error del servidor',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
 }
