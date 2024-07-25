@@ -13,7 +13,7 @@ export class Admin {
   }
 
   @Column({ length: 14 })
-  @Length(6, 14)
+  @Length(6, 14, { message: 'El nombre de usuario debe tener entre 6 y 14 caracteres' })
   username: string;
 
   @Column({ length: 40 })

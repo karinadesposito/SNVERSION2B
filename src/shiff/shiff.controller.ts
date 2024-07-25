@@ -5,13 +5,15 @@ import {
   Body,
   Param,
   Delete,
-  HttpException
+  HttpException,
+  UseGuards
 } from '@nestjs/common';
 import { ShiffService } from './shiff.service';
 import { CreateShiffDto } from './dto/create-shiff.dto';
 import { UpdateShiffDto } from './dto/update-shiff.dto';
 import { Shiff } from './entities/shiff.entity';
 import { IResponse } from '../interface/IResponse';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('shiff')
 export class ShiffController {
@@ -24,16 +26,19 @@ export class ShiffController {
     return this.shiffService.takeShiff(idSchedule, idPatient);
   }
   @Get()
+  @UseGuards(AuthGuard)
   getShiff(): Promise<UpdateShiffDto[] | IResponse | HttpException> {
     return this.shiffService.getShiff();
   }
   @Get(':id')
+  @UseGuards(AuthGuard)
   findOne(
     @Param('id') id: number,
   ): Promise<HttpException | UpdateShiffDto | IResponse> {
     return this.shiffService.findOneShiff(id);
   }
   @Delete(':id')
+  @UseGuards(AuthGuard)
   deleteShiff(
     @Param('id') id: number,
   ): Promise<HttpException | Shiff | IResponse> {

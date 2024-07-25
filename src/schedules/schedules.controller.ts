@@ -7,6 +7,7 @@ import {
   Delete,
   HttpException,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -14,12 +15,14 @@ import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { Schedule } from './entities/schedule.entity';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('schedules')
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
   @Post()
+  //@UseGuards(AuthGuard)
   create(
     @Body() newSchedule: CreateScheduleDto,
   ): Promise<HttpException | CreateScheduleDto | IResponse | void> {
@@ -32,6 +35,7 @@ export class ScheduleController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard)
   findOneSchedule(
     @Param('id') id: number,
   ): Promise<HttpException | Schedule | IResponse> {
@@ -39,6 +43,7 @@ export class ScheduleController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
   async remove(
     @Param('id') id: number,
     @Body('deletionReason') deletionReason: DeletionReason,
@@ -53,6 +58,7 @@ export class ScheduleController {
   }
 
   @Get('/schedules/count')
+  @UseGuards(AuthGuard)
   async getCountTake(
     @Body() body: { idDoctor: number; day: string },
   ): Promise<IResponse | HttpException | Schedule[]> {
@@ -60,6 +66,7 @@ export class ScheduleController {
     return this.scheduleService.countScheduleByDoctor(day, idDoctor);
   }
   @Get('/by-doctor/:idDoctor')
+  @UseGuards(AuthGuard)
   getSchedulesByDoctor(
     @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Schedule[] | IResponse> {
@@ -67,6 +74,7 @@ export class ScheduleController {
   }
 
   @Get('/schedules/byDay')
+  @UseGuards(AuthGuard)
   async findScheduleByDay(
     @Body() body: { idDoctor: number; day: string },
   ): Promise<IResponse | HttpException | Schedule[]> {
@@ -74,6 +82,7 @@ export class ScheduleController {
     return this.scheduleService.findScheduleByDay(day, idDoctor);
   }
   @Delete(':doctorId/:date')
+  @UseGuards(AuthGuard)
   async deleteSchedule(
     @Param('doctorId') doctorId: number,
     @Param('date') date: string,
