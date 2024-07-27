@@ -22,7 +22,7 @@ export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
   @Post()
-  //@UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   create(
     @Body() newSchedule: CreateScheduleDto,
   ): Promise<HttpException | CreateScheduleDto | IResponse | void> {
@@ -66,7 +66,6 @@ export class ScheduleController {
     return this.scheduleService.countScheduleByDoctor(day, idDoctor);
   }
   @Get('/by-doctor/:idDoctor')
-  @UseGuards(AuthGuard)
   getSchedulesByDoctor(
     @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Schedule[] | IResponse> {
