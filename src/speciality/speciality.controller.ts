@@ -24,7 +24,6 @@ export class SpecialityController {
   }
 
   @Get()
-  @UseGuards(AuthGuard)
   findAll() {
     return this.specialityService.getSpeciality();
   }
