@@ -229,6 +229,9 @@ export class DoctorsService {
       )
     }
   }
+  async findByLicense(license: string): Promise<Doctor> {
+    return await this.doctorRepository.findOne({ where: { license } });
+  }
 
   async findOneDoctor(id: number): Promise<HttpException | Doctor | IResponse> {
     try {

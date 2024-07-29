@@ -26,7 +26,8 @@ export class Doctor extends Person {
   @OneToMany(() => Schedule, (schedule) => schedule.idDoctors)
   schedule: Schedule[];
 
-  @ManyToOne(() => Speciality, (speciality) => speciality.idDoctor)
+  @ManyToOne(() => Speciality, (speciality) => speciality.idDoctor,
+  { onDelete:'SET NULL'})
   @JoinColumn({ name: 'speciality' })
   speciality: Speciality;
 
