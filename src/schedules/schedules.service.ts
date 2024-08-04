@@ -344,6 +344,7 @@ export class ScheduleService {
       date: string,
       deletionReason: DeletionReason,
     ): Promise<HttpException | IResponse> {
+      console.log(`Attempting to delete schedule for doctorId: ${doctorId} on date: ${date}`); // Log para depuración
       try {
         const schedules = await this.scheduleRepository.find({
           where: { idDoctor: doctorId, day: date, removed: false },
@@ -377,4 +378,5 @@ export class ScheduleService {
         );
       }
     }
+    
 }

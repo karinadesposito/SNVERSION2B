@@ -2,6 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -230,7 +231,15 @@ export class DoctorsService {
     }
   }
   async findByLicense(license: string): Promise<Doctor> {
-    return await this.doctorRepository.findOne({ where: { license } });
+    try {
+      const doctor = await this.doctorRepository.findOne({ where: { license } });
+      if (!doctor) {
+        throw new NotFoundException('Doctor not found');
+      }
+      return doctor;
+    } catch (error) {
+      throw new NotFoundException('Error al buscar el doctor por matrícula');
+    }
   }
 
   async findOneDoctor(id: number): Promise<HttpException | Doctor | IResponse> {

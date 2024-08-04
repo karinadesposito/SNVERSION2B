@@ -33,6 +33,12 @@ export class DoctorsController {
   Doctors(): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctors();
   }
+  @Get('license/:license')
+  @UseGuards(AuthGuard)
+  async getDoctorByLicense(@Param('license') license: string) {
+    const doctor = await this.doctorsService.findByLicense(license);
+    return { id: doctor.id };
+  }
   @Get('/shiffAvailable/:idDoctor')
   @UseGuards(AuthGuard)
   DoctorsTwo(
