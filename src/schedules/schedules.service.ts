@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 import { Doctor } from '../doctors/entities/doctor.entity';
+import { EstadoTurno } from '../schedules/entities/schedule.entity';
+import { Patient } from '../patients/entities/patient.entity';
 @Injectable() 
 export class ScheduleService {
   constructor(
@@ -14,6 +16,8 @@ export class ScheduleService {
     private readonly scheduleRepository: Repository<Schedule>,
     @InjectRepository(Doctor)
     private readonly doctorRepository: Repository<Doctor>,
+    @InjectRepository(Patient) 
+    private patientRepository: Repository<Patient>, 
   ) {}
 
   async createScheduleWithInterval(
@@ -64,8 +68,8 @@ export class ScheduleService {
             timeZone: 'America/Argentina/Buenos_Aires',
             hour12: false,
           });
-          newSchedule.available = true;
-          schedules.push(newSchedule);
+          newSchedule.estado = EstadoTurno.DISPONIBLE; // Asignar el estado a DISPONIBLE
+        schedules.push(newSchedule);
         }
 
         await this.scheduleRepository.save(schedules);
@@ -182,163 +186,7 @@ export class ScheduleService {
       );
     }
   }
-  //Funcion para seleccionar turno o cancelarlo (pasa de true a false)
-  async updateAvailability(
-    idSchedule: number,
-  ): Promise<IResponse | HttpException | UpdateScheduleDto> {
-    try {
-      const existingSchedule = await this.scheduleRepository.findOne({
-        where: { idSchedule },
-      });
-      if (!existingSchedule) {
-        throw new HttpException('El turno no existe', HttpStatus.NOT_FOUND);
-      } else if (existingSchedule && existingSchedule.available === true) {
-        await this.scheduleRepository.update(idSchedule, { available: false });
-        const updatedSchedule = await this.scheduleRepository.findOne({
-          where: { idSchedule },
-        });
-        return {
-          message: 'El turno ha sido reservado correctamente',
-          data: updatedSchedule,
-          statusCode: HttpStatus.OK,
-        };
-      } else {
-        await this.scheduleRepository.update(idSchedule, { available: true });
-        const updatedSchedule = await this.scheduleRepository.findOne({
-          where: { idSchedule },
-        });
-        return {
-          message: 'Se ha cancelado el turno correctamente:',
-          data: updatedSchedule,
-          statusCode: HttpStatus.OK,
-        };
-      }
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async findScheduleByDay(
-    day: string,
-    idDoctor: number,
-  ): Promise<HttpException | Schedule[] | IResponse> {
-    try {
-      const doctor = await this.doctorRepository.findOne({
-        where: { id: idDoctor },
-      });
-      if (!doctor) {
-        throw new HttpException(
-          `No existe el doctor indicado`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      const schedules = await this.scheduleRepository.find({
-        where: { day: day, idDoctor: idDoctor, available: false },
-        relations: ['idDoctors', 'shiff'],
-      });
-
-      if (!schedules.length) {
-        throw new HttpException(
-          `No hay turnos disponibles para el ${day}`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      return {
-        message: 'Turnos tomamos en este dia:',
-        data: schedules,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async countScheduleByDoctor(
-    day: string,
-    idDoctor: number,
-  ): Promise<HttpException | Schedule[] | IResponse> {
-    try {
-     const doctor = await this.doctorRepository.findOne({ where: { id: idDoctor } });
-     if (!doctor) {
-       throw new HttpException(
-         `No existe el doctor indicado`,
-         HttpStatus.NOT_FOUND,
-       );
-     }
-      const schedules = await this.scheduleRepository.find({
-        where: { day: day, idDoctor: idDoctor, available: false },
-        relations: ['idDoctors', 'shiff'],
-      });
-     
-      if (schedules.length) {
-        const count = schedules.length;
-        return {
-          message: `Los turnos del doctor ${schedules[0].idDoctors.fullName} son ${count} para el día ${day}`,
-          data: schedules,
-          statusCode: HttpStatus.OK,
-        };
-      } else {
-        throw new HttpException(
-          'No hay turnos reservados para el ${day} del médico',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async getSchedulesByDoctor(
-    idDoctor: number,
-  ): Promise<HttpException | Schedule[] | IResponse> {
-    try {
-      const doctor = await this.doctorRepository.findOne({ where: { id: idDoctor } });
-      if (!doctor) {
-        throw new HttpException(
-          `No existe el doctor indicado`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const schedules = await this.scheduleRepository.find({
-        where: { idDoctor, available: true , removed: false },
-      });
-
-      if (!schedules.length)
-        throw new HttpException(
-           `No existen agendas registradas para el doctor ${schedules[0].idDoctors.fullName}`,
-           HttpStatus.NOT_FOUND,
-        );
-      return {
-        message: 'Turnos disponibles para el doctor :',
-        data: schedules,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }}
+  
     async deleteSchedulesByDoctorAndDate(
       doctorId: number,
       date: string,
@@ -376,6 +224,148 @@ export class ScheduleService {
           'Error del servidor',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
+      }
+    }
+    
+    async takeSchedule(
+      idSchedule: number,
+      idPatient: number,
+    ): Promise<IResponse> {
+      try {
+        // Buscar el horario por ID
+        const schedule = await this.scheduleRepository.findOne({
+          where: { idSchedule },
+          relations: ['patient', 'idDoctors'], // Cargar las relaciones necesarias
+        });
+    
+        if (!schedule) {
+          throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
+        }
+    
+        if (schedule.removed) {
+          throw new HttpException('Horario ha sido eliminado', HttpStatus.NOT_FOUND);
+        }
+    
+        if (schedule.estado !== EstadoTurno.DISPONIBLE) {
+          throw new HttpException('Horario no disponible', HttpStatus.CONFLICT);
+        }
+    
+        // Buscar el paciente por ID
+        const patient = await this.patientRepository.findOne({
+          where: { id: idPatient },
+        });
+    
+        if (!patient) {
+          throw new HttpException('Paciente no encontrado', HttpStatus.NOT_FOUND);
+        }
+    
+        // Verificar si el paciente ya tiene un turno con el mismo doctor y día
+        const existingTurn = await this.scheduleRepository.findOne({
+          where: {
+            patient: patient, // Usamos la relación en lugar del id directamente
+            idDoctor: schedule.idDoctor,
+            day: schedule.day,
+            estado: EstadoTurno.CONFIRMADO,
+          },
+        });
+    
+        if (existingTurn) {
+          throw new HttpException(
+            `El paciente con DNI ${patient.dni} ya tiene un turno confirmado con el doctor ${schedule.idDoctor} para el día ${schedule.day}`,
+            HttpStatus.CONFLICT,
+          );
+        }
+    
+        // Actualizar el estado del turno a "CONFIRMADO"
+        schedule.estado = EstadoTurno.CONFIRMADO;
+        schedule.patient = patient; // Asignamos el paciente directamente
+    
+        const savedSchedule = await this.scheduleRepository.save(schedule);
+    
+        return {
+          message: 'El turno se ha confirmado',
+          data: savedSchedule,
+          statusCode: HttpStatus.CREATED,
+        };
+      } catch (error) {
+        if (error.status === HttpStatus.NOT_FOUND || HttpStatus.CONFLICT) {
+          throw error;
+        }
+        throw new HttpException(
+          'Error del servidor',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+    async getSchedulesByDoctor(
+      idDoctor: number,
+      estado?: EstadoTurno, // Parámetro opcional para el estado del turno
+    ): Promise<HttpException | IResponse> {
+      try {
+        const doctor = await this.doctorRepository.findOne({ where: { id: idDoctor } });
+        if (!doctor) {
+          throw new HttpException(
+            `No existe el doctor indicado`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+    
+        const whereCondition = { idDoctor }; // Condición básica
+        if (estado) {
+          whereCondition['estado'] = estado; // Filtrar por estado si se proporciona
+        }
+    
+        const schedules = await this.scheduleRepository.find({
+          where: whereCondition,
+          relations: ['idDoctors', 'patient'],
+        });
+    
+        if (!schedules.length) {
+          throw new HttpException(
+            `No existen agendas registradas para el doctor ${doctor.fullName}`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+    
+        return {
+          message: 'Turnos disponibles para el doctor:',
+          data: schedules,
+          statusCode: HttpStatus.OK,
+        };
+      } catch (error) {
+        if (error.status === HttpStatus.NOT_FOUND) {
+          throw error;
+        }
+        throw new HttpException(
+          'Error del servidor',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
+    
+    async actualizarEstadoNoReservado(): Promise<void> {
+      const currentDate = new Date(); // Fecha y hora actual
+      const currentDateString = currentDate.toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+      const currentTimeString = currentDate.toTimeString().split(' ')[0]; // Formato 'HH:MM:SS'
+  
+      // Obtener todos los turnos que están disponibles
+      const schedules = await this.scheduleRepository.find({
+        where: { estado: EstadoTurno.DISPONIBLE },
+      });
+  
+      for (const schedule of schedules) {
+        const scheduleDate = schedule.day.toString().split('T')[0]; // Convierte el día a 'YYYY-MM-DD'
+        const scheduleTime = schedule.start_Time; // Asumiendo que es un string en formato 'HH:MM:SS'
+  
+        // Compara la fecha y hora
+        if (
+          (scheduleDate < currentDateString) || // Si la fecha es anterior a hoy
+          (scheduleDate === currentDateString && scheduleTime < currentTimeString) // Si es hoy y la hora ya pasó
+        ) {
+          // Cambiar el estado a 'NO_RESERVADO'
+          schedule.estado = EstadoTurno.NO_RESERVADO;
+          await this.scheduleRepository.save(schedule);
+        }
       }
     }
     

@@ -6,12 +6,12 @@ import {
   Param,
   Delete,
   Put,
-  UseGuards,
+
 } from '@nestjs/common';
 import { SpecialityService } from './speciality.service';
 import { CreateSpecialityDto } from './dto/create-speciality.dto';
 import { UpdateSpecialityDto } from './dto/update-speciality.dto';
-import { AuthGuard } from '../auth/auth.guard';
+
 
 @Controller('speciality')
 export class SpecialityController {
@@ -29,13 +29,13 @@ export class SpecialityController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard)
+ 
   findOne(@Param('id') id: number) {
     return this.specialityService.findOneSpeciality(id);
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
+
   update(
     @Param('id') id: number,
     @Body() updateSpecialityDto: UpdateSpecialityDto,
@@ -44,7 +44,7 @@ export class SpecialityController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+
   remove(@Param('id') id: number) {
     return this.specialityService.deleteSpeciality(id);
   }

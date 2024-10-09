@@ -7,7 +7,7 @@ import {
   Delete,
   HttpException,
   Put,
-  UseGuards,
+ 
 } from '@nestjs/common';
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -21,50 +21,55 @@ import { AuthGuard } from '../auth/auth.guard';
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
-  @Post()
-  @UseGuards(AuthGuard)
+  @Post() 
   create(
     @Body() newSchedule: CreateScheduleDto,
   ): Promise<HttpException | CreateScheduleDto | IResponse | void> {
     return this.scheduleService.createScheduleWithInterval(newSchedule);
   }
- 
+
+  @Post(':idSchedule/take')
+  async takeSchedule(
+    @Param('idSchedule') idSchedule: number,
+    @Body('idPatient') idPatient: number, // Asegúrate de que idPatient esté en el body
+  ): Promise<IResponse> {
+    return await this.scheduleService.takeSchedule(idSchedule, idPatient);
+  }
+
   @Get()
   findAllSchedules() {
     return this.scheduleService.getSchedules();
   }
 
-  @Get(':id')
-  @UseGuards(AuthGuard)
+  @Get(':id') 
   findOneSchedule(
     @Param('id') id: number,
   ): Promise<HttpException | Schedule | IResponse> {
     return this.scheduleService.findOneSchedule(id);
   }
 
-  @Delete(':id')
-  @UseGuards(AuthGuard)
+  @Delete(':id') 
   async remove(
     @Param('id') id: number,
     @Body('deletionReason') deletionReason: DeletionReason,
   ): Promise<HttpException | Schedule | IResponse> {
     return this.scheduleService.deleteSchedule(id, deletionReason);
   }
-  @Put('/updateAvailability/:idSchedule')
-  async updateAvailability(
-    @Param('idSchedule') idSchedule: number,
-  ): Promise<HttpException | UpdateScheduleDto | IResponse> {
-    return await this.scheduleService.updateAvailability(idSchedule);
-  }
+  // @Put('/updateAvailability/:idSchedule')
+  // async updateAvailability(
+  //   @Param('idSchedule') idSchedule: number,
+  // ): Promise<HttpException | UpdateScheduleDto | IResponse> {
+  //   return await this.scheduleService.updateAvailability(idSchedule);
+  // }
 
-  @Get('/schedules/count')
-  @UseGuards(AuthGuard)
-  async getCountTake(
-    @Body() body: { idDoctor: number; day: string },
-  ): Promise<IResponse | HttpException | Schedule[]> {
-    const { idDoctor, day } = body;
-    return this.scheduleService.countScheduleByDoctor(day, idDoctor);
-  }
+  // @Get('/schedules/count')
+  // @ards(AuthGuard)
+  // async getCountTake(
+  //   @Body() body: { idDoctor: number; day: string },
+  // ): Promise<IResponse | HttpException | Schedule[]> {
+  //   const { idDoctor, day } = body;
+  //   return this.scheduleService.countScheduleByDoctor(day, idDoctor);
+  // }
   @Get('/by-doctor/:idDoctor')
   getSchedulesByDoctor(
     @Param('idDoctor') idDoctor: number,
@@ -72,16 +77,16 @@ export class ScheduleController {
     return this.scheduleService.getSchedulesByDoctor(idDoctor);
   }
 
-  @Get('/schedules/byDay')
-  @UseGuards(AuthGuard)
-  async findScheduleByDay(
-    @Body() body: { idDoctor: number; day: string },
-  ): Promise<IResponse | HttpException | Schedule[]> {
-    const { idDoctor, day } = body;
-    return this.scheduleService.findScheduleByDay(day, idDoctor);
-  }
+  // @Get('/schedules/byDay')
+  // 
+  // async findScheduleByDay(
+  //   @Body() body: { idDoctor: number; day: string },
+  // ): Promise<IResponse | HttpException | Schedule[]> {
+  //   const { idDoctor, day } = body;
+  //   return this.scheduleService.findScheduleByDay(day, idDoctor);
+  // }
   @Delete(':doctorId/:date')
-  @UseGuards(AuthGuard)
+
   async deleteSchedule(
     @Param('doctorId') doctorId: number,
     @Param('date') date: string,

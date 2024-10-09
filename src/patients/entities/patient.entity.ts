@@ -1,6 +1,8 @@
 import { Coverage } from '../../coverage/entities/coverage.entity';
 import { Person } from '../../person/person.entity';
-import { Shiff } from '../../shiff/entities/shiff.entity';
+import { Schedule } from '../../schedules/entities/schedule.entity';
+
+// import { Shiff } from '../../shiff/entities/shiff.entity';
 import {
   Column,
   Entity,
@@ -20,9 +22,11 @@ export class Patient extends Person {
   @Column({ type: 'date' })
   birthday: Date;
 
-  // el paciente puede tener muchos turnos
-  @OneToMany(() => Shiff, (shiff) => shiff.idPatient)
-  shiffs: Shiff[];
+  // // el paciente puede tener muchos turnos
+  // @OneToMany(() => Shiff, (shiff) => shiff.idPatient)
+  // shiffs: Shiff[];
+  @OneToMany(() => Schedule, (schedule) => schedule.patient)
+  schedules: Schedule[];
 
   @OneToOne(() => Coverage)
   @JoinColumn()

@@ -1,21 +1,36 @@
-import { IsNotEmpty } from 'class-validator';
+
+
+import { IsNotEmpty, IsEnum, IsOptional, IsBoolean, IsNumber, IsString } from 'class-validator';
+import { EstadoTurno } from '../entities/schedule.entity'; // Asegúrate de importar el enum correctamente
 
 export class CreateScheduleDto {
   @IsNotEmpty()
-  day: string;
+  @IsString()
+  day: string; // La fecha del turno
 
   @IsNotEmpty()
-  idDoctor: number;
+  @IsNumber()
+  idDoctor: number; // ID del doctor que da el turno
 
   @IsNotEmpty()
-  start_Time: string;
+  @IsString()
+  start_Time: string; // Hora de inicio del turno
 
   @IsNotEmpty()
-  end_Time: string;
+  @IsString()
+  end_Time: string; // Hora de fin del turno
 
-  @IsNotEmpty()
-  available: boolean;
-  
-  @IsNotEmpty()
-  interval: string;
+  @IsOptional() // Este campo es opcional
+  @IsBoolean()
+  removed?: boolean; // Indica si el turno fue eliminado
+
+  @IsOptional()
+  @IsString()
+  interval?: string; // Intervalo de tiempo (opcional)
+
+
+  @IsOptional()
+  @IsEnum(EstadoTurno) // Usamos el enum de EstadoTurno 
+  estado?: EstadoTurno; // Estado del turno (disponible, confirmado, etc.)
 }
+

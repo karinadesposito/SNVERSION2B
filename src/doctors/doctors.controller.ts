@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   HttpException,
-  UseGuards,
+
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -15,14 +15,14 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { IResponse } from '../interface/IResponse';
 import { AddCoverageToDoctorDto } from '../coverage/dto/add-coverage.dto';
-import { AuthGuard } from '../auth/auth.guard';
+
 
 @Controller('doctors')
 export class DoctorsController {
   constructor(private readonly doctorsService: DoctorsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+
   create(
     @Body() newDoctor: CreateDoctorDto,
   ): Promise<HttpException | CreateDoctorDto | IResponse> {
@@ -34,20 +34,20 @@ export class DoctorsController {
     return this.doctorsService.getDoctors();
   }
   @Get('license/:license')
-  @UseGuards(AuthGuard)
+ 
   async getDoctorByLicense(@Param('license') license: string) {
     const doctor = await this.doctorsService.findByLicense(license);
     return { id: doctor.id };
   }
   @Get('/shiffAvailable/:idDoctor')
-  @UseGuards(AuthGuard)
+ 
   DoctorsTwo(
     @Param('idDoctor') idDoctor: number,
   ): Promise<HttpException | Doctor[] | IResponse> {
     return this.doctorsService.getDoctorsShiff(idDoctor);
   }
   @Get(':id')
-  @UseGuards(AuthGuard)
+ 
   findOneDoctor(
     @Param('id') id: number,
   ): Promise<HttpException | Doctor | IResponse> {
@@ -55,7 +55,7 @@ export class DoctorsController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
+
   updateDoctor(
     @Body() updateDoctor: Partial<UpdateDoctorDto>,
     @Param('id') id: number,
@@ -64,7 +64,7 @@ export class DoctorsController {
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+ 
   deleteDoctor(
     @Param('id') id: number,
   ): Promise<HttpException | Doctor | IResponse> {
@@ -72,7 +72,7 @@ export class DoctorsController {
   }
 
   @Post('/addCoverage')
-  @UseGuards(AuthGuard)
+ 
   async addCoverageToDoctor(
     @Body() addCoverageToDoctorDto: AddCoverageToDoctorDto,
   ): Promise<HttpException | Doctor | IResponse> {
@@ -80,16 +80,16 @@ export class DoctorsController {
   } 
 
   @Delete('/remove/coverage')
-  @UseGuards(AuthGuard)
+
   async removeCoverageFromDoctor(
     @Body() doctorData: AddCoverageToDoctorDto,
   ): Promise<Doctor | IResponse> {
     return await this.doctorsService.removeCoverageFromDoctor(doctorData);
   }
-  @Get('/patients/:id')
-  @UseGuards(AuthGuard)
-  getPatientsByDoctorId(@Param('id') doctorId: number) {
-    return this.doctorsService.findPatientsByDoctorId(doctorId);
-  }
+  // @Get('/patients/:id')
+  //
+  // getPatientsByDoctorId(@Param('id') doctorId: number) {
+  //   return this.doctorsService.findPatientsByDoctorId(doctorId);
+  // }
 
 }

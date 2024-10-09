@@ -14,6 +14,7 @@ import { IResponse } from '../interface/IResponse';
 import { Coverage } from '../coverage/entities/coverage.entity';
 import { AddCoverageToDoctorDto } from '../coverage/dto/add-coverage.dto';
 import { Patient } from '../patients/entities/patient.entity';
+import { EstadoTurno } from '../schedules/entities/schedule.entity';
 
 @Injectable()
 export class DoctorsService {
@@ -207,8 +208,8 @@ export class DoctorsService {
         );
       }
       const availableSchedules = doctors[0]?.schedule.filter(
-        (schedule) => schedule.available,
-      );
+        (schedule) => schedule.estado === EstadoTurno.DISPONIBLE,
+    );
       if (!availableSchedules.length) {
         throw new HttpException(
           `No hay turnos disponibles para el doctor especificado con id ${idDoctor}`,
@@ -326,50 +327,50 @@ export class DoctorsService {
     }
   }
 
-  async findPatientsByDoctorId(
-    doctorId: number,
-  ): Promise<HttpException | Patient[] | IResponse> {
-    try {
-      const options: FindOneOptions<Doctor> = {
-        relations: ['schedule', 'schedule.shiff', 'schedule.shiff.idPatient'],
-        where: { id: doctorId },
-      };
+  // async findPatientsByDoctorId(
+  //   doctorId: number,
+  // ): Promise<HttpException | Patient[] | IResponse> {
+  //   try {
+  //     const options: FindOneOptions<Doctor> = {
+  //       relations: ['schedule', 'schedule.shiff', 'schedule.shiff.idPatient'],
+  //       where: { id: doctorId },
+  //     };
 
-      const doctor = await this.doctorRepository.findOne(options);
+  //     const doctor = await this.doctorRepository.findOne(options);
 
-      if (!doctor) {
-        throw new HttpException(
-          `El Doctor con ${doctorId} no existe en la base de datos`,
-          HttpStatus.NOT_FOUND, 
-        );
-      }
+  //     if (!doctor) {
+  //       throw new HttpException(
+  //         `El Doctor con ${doctorId} no existe en la base de datos`,
+  //         HttpStatus.NOT_FOUND, 
+  //       );
+  //     }
 
-      if (doctor.schedule.length === 0) {
-        throw new HttpException(
-          `No se encontraron pacientes asociados al médico con id ${doctorId}`,
-           HttpStatus.NOT_FOUND,
-          )
-      }
+  //     if (doctor.schedule.length === 0) {
+  //       throw new HttpException(
+  //         `No se encontraron pacientes asociados al médico con id ${doctorId}`,
+  //          HttpStatus.NOT_FOUND,
+  //         )
+  //     }
 
-      const patients = doctor.schedule
-        .filter((schedule) => schedule.shiff)
-        .map((schedule) => schedule.shiff.idPatient);
+  //     const patients = doctor.schedule
+  //       .filter((schedule) => schedule.shiff)
+  //       .map((schedule) => schedule.shiff.idPatient);
 
-      return {
-        message: 'Los pacientes del médico son:',
-        data: patients,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  //     return {
+  //       message: 'Los pacientes del médico son:',
+  //       data: patients,
+  //       statusCode: HttpStatus.OK,
+  //     };
+  //   } catch (error) {
+  //     if (error.status === HttpStatus.NOT_FOUND) {
+  //       throw error;
+  //     }
+  //     throw new HttpException(
+  //       'Error del servidor',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
   
-  }
+  // }
 
 }

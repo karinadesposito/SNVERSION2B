@@ -13,7 +13,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PatientsModule } from './patients/patients.module';
 import { DoctorsModule } from './doctors/doctors.module';
-import { ShiffModule } from './shiff/shiff.module';
+
 import { SchedulesModule } from './schedules/schedules.module';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
@@ -30,12 +30,13 @@ import { CoverageModule } from './coverage/coverage.module';
       port: PORT,
       database: DB_NAME,
       entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
+      // migrations: [join(__dirname, '/migrations/*{.ts,.js}')],
       synchronize: true,
     }),
     PatientsModule,
     DoctorsModule,
     SchedulesModule,
-    ShiffModule,
+ 
     AdminModule,
     AuthModule,
     SpecialityModule,
