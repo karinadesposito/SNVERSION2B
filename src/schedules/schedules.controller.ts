@@ -12,7 +12,7 @@ import {
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
-import { Schedule } from './entities/schedule.entity';
+import { EstadoTurno, Schedule } from './entities/schedule.entity';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 import { AuthGuard } from '../auth/auth.guard';
@@ -97,5 +97,13 @@ export class ScheduleController {
       date,
       deletionReason,
     );
+  }
+
+  @Put(':idSchedule/status')
+  async changeScheduleStatus(
+    @Param('idSchedule') idSchedule: number,
+    @Body('estado') newStatus: EstadoTurno,
+  ): Promise<HttpException | IResponse> {
+    return this.scheduleService.changeScheduleStatus(idSchedule, newStatus);
   }
 }

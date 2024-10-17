@@ -297,6 +297,7 @@ export class ScheduleService {
         );
       }
     }
+
     async getSchedulesByDoctor(
       idDoctor: number,
       estado?: EstadoTurno, // Parámetro opcional para el estado del turno
@@ -369,4 +370,57 @@ export class ScheduleService {
       }
     }
     
+    async updateStatus(currentStatus: EstadoTurno, newStatus: EstadoTurno): Promise<boolean> {
+      const transitions = {
+        [EstadoTurno.DISPONIBLE]: [EstadoTurno.CONFIRMADO, EstadoTurno.NO_RESERVADO, EstadoTurno.ELIMINADO],
+        [EstadoTurno.CONFIRMADO]: [EstadoTurno.CANCELADO, EstadoTurno.EJECUTADO, EstadoTurno.NO_ASISTIDO, EstadoTurno.ELIMINADO],
+        [EstadoTurno.CANCELADO]: [EstadoTurno.DISPONIBLE],
+        [EstadoTurno.ELIMINADO]: [],
+        [EstadoTurno.EJECUTADO]: [],
+        [EstadoTurno.NO_ASISTIDO]: [],
+        [EstadoTurno.NO_RESERVADO]: [],
 }
+      return transitions[currentStatus]?.includes(newStatus) ?? false;
+    }
+  
+    // Función para cambiar el estado de un turno
+    async changeScheduleStatus(idSchedule: number, newStatus: EstadoTurno): Promise<HttpException | IResponse> {
+      try{
+      const schedule = await this.scheduleRepository.findOne({ where: { idSchedule } });
+      
+      if (!schedule) {
+        throw new HttpException('Horario no encontrado', HttpStatus.NOT_FOUND);
+      }
+  
+      // Validar si la transición es permitida
+      const isTransitionValid = await this.updateStatus(schedule.estado, newStatus);
+        if (!isTransitionValid) {
+        throw new HttpException(`No se puede cambiar el estado de ${schedule.estado} a ${newStatus}`, HttpStatus.CONFLICT);
+      }
+  
+    if (newStatus === EstadoTurno.CANCELADO) {
+      schedule.patient = null; 
+      schedule.estado = EstadoTurno.DISPONIBLE; 
+    } else {
+      schedule.estado = newStatus;
+    }
+    const savedStatus = await this.scheduleRepository.save(schedule);
+
+    return {
+      message: 'Se ha actualizado el estado del turno',
+      data: savedStatus,
+      statusCode: HttpStatus.OK,
+    };
+
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND || HttpStatus.CONFLICT) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    }   
+} 
+    
