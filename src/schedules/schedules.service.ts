@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
-
+import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Schedule } from './entities/schedule.entity';
 import { Repository, LessThan, LessThanOrEqual } from 'typeorm';
@@ -370,78 +370,92 @@ export class ScheduleService {
         }
       }
     }
-   // schedule.service.ts
-//    async cancelarTurno(idSchedule: number): Promise<Schedule> {
-//     const turno = await this.scheduleRepository.findOne({
-//         where: { idSchedule },
-//     });
-
-//     if (!turno) {
-//         throw new NotFoundException(`Turno con ID ${idSchedule} no encontrado`);
-//     }
-
-//     if (turno.estado === EstadoTurno.CONFIRMADO) {
-//         turno.estado = EstadoTurno.DISPONIBLE; // Cambia el estado a 'disponible'
-//         turno.patient = null; // Limpia la relación con el paciente
-//         await this.scheduleRepository.save(turno);
-//         return turno;
-//     } else {
-//         throw new BadRequestException('Solo los turnos confirmados pueden ser cancelados');
-//     }
-// }
-async changeScheduleStatus(
-  idSchedule: number,
-  { estado, idPatient, deletionReason }: { estado: EstadoTurno, idPatient?: number, deletionReason?: DeletionReason },
-): Promise<Schedule> {
-  const schedule = await this.scheduleRepository.findOne({ where: { idSchedule }, relations: ['patient'] });
-  
-  if (!schedule) {
-    throw new NotFoundException('Turno no encontrado');
-  }
-
-  // Lógica para cambios de estado
-  switch (estado) {
-    case EstadoTurno.ELIMINADO:
-      schedule.estado = EstadoTurno.ELIMINADO;
-      schedule.removed = true;
-      schedule.deletionReason = deletionReason || null;
-      schedule.patient = null; // Si el turno estaba reservado, lo desasignamos
-      break;
-
-    case EstadoTurno.EJECUTADO:
-      if (schedule.estado !== EstadoTurno.CONFIRMADO) {
-        throw new BadRequestException('El turno debe estar confirmado para ser ejecutado');
+   
+    async changeScheduleStatus(
+      idSchedule: number,
+      { estado, idPatient, deletionReason }: { estado: EstadoTurno; idPatient?: number; deletionReason?: DeletionReason },
+    ): Promise<Schedule> {
+      const schedule = await this.scheduleRepository.findOne({ where: { idSchedule }, relations: ['patient'] });
+      
+      if (!schedule) {
+        throw new NotFoundException('Turno no encontrado');
       }
-      schedule.estado = EstadoTurno.EJECUTADO;
-      break;
-
-    case EstadoTurno.NO_ASISTIDO:
-      if (schedule.estado !== EstadoTurno.CONFIRMADO) {
-        throw new BadRequestException('El turno debe estar confirmado para marcarlo como no asistido');
+    
+      // Transiciones válidas entre estados
+      const transicionesValidas = {
+        [EstadoTurno.DISPONIBLE]: [EstadoTurno.CONFIRMADO, EstadoTurno.NO_RESERVADO],
+        [EstadoTurno.CONFIRMADO]: [EstadoTurno.EJECUTADO, EstadoTurno.NO_ASISTIDO, EstadoTurno.CANCELADO],
+        [EstadoTurno.CANCELADO]: [EstadoTurno.DISPONIBLE], // cuando cancela el paciente, vuelve a disponible
+        [EstadoTurno.EJECUTADO]: [], // No puede pasar a otro estado
+        [EstadoTurno.NO_ASISTIDO]: [], // No puede pasar a otro estado
+        [EstadoTurno.NO_RESERVADO]: [], // No puede pasar a otro estado
+        [EstadoTurno.ELIMINADO]: [] // No puede pasar a otro estado
+      };
+    
+      // Función para validar transiciones
+      const esTransicionValida = (estadoActual: EstadoTurno, nuevoEstado: EstadoTurno): boolean => {
+        const transiciones = transicionesValidas[estadoActual];
+        return transiciones.includes(nuevoEstado);
+      };
+    
+      // Lógica para cambios de estado
+      switch (estado) {
+        case EstadoTurno.ELIMINADO:
+          if (!esTransicionValida(schedule.estado, EstadoTurno.ELIMINADO)) {
+            throw new BadRequestException('Transición no válida desde el estado actual');
+          }
+          schedule.estado = EstadoTurno.ELIMINADO;
+          schedule.removed = true;
+          schedule.deletionReason = deletionReason || null;
+          schedule.patient = null; // Si el turno estaba reservado, lo desasignamos
+          break;
+    
+        case EstadoTurno.EJECUTADO:
+          if (!esTransicionValida(schedule.estado, EstadoTurno.EJECUTADO)) {
+            throw new BadRequestException('Transición no válida desde el estado actual');
+          }
+          if (schedule.estado !== EstadoTurno.CONFIRMADO) {
+            throw new BadRequestException('El turno debe estar confirmado para ser ejecutado');
+          }
+          schedule.estado = EstadoTurno.EJECUTADO;
+          break;
+    
+        case EstadoTurno.NO_ASISTIDO:
+          if (!esTransicionValida(schedule.estado, EstadoTurno.NO_ASISTIDO)) {
+            throw new BadRequestException('Transición no válida desde el estado actual');
+          }
+          if (schedule.estado !== EstadoTurno.CONFIRMADO) {
+            throw new BadRequestException('El turno debe estar confirmado para marcarlo como no asistido');
+          }
+          schedule.estado = EstadoTurno.NO_ASISTIDO;
+          break;
+    
+        case EstadoTurno.CANCELADO:
+          if (!esTransicionValida(schedule.estado, EstadoTurno.CANCELADO)) {
+            throw new BadRequestException('Transición no válida desde el estado actual');
+          }
+          if (!schedule.patient) {
+            throw new BadRequestException('El turno no está reservado');
+          }
+          schedule.estado = EstadoTurno.DISPONIBLE; // Cambiamos a DISPONIBLE al cancelar
+          schedule.patient = null; // Liberamos el turno
+          break;
+    
+        case EstadoTurno.DISPONIBLE:
+          if (!esTransicionValida(schedule.estado, EstadoTurno.DISPONIBLE)) {
+            throw new BadRequestException('Transición no válida desde el estado actual');
+          }
+          schedule.estado = EstadoTurno.DISPONIBLE;
+          schedule.patient = null; // Desasignamos el paciente si estaba reservado
+          break;
+    
+        default:
+          throw new BadRequestException('Estado no válido');
       }
-      schedule.estado = EstadoTurno.NO_ASISTIDO;
-      break;
-
-    case EstadoTurno.CANCELADO:
-      if (!schedule.patient) {
-        throw new BadRequestException('El turno no está reservado');
-      }
-      schedule.estado = EstadoTurno.CANCELADO;
-      schedule.patient = null; // Liberamos el turno
-      break;
-
-    case EstadoTurno.DISPONIBLE:
-      schedule.estado = EstadoTurno.DISPONIBLE;
-      schedule.patient = null; // Desasignamos el paciente si estaba reservado
-      break;
-
-    default:
-      throw new BadRequestException('Estado no válido');
-  }
-
-  return await this.scheduleRepository.save(schedule);
-}
-
+    
+      return await this.scheduleRepository.save(schedule);
+    }
+    
 
 
   // Este cron se ejecutará cada noche a la medianoche para verificar los turnos expirados
@@ -457,7 +471,7 @@ async changeScheduleStatus(
     });
     console.log(`Turnos expirados encontrados: ${expiredSchedules.length}`);
     for (const schedule of expiredSchedules) {
-      console.log(`Actualizando turno con ID: ${schedule.idSchedule}`);
+     
       schedule.estado = EstadoTurno.NO_RESERVADO;
       await this.scheduleRepository.save(schedule);
     }

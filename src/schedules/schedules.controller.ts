@@ -79,13 +79,15 @@ export class ScheduleController {
     );
   }
 
-@Put(':id/change-status')
-async changeScheduleStatus(
-  @Param('id') idSchedule: number,
-  @Body() updateStatusDto: { estado: EstadoTurno, idPatient?: number, deletionReason?: DeletionReason },
-): Promise<Schedule> {
-  return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
-}
+  @Put(':id/change-status')
+  async changeScheduleStatus(
+    @Param('id') idSchedule: number,
+    @Body() updateStatusDto: { estado: EstadoTurno; idPatient?: number; deletionReason?: DeletionReason },
+  ): Promise<Schedule> {
+  
+    return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
+  }
+  
 
 @Get('test-update-expired-schedules') // Debe coincidir con la ruta que estás usando
     async testUpdateExpiredSchedules(): Promise<{ message: string }> {
