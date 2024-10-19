@@ -11,11 +11,12 @@ import {
 } from '@nestjs/common';
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
-import { UpdateScheduleDto } from './dto/update-schedule.dto';
+
 import { Schedule } from './entities/schedule.entity';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 import { AuthGuard } from '../auth/auth.guard';
+import { EstadoTurno } from '../schedules/entities/schedule.entity';
 
 @Controller('schedules')
 export class ScheduleController {
@@ -55,21 +56,7 @@ export class ScheduleController {
   ): Promise<HttpException | Schedule | IResponse> {
     return this.scheduleService.deleteSchedule(id, deletionReason);
   }
-  // @Put('/updateAvailability/:idSchedule')
-  // async updateAvailability(
-  //   @Param('idSchedule') idSchedule: number,
-  // ): Promise<HttpException | UpdateScheduleDto | IResponse> {
-  //   return await this.scheduleService.updateAvailability(idSchedule);
-  // }
-
-  // @Get('/schedules/count')
-  // @ards(AuthGuard)
-  // async getCountTake(
-  //   @Body() body: { idDoctor: number; day: string },
-  // ): Promise<IResponse | HttpException | Schedule[]> {
-  //   const { idDoctor, day } = body;
-  //   return this.scheduleService.countScheduleByDoctor(day, idDoctor);
-  // }
+ 
   @Get('/by-doctor/:idDoctor')
   getSchedulesByDoctor(
     @Param('idDoctor') idDoctor: number,
@@ -77,14 +64,7 @@ export class ScheduleController {
     return this.scheduleService.getSchedulesByDoctor(idDoctor);
   }
 
-  // @Get('/schedules/byDay')
-  // 
-  // async findScheduleByDay(
-  //   @Body() body: { idDoctor: number; day: string },
-  // ): Promise<IResponse | HttpException | Schedule[]> {
-  //   const { idDoctor, day } = body;
-  //   return this.scheduleService.findScheduleByDay(day, idDoctor);
-  // }
+  
   @Delete(':doctorId/:date')
 
   async deleteSchedule(
@@ -98,4 +78,19 @@ export class ScheduleController {
       deletionReason,
     );
   }
+
+@Put(':id/change-status')
+async changeScheduleStatus(
+  @Param('id') idSchedule: number,
+  @Body() updateStatusDto: { estado: EstadoTurno, idPatient?: number, deletionReason?: DeletionReason },
+): Promise<Schedule> {
+  return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
+}
+
+@Get('test-update-expired-schedules') // Debe coincidir con la ruta que estás usando
+    async testUpdateExpiredSchedules(): Promise<{ message: string }> {
+        await this.scheduleService.updateExpiredSchedules();
+        return { message: 'Función ejecutada manualmente' };
+    }
+
 }

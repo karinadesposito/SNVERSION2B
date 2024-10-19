@@ -32,6 +32,7 @@ import { CoverageModule } from './coverage/coverage.module';
       entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
       // migrations: [join(__dirname, '/migrations/*{.ts,.js}')],
       synchronize: true,
+      dropSchema: true,
     }),
     PatientsModule,
     DoctorsModule,
