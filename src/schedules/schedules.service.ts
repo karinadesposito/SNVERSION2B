@@ -160,13 +160,13 @@ export class ScheduleService {
           HttpStatus.NOT_FOUND,
         );
       }
-      if (!schedule.removed === true) {
+      /*if (!schedule.removed === true) {
         schedule.deletionReason = deletionReason;
         schedule.removed = true; // Marcar como eliminado
 
         await this.scheduleRepository.save(schedule);
 
-        return {
+          return {
           message: `Se ha marcado la agenda con id: ${schedule.idSchedule} como eliminada`,
           data: schedule.idSchedule,
           statusCode: HttpStatus.OK,
@@ -175,7 +175,37 @@ export class ScheduleService {
       throw new HttpException(
         `La agenda con ${id} ya se encuentra eliminada`,
         HttpStatus.NOT_FOUND,
+      );*/
+
+      // Verificar si ya está marcado como eliminado
+    if (schedule.removed === true) {
+      throw new HttpException(
+        `La agenda con id ${id} ya se encuentra eliminada`,
+        HttpStatus.CONFLICT,
       );
+    }
+
+    // Validar la transición al estado ELIMINADO
+    const isTransitionValid = await this.updateStatus(schedule.estado, EstadoTurno.ELIMINADO);
+    if (!isTransitionValid) {
+      throw new HttpException(
+        `No se puede cambiar el estado de ${schedule.estado} a ELIMINADO`,
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    // Actualizar la razón de eliminación y marcar el turno como eliminado
+    schedule.deletionReason = deletionReason;
+    schedule.removed = true; // Marcar como eliminado
+    schedule.estado = EstadoTurno.ELIMINADO; // Cambiar el estado a ELIMINADO
+
+    await this.scheduleRepository.save(schedule);
+
+    return {
+      message: `Se ha marcado la agenda con id: ${schedule.idSchedule} como eliminada`,
+      data: schedule.idSchedule,
+      statusCode: HttpStatus.OK,
+    };
     } catch (error) {
       if (error.status === HttpStatus.NOT_FOUND) {
         throw error;
@@ -206,14 +236,25 @@ export class ScheduleService {
         }
     
         for (const schedule of schedules) {
-          schedule.deletionReason = deletionReason;
-          schedule.removed = true; // Marcar como eliminado
+          // Validar la transición de estado a ELIMINADO
+      const isTransitionValid = await this.updateStatus(schedule.estado, EstadoTurno.ELIMINADO);
+      if (!isTransitionValid) {
+        throw new HttpException(
+          `No se puede cambiar el estado de ${schedule.estado} a ELIMINADO para el horario con ID ${schedule.idSchedule}`,
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // Actualizar razón de eliminación y marcar como eliminado
+      schedule.deletionReason = deletionReason;
+      schedule.removed = true; // Marcar como eliminado
+      schedule.estado = EstadoTurno.ELIMINADO; // Cambiar el estado a ELIMINADO
           await this.scheduleRepository.save(schedule);
         }
     
         return {
-          message: `Se han eliminado ${schedules.length} horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
-          data: schedules.map((schedule) => schedule.idSchedule),
+          message: `Se han eliminado ${schedules.length} horarios para el doctor con ID ${doctorId} en la fecha ${date} con motivo ${deletionReason}`,
+          // data: schedules.map((schedule) => schedule.idSchedule),
           statusCode: HttpStatus.OK,
         };
       } catch (error) {
@@ -275,7 +316,15 @@ export class ScheduleService {
             HttpStatus.CONFLICT,
           );
         }
-    
+        
+         // Validar la transición de estado a CONFIRMADO
+    const isTransitionValid = await this.updateStatus(schedule.estado, EstadoTurno.CONFIRMADO);
+    if (!isTransitionValid) {
+      throw new HttpException(
+        `No se puede cambiar el estado de ${schedule.estado} a CONFIRMADO para el horario con ID ${schedule.idSchedule}`,
+        HttpStatus.CONFLICT,
+      );
+    }
         // Actualizar el estado del turno a "CONFIRMADO"
         schedule.estado = EstadoTurno.CONFIRMADO;
         schedule.patient = patient; // Asignamos el paciente directamente

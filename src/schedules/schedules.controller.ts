@@ -85,8 +85,8 @@ export class ScheduleController {
   //   const { idDoctor, day } = body;
   //   return this.scheduleService.findScheduleByDay(day, idDoctor);
   // }
+  
   @Delete(':doctorId/:date')
-
   async deleteSchedule(
     @Param('doctorId') doctorId: number,
     @Param('date') date: string,
