@@ -37,47 +37,47 @@ export class ScheduleController {
     return await this.scheduleService.takeSchedule(idSchedule, idPatient);
   }
 
-  @Get()
-  findAllSchedules() {
-    return this.scheduleService.getSchedules();
-  }
+  // @Get()
+  // findAllSchedules() {
+  //   return this.scheduleService.getSchedules();
+  // }
 
-  @Get(':id') 
-  findOneSchedule(
-    @Param('id') id: number,
-  ): Promise<HttpException | Schedule | IResponse> {
-    return this.scheduleService.findOneSchedule(id);
-  }
+  // @Get(':id') 
+  // findOneSchedule(
+  //   @Param('id') id: number,
+  // ): Promise<HttpException | Schedule | IResponse> {
+  //   return this.scheduleService.findOneSchedule(id);
+  // }
 
-  @Delete(':id') 
-  async remove(
-    @Param('id') id: number,
-    @Body('deletionReason') deletionReason: DeletionReason,
-  ): Promise<HttpException | Schedule | IResponse> {
-    return this.scheduleService.deleteSchedule(id, deletionReason);
-  }
+  // @Delete(':id') 
+  // async remove(
+  //   @Param('id') id: number,
+  //   @Body('deletionReason') deletionReason: DeletionReason,
+  // ): Promise<HttpException | Schedule | IResponse> {
+  //   return this.scheduleService.deleteSchedule(id, deletionReason);
+  // }
  
-  @Get('/by-doctor/:idDoctor')
-  getSchedulesByDoctor(
-    @Param('idDoctor') idDoctor: number,
-  ): Promise<HttpException | Schedule[] | IResponse> {
-    return this.scheduleService.getSchedulesByDoctor(idDoctor);
-  }
+  // @Get('/by-doctor/:idDoctor')
+  // getSchedulesByDoctor(
+  //   @Param('idDoctor') idDoctor: number,
+  // ): Promise<HttpException | Schedule[] | IResponse> {
+  //   return this.scheduleService.getSchedulesByDoctor(idDoctor);
+  // }
 
   
-  @Delete(':doctorId/:date')
+  // @Delete(':doctorId/:date')
 
-  async deleteSchedule(
-    @Param('doctorId') doctorId: number,
-    @Param('date') date: string,
-    @Body('deletionReason') deletionReason: DeletionReason,
-  ): Promise<HttpException | IResponse> {
-    return this.scheduleService.deleteSchedulesByDoctorAndDate(
-      doctorId,
-      date,
-      deletionReason,
-    );
-  }
+  // async deleteSchedule(
+  //   @Param('doctorId') doctorId: number,
+  //   @Param('date') date: string,
+  //   @Body('deletionReason') deletionReason: DeletionReason,
+  // ): Promise<HttpException | IResponse> {
+  //   return this.scheduleService.deleteSchedulesByDoctorAndDate(
+  //     doctorId,
+  //     date,
+  //     deletionReason,
+  //   );
+  // }
 
   @Put(':id/change-status')
   async changeScheduleStatus(

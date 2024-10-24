@@ -97,137 +97,137 @@ export class ScheduleService {
     }
   }
 
-  async getSchedules(): Promise<HttpException | Schedule[] | IResponse> {
-    try {
-      const schedules = await this.scheduleRepository.find({
-        where: { removed: false },
-      });
+  // async getSchedules(): Promise<HttpException | Schedule[] | IResponse> {
+  //   try {
+  //     const schedules = await this.scheduleRepository.find({
+  //       where: { removed: false },
+  //     });
 
-      if (!schedules.length)
-        throw new HttpException(
-          'No existen agendas registradas',
-          HttpStatus.NOT_FOUND,
-        );
-      return {
-        message: 'Agendas registradas:',
-        data: schedules,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async findOneSchedule(
-    id: number,
-  ): Promise<HttpException | Schedule | IResponse> {
-    try {
-      const scheduleFound = await this.scheduleRepository.findOne({
-        where: { idSchedule: id },
-      });
-      if (!scheduleFound) {
-        throw new HttpException('Esa agenda no existe', HttpStatus.NOT_FOUND);
-      }
-      return {
-        message: 'La agenda encontrada es:',
-        data: scheduleFound,
-        statusCode: HttpStatus.OK,
-      };
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async deleteSchedule(
-    id: number,
-    deletionReason: DeletionReason,
-  ): Promise<HttpException | Schedule | IResponse> {
-    try {
-      const schedule = await this.scheduleRepository.findOne({
-        where: { idSchedule: id },
-      });
-      if (!schedule) {
-        throw new HttpException(
-          `La agenda con ${id} no existe`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      if (!schedule.removed === true) {
-        schedule.deletionReason = deletionReason;
-        schedule.removed = true; // Marcar como eliminado
+  //     if (!schedules.length)
+  //       throw new HttpException(
+  //         'No existen agendas registradas',
+  //         HttpStatus.NOT_FOUND,
+  //       );
+  //     return {
+  //       message: 'Agendas registradas:',
+  //       data: schedules,
+  //       statusCode: HttpStatus.OK,
+  //     };
+  //   } catch (error) {
+  //     if (error.status === HttpStatus.NOT_FOUND) {
+  //       throw error;
+  //     }
+  //     throw new HttpException(
+  //       'Error del servidor',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
+  // async findOneSchedule(
+  //   id: number,
+  // ): Promise<HttpException | Schedule | IResponse> {
+  //   try {
+  //     const scheduleFound = await this.scheduleRepository.findOne({
+  //       where: { idSchedule: id },
+  //     });
+  //     if (!scheduleFound) {
+  //       throw new HttpException('Esa agenda no existe', HttpStatus.NOT_FOUND);
+  //     }
+  //     return {
+  //       message: 'La agenda encontrada es:',
+  //       data: scheduleFound,
+  //       statusCode: HttpStatus.OK,
+  //     };
+  //   } catch (error) {
+  //     if (error.status === HttpStatus.NOT_FOUND) {
+  //       throw error;
+  //     }
+  //     throw new HttpException(
+  //       'Error del servidor',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
+  // async deleteSchedule(
+  //   id: number,
+  //   deletionReason: DeletionReason,
+  // ): Promise<HttpException | Schedule | IResponse> {
+  //   try {
+  //     const schedule = await this.scheduleRepository.findOne({
+  //       where: { idSchedule: id },
+  //     });
+  //     if (!schedule) {
+  //       throw new HttpException(
+  //         `La agenda con ${id} no existe`,
+  //         HttpStatus.NOT_FOUND,
+  //       );
+  //     }
+  //     if (!schedule.removed === true) {
+  //       schedule.deletionReason = deletionReason;
+  //       schedule.removed = true; // Marcar como eliminado
 
-        await this.scheduleRepository.save(schedule);
+  //       await this.scheduleRepository.save(schedule);
 
-        return {
-          message: `Se ha marcado la agenda con id: ${schedule.idSchedule} como eliminada`,
-          data: schedule.idSchedule,
-          statusCode: HttpStatus.OK,
-        };
-      }
-      throw new HttpException(
-        `La agenda con ${id} ya se encuentra eliminada`,
-        HttpStatus.NOT_FOUND,
-      );
-    } catch (error) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error del servidor',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  //       return {
+  //         message: `Se ha marcado la agenda con id: ${schedule.idSchedule} como eliminada`,
+  //         data: schedule.idSchedule,
+  //         statusCode: HttpStatus.OK,
+  //       };
+  //     }
+  //     throw new HttpException(
+  //       `La agenda con ${id} ya se encuentra eliminada`,
+  //       HttpStatus.NOT_FOUND,
+  //     );
+  //   } catch (error) {
+  //     if (error.status === HttpStatus.NOT_FOUND) {
+  //       throw error;
+  //     }
+  //     throw new HttpException(
+  //       'Error del servidor',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
   
-    async deleteSchedulesByDoctorAndDate(
-      doctorId: number,
-      date: string,
-      deletionReason: DeletionReason,
-    ): Promise<HttpException | IResponse> {
-      console.log(`Attempting to delete schedule for doctorId: ${doctorId} on date: ${date}`); // Log para depuración
-      try {
-        const schedules = await this.scheduleRepository.find({
-          where: { idDoctor: doctorId, day: date, removed: false },
-        });
+    // async deleteSchedulesByDoctorAndDate(
+    //   doctorId: number,
+    //   date: string,
+    //   deletionReason: DeletionReason,
+    // ): Promise<HttpException | IResponse> {
+    //   console.log(`Attempting to delete schedule for doctorId: ${doctorId} on date: ${date}`); // Log para depuración
+    //   try {
+    //     const schedules = await this.scheduleRepository.find({
+    //       where: { idDoctor: doctorId, day: date, removed: false },
+    //     });
     
-        if (schedules.length === 0) {
-          throw new HttpException(
-            `No se encontraron horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
+    //     if (schedules.length === 0) {
+    //       throw new HttpException(
+    //         `No se encontraron horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
+    //         HttpStatus.NOT_FOUND,
+    //       );
+    //     }
     
-        for (const schedule of schedules) {
-          schedule.deletionReason = deletionReason;
-          schedule.removed = true; // Marcar como eliminado
-          await this.scheduleRepository.save(schedule);
-        }
+    //     for (const schedule of schedules) {
+    //       schedule.deletionReason = deletionReason;
+    //       schedule.removed = true; // Marcar como eliminado
+    //       await this.scheduleRepository.save(schedule);
+    //     }
     
-        return {
-          message: `Se han eliminado ${schedules.length} horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
-          data: schedules.map((schedule) => schedule.idSchedule),
-          statusCode: HttpStatus.OK,
-        };
-      } catch (error) {
-        if (error.status === HttpStatus.NOT_FOUND) {
-          throw error;
-        }
-        throw new HttpException(
-          'Error del servidor',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
+    //     return {
+    //       message: `Se han eliminado ${schedules.length} horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
+    //       data: schedules.map((schedule) => schedule.idSchedule),
+    //       statusCode: HttpStatus.OK,
+    //     };
+    //   } catch (error) {
+    //     if (error.status === HttpStatus.NOT_FOUND) {
+    //       throw error;
+    //     }
+    //     throw new HttpException(
+    //       'Error del servidor',
+    //       HttpStatus.INTERNAL_SERVER_ERROR,
+    //     );
+    //   }
+    // }
     
     async takeSchedule(
       idSchedule: number,
@@ -345,31 +345,31 @@ export class ScheduleService {
       }
     }
     
-    async actualizarEstadoNoReservado(): Promise<void> {
-      const currentDate = new Date(); // Fecha y hora actual
-      const currentDateString = currentDate.toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-      const currentTimeString = currentDate.toTimeString().split(' ')[0]; // Formato 'HH:MM:SS'
+    // async actualizarEstadoNoReservado(): Promise<void> {
+    //   const currentDate = new Date(); // Fecha y hora actual
+    //   const currentDateString = currentDate.toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+    //   const currentTimeString = currentDate.toTimeString().split(' ')[0]; // Formato 'HH:MM:SS'
   
-      // Obtener todos los turnos que están disponibles
-      const schedules = await this.scheduleRepository.find({
-        where: { estado: EstadoTurno.DISPONIBLE },
-      });
+    //   // Obtener todos los turnos que están disponibles
+    //   const schedules = await this.scheduleRepository.find({
+    //     where: { estado: EstadoTurno.DISPONIBLE },
+    //   });
   
-      for (const schedule of schedules) {
-        const scheduleDate = schedule.day.toString().split('T')[0]; // Convierte el día a 'YYYY-MM-DD'
-        const scheduleTime = schedule.start_Time; // Asumiendo que es un string en formato 'HH:MM:SS'
+    //   for (const schedule of schedules) {
+    //     const scheduleDate = schedule.day.toString().split('T')[0]; // Convierte el día a 'YYYY-MM-DD'
+    //     const scheduleTime = schedule.start_Time; // Asumiendo que es un string en formato 'HH:MM:SS'
   
-        // Compara la fecha y hora
-        if (
-          (scheduleDate < currentDateString) || // Si la fecha es anterior a hoy
-          (scheduleDate === currentDateString && scheduleTime < currentTimeString) // Si es hoy y la hora ya pasó
-        ) {
-          // Cambiar el estado a 'NO_RESERVADO'
-          schedule.estado = EstadoTurno.NO_RESERVADO;
-          await this.scheduleRepository.save(schedule);
-        }
-      }
-    }
+    //     // Compara la fecha y hora
+    //     if (
+    //       (scheduleDate < currentDateString) || // Si la fecha es anterior a hoy
+    //       (scheduleDate === currentDateString && scheduleTime < currentTimeString) // Si es hoy y la hora ya pasó
+    //     ) {
+    //       // Cambiar el estado a 'NO_RESERVADO'
+    //       schedule.estado = EstadoTurno.NO_RESERVADO;
+    //       await this.scheduleRepository.save(schedule);
+    //     }
+    //   }
+    // }
    
     async changeScheduleStatus(
       idSchedule: number,
@@ -383,8 +383,8 @@ export class ScheduleService {
     
       // Transiciones válidas entre estados
       const transicionesValidas = {
-        [EstadoTurno.DISPONIBLE]: [EstadoTurno.CONFIRMADO, EstadoTurno.NO_RESERVADO],
-        [EstadoTurno.CONFIRMADO]: [EstadoTurno.EJECUTADO, EstadoTurno.NO_ASISTIDO, EstadoTurno.CANCELADO],
+        [EstadoTurno.DISPONIBLE]: [EstadoTurno.CONFIRMADO, EstadoTurno.NO_RESERVADO,EstadoTurno.ELIMINADO],
+        [EstadoTurno.CONFIRMADO]: [EstadoTurno.EJECUTADO, EstadoTurno.NO_ASISTIDO, EstadoTurno.CANCELADO,EstadoTurno.ELIMINADO,],
         [EstadoTurno.CANCELADO]: [EstadoTurno.DISPONIBLE], // cuando cancela el paciente, vuelve a disponible
         [EstadoTurno.EJECUTADO]: [], // No puede pasar a otro estado
         [EstadoTurno.NO_ASISTIDO]: [], // No puede pasar a otro estado
@@ -459,23 +459,26 @@ export class ScheduleService {
 
 
   // Este cron se ejecutará cada noche a la medianoche para verificar los turnos expirados
-  @Cron('0 0 * * *')
+  @Cron('0 0 * * *')  // Ejecuta el cron diariamente a la medianoche
   async updateExpiredSchedules(): Promise<void> {
     const now = new Date();
+    
     const expiredSchedules = await this.scheduleRepository.find({
       where: {
         estado: EstadoTurno.DISPONIBLE,
-        day: LessThanOrEqual(now.toISOString().slice(0, 10)),  // Comparar por la fecha
-        start_Time: LessThan(now.toISOString().slice(11, 19))  // Comparar por la hora
+        day: LessThanOrEqual(now.toISOString().slice(0, 10)),  // Comparar por la fecha 'YYYY-MM-DD'
+        start_Time: LessThan(now.toISOString().slice(11, 19))  // Comparar horas 'HH:MM:SS'
       }
     });
+  
     console.log(`Turnos expirados encontrados: ${expiredSchedules.length}`);
+    
     for (const schedule of expiredSchedules) {
-     
       schedule.estado = EstadoTurno.NO_RESERVADO;
       await this.scheduleRepository.save(schedule);
     }
   }
+  
 
 }
 
