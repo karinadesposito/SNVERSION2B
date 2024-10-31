@@ -7,11 +7,9 @@ import {
   Delete,
   HttpException,
   Put,
- 
 } from '@nestjs/common';
 import { ScheduleService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
-
 import { Schedule } from './entities/schedule.entity';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
@@ -37,7 +35,33 @@ export class ScheduleController {
     return await this.scheduleService.takeSchedule(idSchedule, idPatient);
   }
 
-  // @Get()
+  @Get('/by-doctor/:idDoctor')
+   getSchedulesByDoctor(
+     @Param('idDoctor') idDoctor: number,
+     @Body('estado') estadoTurno?:EstadoTurno
+   ): Promise<HttpException | Schedule[] | IResponse> {
+     return this.scheduleService.getSchedulesByDoctor(idDoctor,estadoTurno);
+   }
+
+  @Put(':id/change-status')
+  async changeScheduleStatus(
+    @Param('id') idSchedule: number,
+    @Body() updateStatusDto: { estado: EstadoTurno; idPatient?: number; deletionReason?: DeletionReason },
+  ): Promise<Schedule> {
+    return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
+  }
+  
+
+@Get('test-update-expired-schedules') // Debe coincidir con la ruta que estás usando
+    async testUpdateExpiredSchedules(): Promise<{ message: string }> {
+        await this.scheduleService.updateExpiredSchedules();
+        return { message: 'Función ejecutada manualmente' };
+    }
+
+}
+
+
+// @Get()
   // findAllSchedules() {
   //   return this.scheduleService.getSchedules();
   // }
@@ -56,17 +80,8 @@ export class ScheduleController {
   // ): Promise<HttpException | Schedule | IResponse> {
   //   return this.scheduleService.deleteSchedule(id, deletionReason);
   // }
- 
-  // @Get('/by-doctor/:idDoctor')
-  // getSchedulesByDoctor(
-  //   @Param('idDoctor') idDoctor: number,
-  // ): Promise<HttpException | Schedule[] | IResponse> {
-  //   return this.scheduleService.getSchedulesByDoctor(idDoctor);
-  // }
 
-  
   // @Delete(':doctorId/:date')
-
   // async deleteSchedule(
   //   @Param('doctorId') doctorId: number,
   //   @Param('date') date: string,
@@ -78,21 +93,3 @@ export class ScheduleController {
   //     deletionReason,
   //   );
   // }
-
-  @Put(':id/change-status')
-  async changeScheduleStatus(
-    @Param('id') idSchedule: number,
-    @Body() updateStatusDto: { estado: EstadoTurno; idPatient?: number; deletionReason?: DeletionReason },
-  ): Promise<Schedule> {
-  
-    return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
-  }
-  
-
-@Get('test-update-expired-schedules') // Debe coincidir con la ruta que estás usando
-    async testUpdateExpiredSchedules(): Promise<{ message: string }> {
-        await this.scheduleService.updateExpiredSchedules();
-        return { message: 'Función ejecutada manualmente' };
-    }
-
-}
