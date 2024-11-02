@@ -3,7 +3,7 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Schedule } from './entities/schedule.entity';
-import { Repository, LessThan, LessThanOrEqual } from 'typeorm';
+import { Repository, LessThan, LessThanOrEqual, Between, MoreThanOrEqual } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 import { Doctor } from '../doctors/entities/doctor.entity';
@@ -96,138 +96,6 @@ export class ScheduleService {
       );
     }
   }
-
-  // async getSchedules(): Promise<HttpException | Schedule[] | IResponse> {
-  //   try {
-  //     const schedules = await this.scheduleRepository.find({
-  //       where: { removed: false },
-  //     });
-
-  //     if (!schedules.length)
-  //       throw new HttpException(
-  //         'No existen agendas registradas',
-  //         HttpStatus.NOT_FOUND,
-  //       );
-  //     return {
-  //       message: 'Agendas registradas:',
-  //       data: schedules,
-  //       statusCode: HttpStatus.OK,
-  //     };
-  //   } catch (error) {
-  //     if (error.status === HttpStatus.NOT_FOUND) {
-  //       throw error;
-  //     }
-  //     throw new HttpException(
-  //       'Error del servidor',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-  // async findOneSchedule(
-  //   id: number,
-  // ): Promise<HttpException | Schedule | IResponse> {
-  //   try {
-  //     const scheduleFound = await this.scheduleRepository.findOne({
-  //       where: { idSchedule: id },
-  //     });
-  //     if (!scheduleFound) {
-  //       throw new HttpException('Esa agenda no existe', HttpStatus.NOT_FOUND);
-  //     }
-  //     return {
-  //       message: 'La agenda encontrada es:',
-  //       data: scheduleFound,
-  //       statusCode: HttpStatus.OK,
-  //     };
-  //   } catch (error) {
-  //     if (error.status === HttpStatus.NOT_FOUND) {
-  //       throw error;
-  //     }
-  //     throw new HttpException(
-  //       'Error del servidor',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-  // async deleteSchedule(
-  //   id: number,
-  //   deletionReason: DeletionReason,
-  // ): Promise<HttpException | Schedule | IResponse> {
-  //   try {
-  //     const schedule = await this.scheduleRepository.findOne({
-  //       where: { idSchedule: id },
-  //     });
-  //     if (!schedule) {
-  //       throw new HttpException(
-  //         `La agenda con ${id} no existe`,
-  //         HttpStatus.NOT_FOUND,
-  //       );
-  //     }
-  //     if (!schedule.removed === true) {
-  //       schedule.deletionReason = deletionReason;
-  //       schedule.removed = true; // Marcar como eliminado
-
-  //       await this.scheduleRepository.save(schedule);
-
-  //       return {
-  //         message: `Se ha marcado la agenda con id: ${schedule.idSchedule} como eliminada`,
-  //         data: schedule.idSchedule,
-  //         statusCode: HttpStatus.OK,
-  //       };
-  //     }
-  //     throw new HttpException(
-  //       `La agenda con ${id} ya se encuentra eliminada`,
-  //       HttpStatus.NOT_FOUND,
-  //     );
-  //   } catch (error) {
-  //     if (error.status === HttpStatus.NOT_FOUND) {
-  //       throw error;
-  //     }
-  //     throw new HttpException(
-  //       'Error del servidor',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-  
-    // async deleteSchedulesByDoctorAndDate(
-    //   doctorId: number,
-    //   date: string,
-    //   deletionReason: DeletionReason,
-    // ): Promise<HttpException | IResponse> {
-    //   console.log(`Attempting to delete schedule for doctorId: ${doctorId} on date: ${date}`); // Log para depuración
-    //   try {
-    //     const schedules = await this.scheduleRepository.find({
-    //       where: { idDoctor: doctorId, day: date, removed: false },
-    //     });
-    
-    //     if (schedules.length === 0) {
-    //       throw new HttpException(
-    //         `No se encontraron horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
-    //         HttpStatus.NOT_FOUND,
-    //       );
-    //     }
-    
-    //     for (const schedule of schedules) {
-    //       schedule.deletionReason = deletionReason;
-    //       schedule.removed = true; // Marcar como eliminado
-    //       await this.scheduleRepository.save(schedule);
-    //     }
-    
-    //     return {
-    //       message: `Se han eliminado ${schedules.length} horarios para el doctor con ID ${doctorId} en la fecha ${date}`,
-    //       data: schedules.map((schedule) => schedule.idSchedule),
-    //       statusCode: HttpStatus.OK,
-    //     };
-    //   } catch (error) {
-    //     if (error.status === HttpStatus.NOT_FOUND) {
-    //       throw error;
-    //     }
-    //     throw new HttpException(
-    //       'Error del servidor',
-    //       HttpStatus.INTERNAL_SERVER_ERROR,
-    //     );
-    //   }
-    // }
     
     async takeSchedule(
       idSchedule: number,
@@ -457,29 +325,100 @@ export class ScheduleService {
     }
     
 
+//     @Cron('0 0 * * *') // Ejecuta a medianoche todos los días
+//     async updateExpiredSchedules(): Promise<void> {
+//       // Obtener la fecha y hora actual en la zona horaria de Buenos Aires
+//       const now = new Date();
+//       const nowInBuenosAires = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    
+//       const currentDate = nowInBuenosAires.toISOString().slice(0, 10); // YYYY-MM-DD
+//       const currentTime = nowInBuenosAires.toISOString().slice(11, 19); // HH:mm:ss
+    
+//       console.log(`Fecha actual: ${currentDate}, Hora actual: ${currentTime}`);
+    
+//       // Buscar todos los turnos disponibles que son anteriores a la fecha y hora actual
+//       const expiredSchedules = await this.scheduleRepository.find({
+//         where: {
+//           estado: EstadoTurno.DISPONIBLE,
+//           day: LessThan(currentDate), // Busca turnos de días anteriores
+//         },
+//       });
+    
+//       // Filtrar los turnos que han pasado la hora actual
+//       const filteredExpiredSchedules = expiredSchedules.filter(schedule => {
+//         return schedule.start_Time < currentTime; // Solo incluir turnos que ya han pasado la hora actual
+//       });
+    
+//       console.log(`Turnos expirados encontrados: ${filteredExpiredSchedules.length}`);
+    
+//       for (const schedule of filteredExpiredSchedules) {
+//         console.log(`Actualizando turno: ${schedule.idSchedule}, Estado anterior: ${schedule.estado}`);
+//         schedule.estado = EstadoTurno.NO_RESERVADO;
+//         await this.scheduleRepository.save(schedule);
+//       }
+//     }
+// }
+async getSchedulesByFilters(
+  estado: EstadoTurno,
+  idDoctor?: number,
+  startDate?: string,
+  endDate?: string,
+  patientId?: number
+): Promise<Schedule[]> {
+  const filters: any = { estado };
 
-  // Este cron se ejecutará cada noche a la medianoche para verificar los turnos expirados
-  @Cron('0 0 * * *')  // Ejecuta el cron diariamente a la medianoche
-  async updateExpiredSchedules(): Promise<void> {
-    const now = new Date();
-    
-    const expiredSchedules = await this.scheduleRepository.find({
-      where: {
-        estado: EstadoTurno.DISPONIBLE,
-        day: LessThanOrEqual(now.toISOString().slice(0, 10)),  // Comparar por la fecha 'YYYY-MM-DD'
-        start_Time: LessThan(now.toISOString().slice(11, 19))  // Comparar horas 'HH:MM:SS'
-      }
-    });
-  
-    console.log(`Turnos expirados encontrados: ${expiredSchedules.length}`);
-    
+  // Filtrar por doctor si se especifica
+  if (idDoctor) {
+    filters.idDoctor = idDoctor;
+  }
+
+  // Filtrar por paciente si se especifica
+  if (patientId) {
+    filters.patient = { id: patientId };
+  }
+
+  // Filtrar por rango de fechas
+  if (startDate && endDate) {
+    filters.day = Between(startDate, endDate);
+  } else if (startDate) {
+    filters.day = MoreThanOrEqual(startDate);
+  } else if (endDate) {
+    filters.day = LessThanOrEqual(endDate);
+  }
+
+  // Consultar los turnos con los filtros aplicados
+  return this.scheduleRepository.find({
+    where: filters,
+    relations: ['patient', 'idDoctors'], // Relacionar con entidades asociadas si es necesario
+  });
+}
+
+async updateExpiredSchedules(): Promise<void> {
+  const now = new Date(); // Obtén la fecha y hora actual
+  // Busca los turnos disponibles que han expirado
+  const expiredSchedules = await this.scheduleRepository
+    .createQueryBuilder('schedule')
+    .where('schedule.estado = :estado', { estado: EstadoTurno.DISPONIBLE })
+    .andWhere('DATE(schedule.day) < :today OR (DATE(schedule.day) = :today AND TIME(schedule.end_Time) < :now)', {
+      today: now.toISOString().split('T')[0], // Fecha de hoy
+      now: now.toTimeString().split(' ')[0], // Hora actual
+    })
+    .getMany();
+
+  // Actualiza el estado de los turnos expirados a NO_RESERVADO
+  if (expiredSchedules.length > 0) {
     for (const schedule of expiredSchedules) {
       schedule.estado = EstadoTurno.NO_RESERVADO;
-      await this.scheduleRepository.save(schedule);
     }
+    await this.scheduleRepository.save(expiredSchedules); // Guarda los cambios en la base de datos
+    console.log(`Turnos expirados actualizados: ${expiredSchedules.length}`);
+  } else {
+    console.log('No se encontraron turnos expirados');
   }
-  
-
 }
+
+
+
+  }
 
 
