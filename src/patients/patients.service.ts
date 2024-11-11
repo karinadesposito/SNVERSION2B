@@ -23,9 +23,9 @@ export class PatientsService {
       });
       if (patientFound) {
         throw new HttpException(
-        `Un paciente ya existe en la base de datos con éste DNI ${patientFound.dni},su id es ${patientFound.id}`,
+          `Un paciente ya existe en la base de datos con éste DNI ${patientFound.dni},su id es ${patientFound.id}`,
           HttpStatus.CONFLICT,
-        )
+        );
       } else {
         const newPatient = this.patientsRepository.create(patient);
         const patientSaved = await this.patientsRepository.save(newPatient);
@@ -35,17 +35,16 @@ export class PatientsService {
           statusCode: HttpStatus.CREATED,
         };
       }
-    }catch (error) {
+    } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {
-        throw error
+        throw error;
       }
       throw new HttpException(
-        "Error del servidor",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
-
 
   async getPatients(): Promise<UpdatePatientDto[] | IResponse | HttpException> {
     try {
@@ -56,7 +55,7 @@ export class PatientsService {
         throw new HttpException(
           'No existen pacientes registrados',
           HttpStatus.CONFLICT,
-        )
+        );
       } else {
         return {
           message: 'La lista de pacientes está compuesta por:',
@@ -64,19 +63,19 @@ export class PatientsService {
           statusCode: HttpStatus.OK,
         };
       }
-    }  catch (error) {
+    } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {
-        throw error
+        throw error;
       }
       throw new HttpException(
-        "Error del servidor",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async findOnePatient(
-    id:number,
+    id: number,
   ): Promise<HttpException | UpdatePatientDto | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
@@ -85,8 +84,8 @@ export class PatientsService {
       if (!patient) {
         throw new HttpException(
           `El paciente con id ${id} no fue encontrado`,
-        HttpStatus.CONFLICT,
-        )
+          HttpStatus.CONFLICT,
+        );
       } else {
         return {
           message: `El paciente encontrado con id ${id} es:`,
@@ -96,16 +95,19 @@ export class PatientsService {
       }
     } catch (error) {
       if (error.status === HttpStatus.CONFLICT) {
-        throw error
+        throw error;
       }
       throw new HttpException(
-        "Error del servidor",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async updatePatient(id: number, updatePatient: Partial<UpdatePatientDto>): Promise<HttpException | UpdatePatientDto | IResponse> {
+  async updatePatient(
+    id: number,
+    updatePatient: Partial<UpdatePatientDto>,
+  ): Promise<HttpException | UpdatePatientDto | IResponse> {
     try {
       const patient = await this.patientsRepository.findOne({
         where: { id: id },
@@ -116,7 +118,7 @@ export class PatientsService {
           HttpStatus.NOT_FOUND,
         );
       }
-//verifica que updatePatient tenga una prop dni
+      //verifica que updatePatient tenga una prop dni
       if (updatePatient.dni) {
         const existingPatient = await this.patientsRepository.findOne({
           where: { dni: updatePatient.dni },
@@ -157,7 +159,7 @@ export class PatientsService {
         throw new HttpException(
           `El paciente con id ${id} no ha sido encontrado: `,
           HttpStatus.NOT_FOUND,
-        )
+        );
       } else {
         await this.patientsRepository.delete({ id: id });
         return {
@@ -165,35 +167,42 @@ export class PatientsService {
           statusCode: HttpStatus.OK,
         };
       }
-    }catch (error) {
+    } catch (error) {
       if (error.status === HttpStatus.NOT_FOUND) {
-        throw error
+        throw error;
       }
       throw new HttpException(
-        "Error del servidor",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
-    }}
-    async findByDni(dni: string): Promise<HttpException | UpdatePatientDto | IResponse> {
-      try {
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async findByDni(
+    dni: string,
+  ): Promise<HttpException | UpdatePatientDto | IResponse> {
+    try {
       const patient = await this.patientsRepository.findOne({ where: { dni } });
-    
-        if (!patient) {
-          throw new HttpException(`El Paciente con DNI ${dni} no fue encontrado`, HttpStatus.NOT_FOUND);
-        }
-    else{
+
+      if (!patient) {
+        throw new HttpException(
+          `El Paciente con DNI ${dni} no fue encontrado`,
+          HttpStatus.NOT_FOUND,
+        );
+      } else {
         return {
           message: `El Paciente encontrado con DNI ${dni} es`,
           data: patient,
           statusCode: HttpStatus.OK,
-        }};
-      } catch (error) {
-        if (error.status === HttpStatus.NOT_FOUND ) {
-          throw error
-        }
-        throw new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
+        };
       }
+    } catch (error) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error del servidor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-  
-  
+  }
 }
