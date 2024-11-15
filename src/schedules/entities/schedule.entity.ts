@@ -60,7 +60,7 @@ export class Schedule {
 
   @ManyToOne(() => Doctor, (doctor) => doctor.schedule)
   @JoinColumn({ name: 'idDoctor' })
-  idDoctors: Doctor;
+  doctors: Doctor;
 
   // Relación con Paciente
   @ManyToOne(() => Patient, (patient) => patient.schedules, { nullable: true })

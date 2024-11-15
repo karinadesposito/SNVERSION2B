@@ -35,9 +35,17 @@ export class ScheduleController {
     return await this.scheduleService.takeSchedule(idSchedule, idPatient);
   }
 
-  @Get('/by-doctor/:idDoctor')
+  /*@Get('/by-doctor/:idDoctor')
    getSchedulesByDoctor(
      @Param('idDoctor') idDoctor: number,
+     @Body('estado') estadoTurno?:EstadoTurno
+   ): Promise<HttpException | Schedule[] | IResponse> {
+     return this.scheduleService.getSchedulesByDoctor(idDoctor,estadoTurno);
+   }*/
+
+     @Get()
+   getSchedulesByDoctor(
+     @Body('idDoctor') idDoctor?: number,
      @Body('estado') estadoTurno?:EstadoTurno
    ): Promise<HttpException | Schedule[] | IResponse> {
      return this.scheduleService.getSchedulesByDoctor(idDoctor,estadoTurno);

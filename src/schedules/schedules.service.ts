@@ -168,7 +168,7 @@ export class ScheduleService {
     }
 
     async getSchedulesByDoctor(
-      idDoctor: number,
+      idDoctor?: number,
       estado?: EstadoTurno, // Parámetro opcional para el estado del turno
     ): Promise<HttpException | IResponse> {
       try {
@@ -187,7 +187,7 @@ export class ScheduleService {
     
         const schedules = await this.scheduleRepository.find({
           where: whereCondition,
-          relations: ['idDoctors', 'patient'],
+          relations: ['doctors', 'patient'],
         });
     
         if (!schedules.length) {
@@ -200,14 +200,17 @@ export class ScheduleService {
         const shiff = schedules.map(schedule => ({
           Dia: schedule.day,
           Hora: schedule.start_Time,
+          Doctor: schedule.doctors ? schedule.doctors.fullName : null,
           Paciente: schedule.patient ? schedule.patient.fullName : null,
           Telefono: schedule.patient ? schedule.patient.phone : null,
           Estado: schedule.estado
         }));
 
         return {
-          message: `Los turnos para el doctor ${doctor.fullName} son`,
+          //message: `Los turnos para el doctor ${doctor.fullName} son`,
+          message: `Los turnos son`,
           data: shiff,
+          //data:schedules,
           statusCode: HttpStatus.OK,
         };
       } catch (error) {
