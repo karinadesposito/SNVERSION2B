@@ -230,31 +230,7 @@ export class ScheduleService {
     }
   }
 
-  // async actualizarEstadoNoReservado(): Promise<void> {
-  //   const currentDate = new Date(); // Fecha y hora actual
-  //   const currentDateString = currentDate.toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-  //   const currentTimeString = currentDate.toTimeString().split(' ')[0]; // Formato 'HH:MM:SS'
-
-  //   // Obtener todos los turnos que están disponibles
-  //   const schedules = await this.scheduleRepository.find({
-  //     where: { estado: EstadoTurno.DISPONIBLE },
-  //   });
-
-  //   for (const schedule of schedules) {
-  //     const scheduleDate = schedule.day.toString().split('T')[0]; // Convierte el día a 'YYYY-MM-DD'
-  //     const scheduleTime = schedule.start_Time; // Asumiendo que es un string en formato 'HH:MM:SS'
-
-  //     // Compara la fecha y hora
-  //     if (
-  //       (scheduleDate < currentDateString) || // Si la fecha es anterior a hoy
-  //       (scheduleDate === currentDateString && scheduleTime < currentTimeString) // Si es hoy y la hora ya pasó
-  //     ) {
-  //       // Cambiar el estado a 'NO_RESERVADO'
-  //       schedule.estado = EstadoTurno.NO_RESERVADO;
-  //       await this.scheduleRepository.save(schedule);
-  //     }
-  //   }
-  // }
+  
 
   async changeScheduleStatus(
     idSchedule: number,
@@ -378,39 +354,7 @@ export class ScheduleService {
     return await this.scheduleRepository.save(schedule);
   }
 
-  //     @Cron('0 0 * * *') // Ejecuta a medianoche todos los días
-  //     async updateExpiredSchedules(): Promise<void> {
-  //       // Obtener la fecha y hora actual en la zona horaria de Buenos Aires
-  //       const now = new Date();
-  //       const nowInBuenosAires = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
-
-  //       const currentDate = nowInBuenosAires.toISOString().slice(0, 10); // YYYY-MM-DD
-  //       const currentTime = nowInBuenosAires.toISOString().slice(11, 19); // HH:mm:ss
-
-  //       console.log(`Fecha actual: ${currentDate}, Hora actual: ${currentTime}`);
-
-  //       // Buscar todos los turnos disponibles que son anteriores a la fecha y hora actual
-  //       const expiredSchedules = await this.scheduleRepository.find({
-  //         where: {
-  //           estado: EstadoTurno.DISPONIBLE,
-  //           day: LessThan(currentDate), // Busca turnos de días anteriores
-  //         },
-  //       });
-
-  //       // Filtrar los turnos que han pasado la hora actual
-  //       const filteredExpiredSchedules = expiredSchedules.filter(schedule => {
-  //         return schedule.start_Time < currentTime; // Solo incluir turnos que ya han pasado la hora actual
-  //       });
-
-  //       console.log(`Turnos expirados encontrados: ${filteredExpiredSchedules.length}`);
-
-  //       for (const schedule of filteredExpiredSchedules) {
-  //         console.log(`Actualizando turno: ${schedule.idSchedule}, Estado anterior: ${schedule.estado}`);
-  //         schedule.estado = EstadoTurno.NO_RESERVADO;
-  //         await this.scheduleRepository.save(schedule);
-  //       }
-  //     }
-  // }
+  
   async getSchedulesByFilters(
     estado: EstadoTurno,
     idDoctor?: number,

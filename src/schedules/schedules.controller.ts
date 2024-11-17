@@ -45,14 +45,10 @@ export class ScheduleController {
     return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
   }
   
-// @Get('test-update-expired-schedules') // Debe coincidir con la ruta que estás usando
-//     async testUpdateExpiredSchedules(): Promise<{ message: string }> {
-//         await this.scheduleService.updateExpiredSchedules();
-//         return { message: 'Función ejecutada manualmente' };
-//     }
+
 @Get('/report/:estado')
 getSchedulesByFilters(
-  @Param('estado') estado: EstadoTurno,
+  @Param('estado') estado? : EstadoTurno,
   @Query('idDoctor') idDoctor?: number,
   @Query('startDate') startDate?: string,
   @Query('endDate') endDate?: string,
