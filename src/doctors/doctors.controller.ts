@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   HttpException,
-
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -16,13 +15,11 @@ import { Doctor } from './entities/doctor.entity';
 import { IResponse } from '../interface/IResponse';
 import { AddCoverageToDoctorDto } from '../coverage/dto/add-coverage.dto';
 
-
 @Controller('doctors')
 export class DoctorsController {
   constructor(private readonly doctorsService: DoctorsService) {}
 
   @Post()
-
   create(
     @Body() newDoctor: CreateDoctorDto,
   ): Promise<HttpException | CreateDoctorDto | IResponse> {
@@ -34,20 +31,12 @@ export class DoctorsController {
     return this.doctorsService.getDoctors();
   }
   @Get('license/:license')
- 
   async getDoctorByLicense(@Param('license') license: string) {
     const doctor = await this.doctorsService.findByLicense(license);
     return { id: doctor.id };
   }
-  @Get('/shiffAvailable/:idDoctor')
- 
-  DoctorsTwo(
-    @Param('idDoctor') idDoctor: number,
-  ): Promise<HttpException | Doctor[] | IResponse> {
-    return this.doctorsService.getDoctorsShiff(idDoctor);
-  }
+  
   @Get(':id')
- 
   findOneDoctor(
     @Param('id') id: number,
   ): Promise<HttpException | Doctor | IResponse> {
@@ -55,7 +44,6 @@ export class DoctorsController {
   }
 
   @Put(':id')
-
   updateDoctor(
     @Body() updateDoctor: Partial<UpdateDoctorDto>,
     @Param('id') id: number,
@@ -64,7 +52,6 @@ export class DoctorsController {
   }
 
   @Delete(':id')
- 
   deleteDoctor(
     @Param('id') id: number,
   ): Promise<HttpException | Doctor | IResponse> {
@@ -72,15 +59,13 @@ export class DoctorsController {
   }
 
   @Post('/addCoverage')
- 
   async addCoverageToDoctor(
     @Body() addCoverageToDoctorDto: AddCoverageToDoctorDto,
   ): Promise<HttpException | Doctor | IResponse> {
     return this.doctorsService.addCoverageToDoctor(addCoverageToDoctorDto);
-  } 
+  }
 
   @Delete('/remove/coverage')
-
   async removeCoverageFromDoctor(
     @Body() doctorData: AddCoverageToDoctorDto,
   ): Promise<Doctor | IResponse> {
@@ -91,5 +76,4 @@ export class DoctorsController {
   // getPatientsByDoctorId(@Param('id') doctorId: number) {
   //   return this.doctorsService.findPatientsByDoctorId(doctorId);
   // }
-
 }
