@@ -6,7 +6,7 @@ import { Repository, LessThan, LessThanOrEqual } from 'typeorm';
 import { IResponse } from '../interface/IResponse';
 import { DeletionReason } from './enum/deleteSchedule.enum';
 import { Doctor } from '../doctors/entities/doctor.entity';
-import { EstadoTurno } from '../schedules/entities/schedule.entity';
+import { EstadoTurno } from './enum/estados.enum'; 
 import { Patient } from '../patients/entities/patient.entity';
 import { Cron } from '@nestjs/schedule';
 
@@ -104,7 +104,7 @@ export class ScheduleService {
         // Buscar el horario por ID
         const schedule = await this.scheduleRepository.findOne({
           where: { idSchedule },
-          relations: ['patient', 'idDoctors'], // Cargar las relaciones necesarias
+          relations: ['patient', 'idDoctors'],
         });
     
         if (!schedule) {
@@ -169,7 +169,7 @@ export class ScheduleService {
 
     async getSchedulesByDoctor(
       idDoctor?: number,
-      estado?: EstadoTurno, // Parámetro opcional para el estado del turno
+      estado?: EstadoTurno,
     ): Promise<HttpException | IResponse> {
       try {
         const doctor = await this.doctorRepository.findOne({ where: { id: idDoctor } });

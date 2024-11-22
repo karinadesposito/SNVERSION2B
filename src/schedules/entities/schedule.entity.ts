@@ -1,5 +1,4 @@
 import { Doctor } from '../../doctors/entities/doctor.entity';
-// import { Shiff } from '../../shiff/entities/shiff.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import {
   Entity,
@@ -7,21 +6,9 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  OneToOne,
 } from 'typeorm';
 import { DeletionReason } from '../enum/deleteSchedule.enum';
-
-
-
-export enum EstadoTurno {
-  DISPONIBLE = 'disponible', 
-  CONFIRMADO = 'confirmado',//por el paciente, mail confirmatorio, recordatorio?//
-  CANCELADO = 'cancelado',//cancelado x paciente 
-  ELIMINADO = 'eliminado', //en el caso de que lo elimine el médico
-  EJECUTADO = 'ejecutado',
-  NO_ASISTIDO = 'no_asistido',//no fue el paciente
-  NO_RESERVADO = 'no_reservado'//quedaron disponibles
-}
+import { EstadoTurno } from '../enum/estados.enum';
 
 @Entity({ name: 'schedules' })
 export class Schedule {

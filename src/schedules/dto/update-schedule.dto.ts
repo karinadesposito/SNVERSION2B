@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateScheduleDto } from './create-schedule.dto';
 import { IsEnum, IsOptional } from 'class-validator';
-import { EstadoTurno } from '../entities/schedule.entity';
+import { EstadoTurno } from '../enum/estados.enum';
 import { DeletionReason } from '../enum/deleteSchedule.enum';
 
 export class UpdateScheduleDto extends PartialType(CreateScheduleDto) {

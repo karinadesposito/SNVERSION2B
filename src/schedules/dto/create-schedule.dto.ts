@@ -1,7 +1,5 @@
-
-
 import { IsNotEmpty, IsEnum, IsOptional, IsBoolean, IsNumber, IsString } from 'class-validator';
-import { EstadoTurno } from '../entities/schedule.entity'; // Asegúrate de importar el enum correctamente
+import { EstadoTurno } from '../enum/estados.enum'; 
 
 export class CreateScheduleDto {
   @IsNotEmpty()
@@ -27,7 +25,6 @@ export class CreateScheduleDto {
   @IsOptional()
   @IsString()
   interval?: string; // Intervalo de tiempo (opcional)
-
 
   @IsOptional()
   @IsEnum(EstadoTurno) // Usamos el enum de EstadoTurno 
