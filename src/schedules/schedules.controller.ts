@@ -44,7 +44,13 @@ export class ScheduleController {
   
     return await this.scheduleService.changeScheduleStatus(idSchedule, updateStatusDto);
   }
-  
+//   @Put('/batch/change-status')
+// async changeMultipleSchedulesStatus(
+//   @Body() updateBatchStatusDto: { ids: number[]; estado: EstadoTurno; deletionReason?: DeletionReason },
+// ): Promise<Schedule[]> {
+//   return await this.scheduleService.changeMultipleSchedulesStatus(updateBatchStatusDto);
+// }
+
 
 @Get('/report/:estado')
 getSchedulesByFilters(
