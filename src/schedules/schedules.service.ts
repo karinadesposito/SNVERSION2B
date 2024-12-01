@@ -416,4 +416,42 @@ export class ScheduleService {
       console.log('No se encontraron turnos expirados');
     }
   }
+
+  // async changeMultipleSchedulesStatus(
+  //   updateBatchStatusDto: { ids: number[]; estado: EstadoTurno; deletionReason?: DeletionReason },
+  // ): Promise<Schedule[]> {
+  //   const { ids, estado, deletionReason } = updateBatchStatusDto;
+  
+  //   // Validar que los IDs existan
+  //   const schedules = await this.scheduleRepository.findByIds(ids);
+  //   if (schedules.length !== ids.length) {
+  //     throw new NotFoundException('Uno o más turnos no existen.');
+  //   }
+  
+  //   // Validar las transiciones de estado
+  //   schedules.forEach((schedule) => {
+  //     if (!esTransicionValida(schedule.estado, estado)) {
+  //       throw new BadRequestException(
+  //         `Transición no válida desde el estado actual para el turno con ID ${schedule.idSchedule}`,
+  //       );
+  //     }
+  // });
+  
+  //   // Actualizar los turnos en la base de datos
+  //   await this.scheduleRepository
+  //     .createQueryBuilder()
+  //     .update(Schedule)
+  //     .set({
+  //       estado,
+  //       deletionReason: estado === EstadoTurno.ELIMINADO ? deletionReason : null,
+  //     })
+  //     .whereInIds(ids)
+  //     .execute();
+  
+  //   return await this.scheduleRepository.findByIds(ids);
+  // }
+
+
+
+
 }
