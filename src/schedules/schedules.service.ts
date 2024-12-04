@@ -202,6 +202,7 @@ export class ScheduleService {
           Hora: schedule.start_Time,
           Doctor: schedule.doctors ? schedule.doctors.fullName : null,
           Paciente: schedule.patient ? schedule.patient.fullName : null,
+          Documento: schedule.patient ? schedule.patient.dni : null,
           Telefono: schedule.patient ? schedule.patient.phone : null,
           Estado: schedule.estado
         }));

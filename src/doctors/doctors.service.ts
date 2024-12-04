@@ -14,7 +14,7 @@ import { IResponse } from '../interface/IResponse';
 import { Coverage } from '../coverage/entities/coverage.entity';
 import { AddCoverageToDoctorDto } from '../coverage/dto/add-coverage.dto';
 import { Patient } from '../patients/entities/patient.entity';
-import { EstadoTurno } from '../schedules/entities/schedule.entity';
+import { EstadoTurno } from 'src/schedules/enum/estados.enum';
 
 @Injectable()
 export class DoctorsService {
