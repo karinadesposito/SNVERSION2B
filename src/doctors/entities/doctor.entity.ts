@@ -23,7 +23,7 @@ export class Doctor extends Person {
   @DeleteDateColumn({ name: 'deletedAt', nullable: true, type: 'datetime' })
   deletedAt: Date;
 
-  @OneToMany(() => Schedule, (schedule) => schedule.doctors)
+  @OneToMany(() => Schedule, (schedule) => schedule.idDoctors)
   schedule: Schedule[];
 
   @ManyToOne(() => Speciality, (speciality) => speciality.idDoctor,

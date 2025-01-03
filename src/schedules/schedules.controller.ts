@@ -29,7 +29,7 @@ export class ScheduleController {
   @Post(':idSchedule/take')
   async takeSchedule(
     @Param('idSchedule') idSchedule: number,
-    @Body('idPatient') idPatient: number, // Asegúrate de que idPatient esté en el body
+    @Body('idPatient') idPatient: number,
   ): Promise<IResponse> {
     return await this.scheduleService.takeSchedule(idSchedule, idPatient);
   }

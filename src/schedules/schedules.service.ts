@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Schedule } from './entities/schedule.entity';
@@ -187,7 +187,7 @@ export class ScheduleService {
     
         const schedules = await this.scheduleRepository.find({
           where: whereCondition,
-          relations: ['doctors', 'patient'],
+          relations: ['idDoctors', 'patient'],
         });
     
         if (!schedules.length) {
@@ -200,7 +200,7 @@ export class ScheduleService {
         const shiff = schedules.map(schedule => ({
           Dia: schedule.day,
           Hora: schedule.start_Time,
-          Doctor: schedule.doctors ? schedule.doctors.fullName : null,
+          Doctor: schedule.idDoctors ? schedule.idDoctors.fullName : null,
           Paciente: schedule.patient ? schedule.patient.fullName : null,
           Documento: schedule.patient ? schedule.patient.dni : null,
           Telefono: schedule.patient ? schedule.patient.phone : null,
