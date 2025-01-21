@@ -182,7 +182,7 @@ export class ScheduleService {
     
         const whereCondition = { idDoctor }; // Condición básica
         if (estado) {
-          whereCondition['estado'] = estado; // Filtrar por estado si se proporciona
+          whereCondition['estado'] = estado.toLowerCase(); // Filtrar por estado si se proporciona
         }
     
         const schedules = await this.scheduleRepository.find({
