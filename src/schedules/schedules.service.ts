@@ -198,6 +198,7 @@ export class ScheduleService {
         }
     
         const shiff = schedules.map(schedule => ({
+          idSchedule: schedule.idSchedule,
           Dia: schedule.day,
           Hora: schedule.start_Time,
           Doctor: schedule.idDoctors ? schedule.idDoctors.fullName : null,
