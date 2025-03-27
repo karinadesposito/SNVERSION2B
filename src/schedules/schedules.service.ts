@@ -202,6 +202,7 @@ export class ScheduleService {
           Dia: schedule.day,
           Hora: schedule.start_Time,
           Doctor: schedule.idDoctors ? schedule.idDoctors.fullName : null,
+          idDoctor: schedule.idDoctors ? schedule.idDoctors.id : null,
           Paciente: schedule.patient ? schedule.patient.fullName : null,
           Documento: schedule.patient ? schedule.patient.dni : null,
           Telefono: schedule.patient ? schedule.patient.phone : null,

@@ -34,9 +34,9 @@ export class ScheduleController {
     return await this.scheduleService.takeSchedule(idSchedule, idPatient);
   }
 
-  @Get()
+  @Get(':idDoctor?')
   getSchedulesByDoctor(
-    @Body('idDoctor') idDoctor?: number,
+    @Param('idDoctor') idDoctor?: number,
     @Body('estado') estadoTurno?: EstadoTurno,
   ): Promise<HttpException | Schedule[] | IResponse> {
     return this.scheduleService.getSchedulesByDoctor(idDoctor, estadoTurno);
